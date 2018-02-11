@@ -1,0 +1,124 @@
+<query-editor-row
+  query-ctrl="ctrl"
+  class="generic-datasource-query-row"
+  has-text-edit-mode="true"
+>
+  <div class="gf-form-inline">
+    <div class="gf-form gf-form--grow">
+      <label class="gf-form-label width-8 query-keyword">
+        Metric
+      </label>
+      <div class="gf-form gf-form--grow">
+        <gf-form-dropdown
+          model="ctrl.target.target"
+          class="gf-form-dropdown gf-form-dropdown--grow"
+          allow-custom="true"
+          lookup-text="true"
+          get-options="ctrl.getMetricOptions($query)"
+          on-change="ctrl.onChangeParameter()"
+        >
+        </gf-form-dropdown>
+      </div>
+    </div>
+
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword">
+        Time aggregation
+      </label>
+      <div class="gf-form">
+        <gf-form-dropdown
+          model="ctrl.target.timeAggregation"
+          allow-custom="false"
+          lookup-text="false"
+          get-options="ctrl.getTimeAggregationOptions()"
+          on-change="ctrl.onChangeParameter()"
+        >
+        </gf-form-dropdown>
+      </div>
+    </div>
+
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword">
+        Group aggregation
+      </label>
+      <div class="gf-form">
+        <gf-form-dropdown
+          model="ctrl.target.groupAggregation"
+          allow-custom="false"
+          lookup-text="false"
+          get-options="ctrl.getGroupAggregationOptions()"
+          on-change="ctrl.onChangeParameter()"
+        >
+        </gf-form-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <div class="gf-form-inline">
+    <div class="gf-form gf-form--grow">
+      <label class="gf-form-label width-8 query-keyword">
+        Segment by
+      </label>
+      <div class="gf-form gf-form--grow">
+        <gf-form-dropdown
+          model="ctrl.target.segmentBy"
+          class="gf-form-dropdown gf-form-dropdown--grow"
+          allow-custom="true"
+          lookup-text="true"
+          placeholder="no segmentation"
+          get-options="ctrl.getSegmentByOptions($query)"
+          on-change="ctrl.onChangeParameter()"
+        >
+        </gf-form-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <div class="gf-form-inline">
+    <div class="gf-form gf-form--grow">
+      <label class="gf-form-label width-8 query-keyword">
+        Filter
+      </label>
+      <div class="gf-form gf-form--grow">
+        <input
+          type="text"
+          class="gf-form-input"
+          ng-model="ctrl.target.filter"
+          spellcheck="false"
+          placeholder="optional filter"
+          ng-blur="ctrl.onChangeParameter()"
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="gf-form-inline" ng-if="ctrl.target.segmentBy">
+    <div class="gf-form">
+      <label class="gf-form-label width-8 query-keyword">
+        Display
+      </label>
+      <div class="gf-form width-8">
+        <gf-form-dropdown
+          model="ctrl.target.sortDirection"
+          class="gf-form-dropdown gf-form-dropdown--grow"
+          allow-custom="true"
+          lookup-text="true"
+          placeholder="top"
+          get-options="ctrl.getSortDirectionOptions()"
+          on-change="ctrl.onChangeParameter()"
+        >
+        </gf-form-dropdown>
+      </div>
+      <div class="gf-form width-8">
+        <input
+          type="number"
+          class="gf-form-input"
+          ng-model="ctrl.target.pageLimit"
+          spellcheck="false"
+          placeholder="number of elements (10 by default)"
+          ng-blur="ctrl.onChangeParameter()"
+        >
+      </div>
+    </div>
+  </div>
+</query-editor-row>
