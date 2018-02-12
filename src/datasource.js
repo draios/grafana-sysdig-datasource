@@ -1,5 +1,4 @@
 import _ from "lodash";
-import {SysdigDashboardImporter} from './sysdig-dashboard-importer';
 
 //
 // TODO

@@ -1,3 +1,5 @@
+import {SysdigDashboardImporter} from './sysdig-dashboard-importer';
+
 const CLOUD_URL = 'https://app.sysdigcloud.com';
 
 export class SysdigConfigCtrl {
