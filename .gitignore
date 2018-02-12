@@ -1,5 +1,9 @@
-#Dependencies
+.DS_Store
+
+# Dependencies
 node_modules/
 
 # Build artifacts
 dist/
+sysdig/
+*.zip
