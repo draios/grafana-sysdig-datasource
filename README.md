@@ -3,6 +3,7 @@
 Plugin to connect Grafana with Sysdig.
 
 
+
 ## Installation
 
 To install this plugin using the `grafana-cli` tool:
@@ -12,18 +13,15 @@ sudo grafana-cli plugins install grafana-sysdig-datasource
 sudo service grafana-server restart
 ```
 
-(To be continued...)
-
-
-## Dev setup
-
-This plugin requires node 6.10.0
+or download and install the datasource manually:
 
 ```
-npm install -g yarn
-yarn install
-npm run build
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.11.zip -o sysdig.zip
+unzip sysdig.zip
+sudo cp -R sysdig /var/lib/grafana/plugins
+sudo service grafana-server restart
 ```
+
 
 
 ## Changelog
