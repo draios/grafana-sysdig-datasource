@@ -163,29 +163,29 @@ function buildTimeSeriesTargets(sysdigDashboard, sysdigPanel) {
 }
 
 function buildPanelSortDirection(sysdigPanel) {
-    const normalizedDisplayOptions = sysdigPanel.customDisplayOptions ?
-        sysdigPanel.customDisplayOptions :
+    const normalizedDisplayOptions = Object.assign(
         {
             valueLimit: {
                 direction: null,
-                count: null,
-            },
-        }
-    ;
+                count: null
+            }
+        },
+        sysdigPanel.customDisplayOptions
+    );
 
     return normalizedDisplayOptions.valueLimit.direction || null;
 }
 
 function buildPanelPageLimit(sysdigPanel) {
-    const normalizedDisplayOptions = sysdigPanel.customDisplayOptions ?
-        sysdigPanel.customDisplayOptions :
+    const normalizedDisplayOptions = Object.assign(
         {
             valueLimit: {
                 direction: null,
-                count: null,
-            },
-        }
-    ;
+                count: null
+            }
+        },
+        sysdigPanel.customDisplayOptions
+    );
 
     return Number.parseInt(normalizedDisplayOptions.valueLimit.count) || null;
 }
