@@ -346,6 +346,8 @@ const DataService = {
         batch.requests.forEach((request) => {
           request.promise.resolve({ data: [] });
         });
+
+        return { data: { responses: [] } };
       } else {
         const apiRequests = batch.requests.reduce((acc, item) => {
           return [
@@ -371,7 +373,12 @@ const DataService = {
           const requestCount = item.query.targets.length;
           const itemResponses = responses.slice(0, requestCount);
 
-          item.promise.resolve(parseResponses(item.query, itemResponses));
+          const parseResult = parseResponses(item.query, itemResponses);
+          if (parseResult.error) {
+            item.promise.reject(parseResult.error);
+          } else {
+            item.promise.resolve(parseResult);
+          }
 
           responses = responses.slice(requestCount);
         });
@@ -412,41 +419,47 @@ function getRequestTime(timelines, alignments, userTime) {
   const fromUs = userTime.from * 1000000;
   const toUs = userTime.to * 1000000;
   const timespan = toUs - fromUs;
-  const validTimelines = timelines.agents.filter((t) => {
-    return t.from !== null && t.to !== null &&
-      userTime.sampling <= t.sampling &&
-      (
-        (
-          fromUs <= t.from &&
-          toUs >= t.from
-        ) ||
-        (
-          fromUs <= t.to &&
-          toUs >= t.to
-        ) ||
-        (
-          fromUs >= t.from &&
-          toUs <= t.to
-        )
-      )
-    ;
-  });
+
   const validAlignments = alignments.filter((a) => {
     return timespan <= a.max * 1000000;
   });
 
-  if (validTimelines.length === 0 || validAlignments.length === 0) {
+  if (validAlignments.length === 0) {
     return null;
-  } else {
-    const alignTo = validAlignments[0].alignTo * 1000000;
-    const sampling = validAlignments[0].sampling * 1000000;
-
-    return {
-      from: Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000),
-      to: Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000),
-      sampling: Math.trunc(sampling / 1000000),
-    };
   }
+
+  const minSampling = validAlignments[0].sampling * 1000000;
+
+  const validTimelines = timelines.agents.filter((t) => {
+    return t.from !== null &&
+      t.to !== null &&
+      minSampling <= t.sampling &&
+      (
+        (
+          fromUs <= t.from && toUs >= t.from
+        ) ||
+        (
+          fromUs >= t.from && toUs <= t.to
+        ) ||
+        (
+          fromUs <= t.to && toUs >= t.to
+        )
+      )
+    ;
+  });
+
+  if (validTimelines.length === 0) {
+    return null;
+  }
+
+  const alignTo = validAlignments[0].alignTo * 1000000;
+  const alignedFrom = Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000);
+  const alignedTo = Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000);
+  return {
+    from: Math.max(alignedFrom, usableTimelines[0].from / 1000000),
+    to: Math.min(alignedTo, usableTimelines[0].to / 1000000),
+    sampling: Math.trunc(minSampling / 1000000),
+  };
 }
 
 function getRequests(options, requestTime) {
@@ -535,34 +548,48 @@ function getRequest(target, requestTime) {
 
 function parseResponses(options, response) {
   const data = options.targets.map((target, i) => {
-    const map = response[i].data.reduce((acc, d) => {
-      let t;
+    if (response.length <= i) {
+      return [];
+    } else if (response[i].data) {
+      const map = response[i].data.reduce((acc, d) => {
+        let t;
 
-      if (target.segmentBy) {
-        t = options.targets.length === 1 ? d.k1 : `${target.target} (${d.k1})`;
-      } else {
-        t = target.target;
+        if (target.segmentBy) {
+          t = options.targets.length === 1 ? d.k1 : `${target.target} (${d.k1})`;
+        } else {
+          t = target.target;
+        }
+
+        if (acc[t] === undefined) {
+          acc[t] = {
+            target: t,
+            datapoints: [],
+          };
+        }
+
+        acc[t].datapoints.push([
+          d.v0,
+          d.k0 / 1000
+        ]);
+
+        return acc;
+      }, {});
+
+      return Object.values(map).sort((a, b) => a.target.localeCompare(b.target));
+    } else {
+      return {
+        error: response[i].errors[0].reason,
       }
-
-      if (acc[t] === undefined) {
-        acc[t] = {
-          target: t,
-          datapoints: [],
-        };
-      }
-
-      acc[t].datapoints.push([
-        d.v0,
-        d.k0 / 1000
-      ]);
-
-      return acc;
-    }, {});
-
-    return Object.values(map).sort((a, b) => a.target.localeCompare(b.target));
+    }
   });
 
-  return {
-    data: Array.concat(...data),
-  };
+  if (data.filter((d) => d.error).length < data.length) {
+    return {
+      data: Array.concat(...data),
+    };
+  } else {
+    return {
+      error: data[0].error,
+    };
+  }
 }
