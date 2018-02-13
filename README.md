@@ -16,7 +16,7 @@ sudo service grafana-server restart
 or download and install the datasource manually:
 
 ```
-curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.11.zip -o sysdig.zip
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.zip -o sysdig.zip
 unzip sysdig.zip
 sudo cp -R sysdig /var/lib/grafana/plugins
 sudo service grafana-server restart
