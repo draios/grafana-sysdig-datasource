@@ -61,7 +61,7 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
             delete panel.gridPos;
         });
     } else {
-        dashboardPanelsConfiguration = panels;
+        dashboardPanelsConfiguration = { panels };
     }
 
     return Object.assign(
@@ -90,9 +90,14 @@ function buildPanel(sysdigDashboard, options, sysdigPanel, index) {
         case 'timeSeriesArea':
             return buildTimeSeriesAreaPanel(sysdigDashboard, options, sysdigPanel, index);
 
-
         case 'histogram':
             return buildHistogramPanel(sysdigDashboard, options, sysdigPanel, index);
+
+        case 'top':
+            return buildTopPanel(sysdigDashboard, options, sysdigPanel, index);
+
+        case 'summary':
+            return buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index);
 
         default:
             console.warn(`${sysdigPanel.showAs} panels cannot be exported to Grafana`);
@@ -150,6 +155,40 @@ function buildHistogramPanel(sysdigDashboard, options, sysdigPanel, index) {
     );
 }
 
+function buildTopPanel(sysdigDashboard, options, sysdigPanel, index) {
+    console.warn(`top panels will be converted to time series`);
+
+    return {
+        type: 'graph',
+        datasource: options.datasourceName,
+        id: index,
+        title: sysdigPanel.name,
+        gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
+        targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
+        legend: {
+            show: false, // retain Sysdig layout
+        },
+        yaxes: buildPanelYAxes(sysdigPanel),
+    };
+}
+
+function buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index) {
+    console.warn(`top panels will be converted to time series`);
+
+    return {
+        type: 'graph',
+        datasource: options.datasourceName,
+        id: index,
+        title: sysdigPanel.name,
+        gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
+        targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
+        legend: {
+            show: false, // retain Sysdig layout
+        },
+        yaxes: buildPanelYAxes(sysdigPanel),
+    };
+}
+
 function buildTextContentForUnavailablePanel(sysdigPanel) {
     let panelType;
     switch (sysdigPanel.showAs) {
@@ -183,14 +222,14 @@ function buildTimeSeriesTargets(sysdigDashboard, sysdigPanel) {
     const values = sysdigPanel.metrics.filter((metric) => {
         return metric.metricId !== 'timestamp' && metric.aggregation !== undefined;
     });
-    if (values.length > 0) {
+    if (values.length === 0) {
         console.warn('Expected at least one value metric');
     }
 
     const keys = sysdigPanel.metrics.filter((metric) => {
         return metric.metricId !== 'timestamp' && metric.aggregation === undefined;
     });
-    if (keys.length <= 1) {
+    if (keys.length > 1) {
         console.warn('Expected at most one key metric');
     }
 
