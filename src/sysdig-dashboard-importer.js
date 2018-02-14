@@ -18,17 +18,27 @@ export class SysdigDashboardImporter {
 }
 
 function buildGrafanaDashboard(sysdigDashboard, options) {
-    const buildPanelFn = buildPanel.bind(null, sysdigDashboard, options);
-    const isRowMandatory = grafanaBootData &&
+    const grafanaVersion = grafanaBootData &&
         grafanaBootData.settings &&
         grafanaBootData.settings.buildInfo &&
-        grafanaBootData.settings.buildInfo.version &&
-        grafanaBootData.settings.buildInfo.version.indexOf('4.') === 0
+        grafanaBootData.settings.buildInfo.version ?
+        grafanaBootData.settings.buildInfo.version :
+        'n.a.'
     ;
 
+    const buildPanelFn = buildPanel.bind(null, sysdigDashboard, options);
     const panels = sysdigDashboard.items.map(buildPanelFn).filter((r) => r !== null);
-    const dashboardPanelsConfiguration = isRowMandatory ?
-        {
+
+    const isRowMandatory = grafanaVersion.indexOf('4.') === 0;
+    let dashboardPanelsConfiguration;
+    if (isRowMandatory) {
+        // convert grid layout to row spans
+        panels.forEach((panel) => {
+            panel.span = panel.gridPos.w / 2;
+        });
+
+        // define rows
+        dashboardPanelsConfiguration = {
             rows: panels.reduce((acc, panel) => {
                 if (acc.length === 0) {
                     return [{
@@ -44,11 +54,15 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
 
                 return acc;
             }, []),
-        } :
-        {
-            panels,
-        }
-    ;
+        };
+
+        // remove grid layout
+        panels.forEach((panel) => {
+            delete panel.gridPos;
+        });
+    } else {
+        dashboardPanelsConfiguration = panels;
+    }
 
     return Object.assign(
         {
