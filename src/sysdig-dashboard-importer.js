@@ -34,7 +34,7 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
                     return [{
                         panels: [panel],
                     }];
-                } else if (acc[acc.length - 1].panels[0].gridPos.y === panel.gridPos.y) {
+                } else if (acc[acc.length - 1].panels[0].gridPos.x < panel.gridPos.x) {
                     acc[acc.length - 1].panels.push(panel);
                 } else {
                     acc.push({
