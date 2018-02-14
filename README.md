@@ -31,6 +31,7 @@ In Grafana, select **Add Data Sources**:
 3. **Plan**: Pick _Basic/Pro Cloud_ if you use Sysdig SaaS or _Pro Software_ if you use on premises
 4. **API Token**: In your Sysdig UI go to _Settings -> User Profile -> Sysdig Monitor API token_. Copy the token and paste it.
 
+![screenshot](https://github.com/draios/grafana-sysdig-datasource/blob/dev/datasource-settings.png)
 
 ### 2. Import Sysdig dashboards
 
