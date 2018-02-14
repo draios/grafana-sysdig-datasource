@@ -7,7 +7,9 @@ Plugin to connect Grafana with Sysdig.
 
 
 
-## Installation
+## Getting started!
+
+### 1. Installation
 
 At this time, the Sysdig datasource is not included in the [Official & community built plugin page](https://grafana.com/plugins). You will need to install the plugin manually.
 
@@ -19,6 +21,20 @@ unzip sysdig.zip
 sudo cp -R sysdig /var/lib/grafana/plugins
 sudo service grafana-server restart
 ```
+
+
+### 1. Add datasource
+In Grafana, select **Add Data Sources**:
+
+1. **Name**: Any name of your choice
+2. **Type**: Choose _Sysdig_
+3. **Plan**: Pick _Basic/Pro Cloud_ if you use Sysdig SaaS or _Pro Software_ if you use on premises
+4. **API Token**: In your Sysdig UI go to _Settings -> User Profile -> Sysdig Monitor API token_. Copy the token and paste it.
+
+
+### 2. Import Sysdig dashboards
+
+After creating the datasource you will have the ability to import your Sysdig Monitor dashboards into Grafana. Click **Import** to get all your dashboards from Sysdig. Go to **Dashboards Home page** and pull down your dashboard selection to see all your dashboards here.
 
 
 ## Current limitations
