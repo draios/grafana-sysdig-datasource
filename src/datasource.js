@@ -607,9 +607,9 @@ function parseResponses(options, response) {
         let t;
 
         if (target.segmentBy) {
-          t = options.targets.length === 1 ? d.k1 : `${target.target} (${d.k1})`;
+          t = options.targets.length === 1 ? d.k1 : `${targetToString(target.target)} (${d.k1})`;
         } else {
-          t = target.target;
+          t = targetToString(target.target);
         }
 
         if (acc[t] === undefined) {
@@ -639,4 +639,8 @@ function parseResponses(options, response) {
   return {
     data: Array.concat(...data),
   };
+}
+
+function targetToString(target) {
+  return target || 'n/a';
 }
