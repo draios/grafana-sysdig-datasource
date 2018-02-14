@@ -607,7 +607,7 @@ function parseResponses(options, response) {
         let t;
 
         if (target.segmentBy) {
-          t = options.targets.length === 1 ? d.k1 : `${targetToString(target.target)} (${d.k1})`;
+          t = options.targets.length === 1 ? targetToString(d.k1) : `${targetToString(target.target)} (${d.k1})`;
         } else {
           t = targetToString(target.target);
         }
