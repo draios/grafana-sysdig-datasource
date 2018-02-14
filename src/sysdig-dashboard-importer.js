@@ -29,7 +29,21 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
     const panels = sysdigDashboard.items.map(buildPanelFn).filter((r) => r !== null);
     const dashboardPanelsConfiguration = isRowMandatory ?
         {
-            rows: [ { panels } ],
+            rows: panels.reduce((acc, panel) => {
+                if (acc.length === 0) {
+                    return [{
+                        panels: [panel],
+                    }];
+                } else if (acc[acc.length - 1].panels[0].gridPos.y === panel.gridPos.y) {
+                    acc[acc.length - 1].panels.push(panel);
+                } else {
+                    acc.push({
+                        panels: [panel],
+                    });
+                }
+
+                return acc;
+            }, []),
         } :
         {
             panels,
