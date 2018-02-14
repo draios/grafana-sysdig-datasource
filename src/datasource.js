@@ -341,46 +341,79 @@ const DataService = {
     ]).then((responses) => {
       return getRequestTime(responses[0].data, responses[1].data, userTime);
     }).then((requestTime) => {
-      if (requestTime === null) {
-        // time window not available
-        batch.requests.forEach((request) => {
-          request.promise.resolve({ data: [] });
-        });
+      //
+      // get list of data requests to batch
+      //
+      const apiRequests = batch.requests.reduce((acc, item) => {
+        return [
+          ...acc,
+          ...getRequests(item.query, requestTime)
+        ];
+      }, []);
 
-        return { data: { responses: [] } };
-      } else {
-        const apiRequests = batch.requests.reduce((acc, item) => {
-          return [
-            ...acc,
-            ...getRequests(item.query, requestTime)
-          ];
-        }, []);
+      //
+      // break list into 20-request chunks
+      //
+      const maxRequestCountPerChunk = 20;
+      const chunks = apiRequests.reduce((acc, request) => {
+        if (acc.length === 0 || acc[acc.length - 1].length === maxRequestCountPerChunk) {
+          acc.push([request]);
+        } else {
+          acc[acc.length - 1].push(request);
+        }
 
-        return doRequest(
+        return acc;
+      }, []);
+
+      if (requestTime) {
+        //
+        // send all batch requests
+        //
+        return q.all(chunks.map((chunk) => doRequest(
           backendSrv,
           apiToken,
           {
             url: `${url}/api/data/batch`,
-            data: { requests: apiRequests },
+            data: { requests: chunk },
             method: 'POST'
           }
-        );
+        )));
+      } else {
+        //
+        // pretend the backend returned all empty datasets
+        //
+        return chunks.map((chunk) => ({
+          data: {
+            responses: chunk.map(() => ({ data: []})),
+          }
+        }));
       }
     }).then(
-      (response) => {
-        let responses = response.data.responses.slice();
-        batch.requests.forEach((item) => {
-          const requestCount = item.query.targets.length;
-          const itemResponses = responses.slice(0, requestCount);
+      (chunks) => {
+        //
+        // flatten responses
+        //
+        let responses = chunks.reduce((acc, chunk) => [...acc, ...chunk.data.responses], []);
 
-          const parseResult = parseResponses(item.query, itemResponses);
-          if (parseResult.error) {
-            item.promise.reject(parseResult.error);
+        //
+        // process and resolve each query with its response(s)
+        //
+        batch.requests.forEach((item) => {
+          const targetResponseCount = item.query.targets.length;
+          const targetResponses = responses.slice(0, targetResponseCount);
+
+          const parseResult = parseResponses(item.query, targetResponses);
+          const failedResults = parseResult.data.filter((d) => d.error);
+          if (parseResult.data.length > 0 && failedResults.length === parseResult.data.length) {
+            const error = failedResults[0].error;
+            item.promise.reject({
+              message: `${error.reason} (${error.message})`
+            });
           } else {
             item.promise.resolve(parseResult);
           }
 
-          responses = responses.slice(requestCount);
+          responses = responses.slice(targetResponseCount);
         });
       },
       (error) => {
@@ -420,6 +453,9 @@ function getRequestTime(timelines, alignments, userTime) {
   const toUs = userTime.to * 1000000;
   const timespan = toUs - fromUs;
 
+  //
+  // Use alignments that allow the required timespan
+  //
   const validAlignments = alignments.filter((a) => {
     return timespan <= a.max * 1000000;
   });
@@ -428,8 +464,15 @@ function getRequestTime(timelines, alignments, userTime) {
     return null;
   }
 
+  //
+  // Set min sampling
+  //
   const minSampling = validAlignments[0].sampling * 1000000;
 
+  //
+  // Filter timelines so that sampling is valid, and the requested time window is partially or
+  // entirely overlapping with a given timeline
+  //
   const validTimelines = timelines.agents.filter((t) => {
     return t.from !== null &&
       t.to !== null &&
@@ -452,12 +495,19 @@ function getRequestTime(timelines, alignments, userTime) {
     return null;
   }
 
+  //
+  // Align time window with required alignment
+  //
   const alignTo = validAlignments[0].alignTo * 1000000;
   const alignedFrom = Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000);
   const alignedTo = Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000);
+
+  //
+  // Adjust time window according to timeline (might miss first or last portion)
+  //
   return {
-    from: Math.max(alignedFrom, usableTimelines[0].from / 1000000),
-    to: Math.min(alignedTo, usableTimelines[0].to / 1000000),
+    from: Math.max(alignedFrom, validTimelines[0].from / 1000000),
+    to: Math.min(alignedTo, validTimelines[0].to / 1000000),
     sampling: Math.trunc(minSampling / 1000000),
   };
 }
@@ -467,32 +517,36 @@ function getRequests(options, requestTime) {
 }
 
 function getRequest(target, requestTime) {
-  return {
-    format: {
-      type: 'data'
-    },
-    time: {
-      from: requestTime.from * 1000000,
-      to: requestTime.to * 1000000,
-      sampling: requestTime.sampling * 1000000,
-    },
-    metrics: getMetrics(),
-    sort: getSort(),
-    paging: getPaging(),
-    scope: target.filter,
-    group: {
-      aggregations: {
-        v0: target.timeAggregation
+  if (requestTime) {
+    return {
+      format: {
+        type: 'data'
       },
-      groupAggregations: {
-        v0: target.groupAggregation
+      time: {
+        from: requestTime.from * 1000000,
+        to: requestTime.to * 1000000,
+        sampling: requestTime.sampling * 1000000,
       },
-      by: getGroupBy(),
-      configuration: {
-        groups: []
+      metrics: getMetrics(),
+      sort: getSort(),
+      paging: getPaging(),
+      scope: target.filter,
+      group: {
+        aggregations: {
+          v0: target.timeAggregation
+        },
+        groupAggregations: {
+          v0: target.groupAggregation
+        },
+        by: getGroupBy(),
+        configuration: {
+          groups: []
+        }
       }
-    }
-  };
+    };
+  } else {
+    return null;
+  }
 
   function getMetrics() {
     const metrics = {
@@ -548,9 +602,7 @@ function getRequest(target, requestTime) {
 
 function parseResponses(options, response) {
   const data = options.targets.map((target, i) => {
-    if (response.length <= i) {
-      return [];
-    } else if (response[i].data) {
+    if (response[i].data) {
       const map = response[i].data.reduce((acc, d) => {
         let t;
 
@@ -578,18 +630,13 @@ function parseResponses(options, response) {
       return Object.values(map).sort((a, b) => a.target.localeCompare(b.target));
     } else {
       return {
-        error: response[i].errors[0].reason,
-      }
+        target: target.target,
+        error: response[i].errors[0],
+      };
     }
   });
 
-  if (data.filter((d) => d.error).length < data.length) {
-    return {
-      data: Array.concat(...data),
-    };
-  } else {
-    return {
-      error: data[0].error,
-    };
-  }
+  return {
+    data: Array.concat(...data),
+  };
 }
