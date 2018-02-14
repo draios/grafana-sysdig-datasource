@@ -1,3 +1,6 @@
+_Note: Public readme is available at https://gist.github.com/davideschiera/9bcb026e5d45b9dc4def48c525dd8cdb_
+
+
 ## Sysdig Datasource Plugin for Grafana
 
 Plugin to connect Grafana with Sysdig.
