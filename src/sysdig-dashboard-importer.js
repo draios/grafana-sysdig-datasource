@@ -19,20 +19,38 @@ export class SysdigDashboardImporter {
 
 function buildGrafanaDashboard(sysdigDashboard, options) {
     const buildPanelFn = buildPanel.bind(null, sysdigDashboard, options);
+    const isRowMandatory = grafanaBootData &&
+        grafanaBootData.settings &&
+        grafanaBootData.settings.buildInfo &&
+        grafanaBootData.settings.buildInfo.version &&
+        grafanaBootData.settings.buildInfo.version.indexOf('4.') === 0
+    ;
 
-    return {
-        schemaVersion: 6,
-        version: 0,
-        title: sysdigDashboard.name,
-        tags: ['sysdig'],
-        timezone: 'browser',
-        time: { // default Sysdig: last 1 hour
-            from: 'now-1h',
-            to: 'now',
+    const panels = sysdigDashboard.items.map(buildPanelFn).filter((r) => r !== null);
+    const dashboardPanelsConfiguration = isRowMandatory ?
+        {
+            rows: [ { panels } ],
+        } :
+        {
+            panels,
+        }
+    ;
+
+    return Object.assign(
+        {
+            schemaVersion: 6,
+            version: 0,
+            title: sysdigDashboard.name,
+            tags: ['sysdig'],
+            timezone: 'browser',
+            time: { // default Sysdig: last 1 hour
+                from: 'now-1h',
+                to: 'now',
+            },
+            graphTooltip: 1, // shared crosshair
         },
-        graphTooltip: 1, // shared crosshair
-        panels: sysdigDashboard.items.map(buildPanelFn).filter((r) => r !== null),
-    };
+        dashboardPanelsConfiguration
+    );
 
 }
 
