@@ -35,7 +35,11 @@
       type="text"
       class="gf-form-input"
       ng-model="ctrl.current.jsonData.apiToken"
-    ></input>
+    >
+    </input>
+    <info-popover mode="right-absolute">
+      You can find your API Token in the <strong>Sysdig Monitor API</strong> section of <a href="{{ctrl.current.url}}/#/settings/user" target="_blank">User Profile Settings page.</a>
+    </info-popover>
   </div>
 </div>
 
@@ -45,7 +49,7 @@
   Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
 </p>
 <p>
-  You can visit your existing dashboards at <a href="{{ctrl.current.url}}/#/dashboards" target="_blank">Sysdig Monitor Dashboards page</a>.
+  You can visit your existing dashboards at <a href="{{ctrl.current.url}}/#/dashboards" target="_blank" style="text-decoration: underline;">Sysdig Monitor Dashboards page</a>.
 </p>
 <p class="grafana-info-box" ng-if="ctrl.isDashboardsImportDisabled()">
   Before importing dashboards, please save the data source.
@@ -55,25 +59,29 @@
   <div class="gf-form-group">
     <table class="filter-table">
       <tbody>
-        <tr ng-repeat="dashboard in ctrl.dashboards">
+        <tr ng-repeat="dashboardSet in ctrl.dashboards">
           <td class="width-1">
             <i class="icon-gf icon-gf-dashboard"></i>
           </td>
           <td>
-            <span>{{dashboard.title}}</span>
+            <span>{{dashboardSet.title}}</span>
           </td>
           <td>
             <button
               class="btn btn-secondary btn-small"
               ng-disabled="ctrl.isDashboardsImportDisabled()"
-              ng-click="ctrl.importDashboards(dashboard.id)"
+              ng-click="ctrl.importDashboards(dashboardSet.id)"
             >
               Import
             </button>
+            <div style="display: inline-block; margin: 0 10px; min-width: 13px;">
+              <i class="fa fa-spinner" ng-show="dashboardSet.importStatus === 'executing'"></i>
+              <i class="fa fa-check" ng-show="dashboardSet.importStatus === 'success'"></i>
+              <i class="fa fa-exclamation-triangle" ng-show="dashboardSet.importStatus === 'error'"></i>
+            </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
 </div>
-

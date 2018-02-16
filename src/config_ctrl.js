@@ -11,8 +11,8 @@ export class SysdigConfigCtrl {
     ];
 
     this.dashboards = [
-        { id: 'PRIVATE', title: 'My dashboards' },
-        { id: 'SHARED', title: 'Shared dashboards' },
+        { id: 'PRIVATE', title: 'My dashboards', importStatus: 'none' },
+        { id: 'SHARED', title: 'Shared dashboards', importStatus: 'none' },
     ];
 
     this.current.url = this.current.url || CLOUD_URL;
@@ -36,6 +36,11 @@ export class SysdigConfigCtrl {
   }
 
   importDashboards(id) {
+    this.testing = null;
+
+    const dashboardSet = this.dashboards.filter((set) => set.id === id)[0];
+    dashboardSet.importStatus = 'executing';
+
     const options = {
       url: `/api/datasources/proxy/${this.current.id}/ui/dashboards`,
       method: 'GET',
@@ -69,8 +74,14 @@ export class SysdigConfigCtrl {
             };
 
             return saveDashboards.call(this, convertedDashboards, options);
-        }).then((result) => {
+        })
+        .then((result) => {
             console.info('Sysdig dashboards import: Completed');
+            dashboardSet.importStatus = 'success';
+        })
+        .catch((error) => {
+            dashboardSet.importStatus = 'error';
+            dashboardSet.importMessage = error;
         })
     ;
 
