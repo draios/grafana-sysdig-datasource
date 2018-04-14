@@ -1,7 +1,7 @@
 _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb026e5d45b9dc4def48c525dd8cdb_
 
 
-## Sysdig Datasource Plugin for Grafana
+## Sysdig Datasource Plugin for Grafana (beta)
 
 Plugin to connect Grafana with Sysdig.
 
@@ -57,6 +57,13 @@ The Sysdig datasource is in beta version. We'll iterate quickly to make it more 
 6. Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are very different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not create table panels
 7. Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels
 8. Sysdig doesn't support exponential y-axis scale
+
+
+## Support / Community
+
+The Sysdig Datasource Plugin for Grafana is currently in beta. We'd love to hear from you and help you with it!
+
+Join our [Public Slack](https://slack.sysdig.com) channel (#grafana) for announcements and discussions.
 
 
 ## Changelog
