@@ -28,11 +28,6 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-            }
-        }
-
         stage('Deploy') {
             environment {
                 DIST_PATH = "dist"
