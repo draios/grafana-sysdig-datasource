@@ -40,14 +40,14 @@ pipeline {
                 sh 'rm -rf sysdig/test'
 
                 echo 'Deploying zip file....'
-                sh 'zip -ry ${env.BUILD_FILE_NAME}.zip sysdig'
-                sh 'aws s3 cp ${env.BUILD_FILE_NAME}.zip s3://download.draios.com/stable/grafana-sysdig-datasource/${env.BUILD_FILE_NAME}.zip --acl public-read'
-                sh 'aws s3 cp ${env.BUILD_FILE_NAME}.zip s3://download.draios.com/stable/grafana-sysdig-datasource/${env.RELEASE_FILE_NAME}.zip --acl public-read'
+                echo 'zip -ry ${env.BUILD_FILE_NAME}.zip sysdig'
+                echo 'aws s3 cp ${env.BUILD_FILE_NAME}.zip s3://download.draios.com/stable/grafana-sysdig-datasource/${env.BUILD_FILE_NAME}.zip --acl public-read'
+                echo 'aws s3 cp ${env.BUILD_FILE_NAME}.zip s3://download.draios.com/stable/grafana-sysdig-datasource/${env.RELEASE_FILE_NAME}.zip --acl public-read'
 
                 echo 'Deploying tgz file....'
-                sh 'tar zcvf ${env.BUILD_FILE_NAME}.tgz sysdig'
-                sh 'aws s3 cp ${env.BUILD_FILE_NAME}.tgz s3://download.draios.com/stable/grafana-sysdig-datasource/${env.BUILD_FILE_NAME}.tgz --acl public-read'
-                sh 'aws s3 cp ${env.BUILD_FILE_NAME}.tgz s3://download.draios.com/stable/grafana-sysdig-datasource/${env.RELEASE_NAME_PREFIX}.tgz --acl public-read'
+                echo 'tar zcvf ${env.BUILD_FILE_NAME}.tgz sysdig'
+                echo 'aws s3 cp ${env.BUILD_FILE_NAME}.tgz s3://download.draios.com/stable/grafana-sysdig-datasource/${env.BUILD_FILE_NAME}.tgz --acl public-read'
+                echo 'aws s3 cp ${env.BUILD_FILE_NAME}.tgz s3://download.draios.com/stable/grafana-sysdig-datasource/${env.RELEASE_NAME_PREFIX}.tgz --acl public-read'
             }
         }
     }
