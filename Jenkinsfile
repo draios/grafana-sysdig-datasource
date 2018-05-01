@@ -37,6 +37,7 @@ pipeline {
             }
             steps {
                 echo "Cleaning up artifacts...."
+                sh "cp -R ${DIST_PATH} sysdig"
                 sh "rm -rf sysdig/test"
 
                 echo "Deploying zip file...."
