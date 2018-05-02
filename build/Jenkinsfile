@@ -121,7 +121,7 @@ pipeline {
             // slackSend channel: '#grafana-ds-activity', color: 'good', message: '[${currentBuild.result}] #${env.BUILD_NUMBER} ${env.BUILD_URL}', teamDomain: 'sysdigcloud', token: credentials('slack-api-key')
 
             script {
-                text="Hello Davide"
+                text="${currentBuild.result}] v${VERSION}.${env.BUILD_NUMBER} ${env.BUILD_URL}"
                 channel="#grafana-ds-activity"
                 json="{ \"channel\": \"${channel}\", \"text\": \"${text}\" }"
             }
@@ -129,7 +129,7 @@ pipeline {
             // escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
 
 
-            sh "curl -s -d \'payload=${json}\' \'${SLACK_URL}\'"
+            sh "escaped=\$(echo ${json} | sed 's/\"/\\\"/g' | sed \"s/'/\\\'/g\" ) && curl -s -d \'payload=${escaped}\' \'${SLACK_URL}\'"
             
             
             // sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
