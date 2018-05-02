@@ -98,8 +98,6 @@ pipeline {
     }
 
     post {
-        always {
-        }
         fixed {
             script {
                 TEXT = "Build #${env.BUILD_NUMBER} fixed :-)\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
