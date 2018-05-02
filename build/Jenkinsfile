@@ -105,12 +105,16 @@ pipeline {
 
                 withCredentials([usernamePassword(credentialsId: 'jenkins-github-login', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
                     sh("git tag -a v${VERSION} -m 'Jenkins'")
+                    sh("git push origin --tags")
                 }
             }
         }
     }
 
     post {
+        always {
+            slackSend channel: '#grafana-ds-activity', color: 'good', message: '[${currentBuild.result}] #${env.BUILD_NUMBER} ${env.BUILD_URL}', teamDomain: 'kitconcept', token: '$'
+        }
         fixed {
             echo "Fixed :-)"
         }
