@@ -10,6 +10,10 @@ pipeline {
         VERSION = readFile "VERSION"
     }
 
+    options {
+        disableConcurrentBuilds()
+    }
+
     stages {
         stage('Prepare build') {
             steps {
