@@ -25,6 +25,7 @@ RUN apt-get update -y && \
       curl \
       gzip \
       zip \
+      git \
       awscli \
       xz-utils -y --no-install-recommends && \
     wget https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb && \
