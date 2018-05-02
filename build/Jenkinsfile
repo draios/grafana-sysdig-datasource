@@ -94,11 +94,15 @@ pipeline {
         }
 
         stage('Post deploy') {
-            when {
-                branch 'master'
-            }
+            // when {
+            //     branch 'master'
+            // }
             steps {
                 echo "Tagging repository v${VERSION}"
+
+                withCredentials([usernamePassword(credentialsId: 'jenkins-github-login', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                    sh("git tag -a v${VERSION} -m 'Jenkins'")
+                }
             }
         }
     }
