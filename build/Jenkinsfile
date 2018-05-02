@@ -20,6 +20,9 @@ pipeline {
             steps {
                 sh "rm -rf *"
                 // checkout scm
+                checkout([$class: "GitSCM", branches: [[name: "${env.BRANCH_NAME}"]], userRemoteConfigs: [[url: 'draios/grafana-sysdig-datasource.git']]])
+                
+                
                 checkout repository: "draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}"
 
                 echo "Preparing environment"
