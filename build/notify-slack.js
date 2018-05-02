@@ -19,10 +19,12 @@ request.post(
     { json },
     (err, res, body) => {
         if (err) {
-            return console.log(err);
+            console.log(err);
+            process.exit(1);
         }
 
         console.log(body.url);
         console.log(body.explanation);
+        process.exit(0);
     }
 );
