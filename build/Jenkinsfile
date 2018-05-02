@@ -120,5 +120,5 @@ pipeline {
     //         echo "${currentBuild}"
     //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
     //     }
-    // }
+    }
 }
