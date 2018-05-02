@@ -21,9 +21,6 @@ pipeline {
                 sh "rm -rf *"
                 // checkout scm
                 git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
-                
-                
-                checkout repository: "draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}"
 
                 echo "Preparing environment"
                 sh "npm install"
