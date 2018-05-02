@@ -127,7 +127,7 @@ pipeline {
             }
 
             // escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
-            sh "curl -s -d \'payload=${json}\' \'${SLACK_URL}\'"
+            sh "curl -s -d \'payload=${json}\' \'${SLACK_URL_PWD}\'"
             // sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
         }
         fixed {
