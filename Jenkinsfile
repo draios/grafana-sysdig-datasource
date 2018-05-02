@@ -29,28 +29,10 @@ pipeline {
         }
 
         stage('Configure feature branch deploy') {
-            when {
-                not { branch 'master' }
-                not { branch 'dev' }
-            }
             steps {
-                S3_DEST = "dev/grafana-sysdig-datasource/${env.BRANCH_NAME}"
-            }
-        }
-        stage('Configure dev deploy') {
-            when {
-                branch 'dev'
-            }
-            steps {
-                S3_DEST = "dev/grafana-sysdig-datasource"
-            }
-        }
-        stage('Configure master deploy') {
-            when {
-                branch 'master'
-            }
-            steps {
-                S3_DEST = "stable/grafana-sysdig-datasource"
+                script {
+                    S3_DEST = "dev/grafana-sysdig-datasource/${env.BRANCH_NAME}"
+                }
             }
         }
 
