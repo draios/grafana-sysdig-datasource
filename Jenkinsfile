@@ -43,12 +43,19 @@ pipeline {
             environment {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
-                RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
+                RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-latest"
             }
             steps {
                 script {
-                    S3_BUCKET = 's3://download.draios.com'
-                    S3_DEST = 'dev/grafana-sysdig-datasource'
+                    S3_BUCKET = "s3://download.draios.com"
+                    S3_DEST = "dev/grafana-sysdig-datasource/${env.BRANCH_NAME}"
+
+                    withEnv(["env.BRANCH_NAME=dev"]) {
+                        S3_DEST = "dev/grafana-sysdig-datasource"
+                    }
+                    withEnv(["env.BRANCH_NAME=master"]) {
+                        S3_DEST = "stable/grafana-sysdig-datasource"
+                    }
                 }
 
                 echo "Deploying zip file...."
