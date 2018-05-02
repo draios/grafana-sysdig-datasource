@@ -18,11 +18,17 @@ pipeline {
     stages {
         stage('Prepare build') {
             steps {
+                // At this point, Jenkins checked out the repository already.
+                // Also, the workspace is persistent.
+                // Since the previous build might have left some artifacts then now we're going to
+                // remove everything and checkout the repository again
                 sh "rm -rf *"
-                // checkout scm
-                git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
 
-                echo "Preparing environment"
+                // NOTE: 'checkout scm' is equivalent to
+                // git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
+                checkout scm
+
+                // Prepare npm/yarn environment
                 sh "npm install"
                 sh "./node_modules/.bin/yarn install"
             }
@@ -30,7 +36,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Building..."
                 sh "npm run build"
             }
         }
@@ -71,25 +76,19 @@ pipeline {
             }
         }
 
-        stage('Prepare deploy') {
-            environment {
-                DIST_PATH = "dist"
-            }
-            steps {
-                echo "Cleaning up artifacts...."
-                sh "cp -R ${DIST_PATH} sysdig"
-                sh "rm -rf sysdig/test"
-            }
-        }
-
         stage('Deploy') {
             environment {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
                 LATEST_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
                 S3_BUCKET = "s3://download.draios.com"
+                DIST_PATH = "dist"
             }
             steps {
+                echo "Cleaning up artifacts...."
+                sh "cp -R ${DIST_PATH} sysdig"
+                sh "rm -rf sysdig/test"
+
                 echo "Deploying zip file...."
                 sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
                 sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read"
@@ -102,15 +101,15 @@ pipeline {
             }
         }
 
-        stage('Post deploy') {
+        stage('Tag') {
             when {
                 branch 'master'
             }
             steps {
-                echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
+                echo "Tagging repository v${VERSION}"
 
                 withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
-                    sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
+                    sh("git tag -a v${VERSION}")
                     sh("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource --tags")
                 }
             }
@@ -120,7 +119,7 @@ pipeline {
     post {
         always {
             script {
-                TEXT = "${env.BRANCH_NAME} version v${VERSION}.${env.BUILD_NUMBER}: ${currentBuild.currentResult}\n\nJenkins result: ${env.BUILD_URL}"
+                TEXT = "Build #${env.BUILD_NUMBER} xxx\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
                 CHANNEL = "#grafana-ds-activity"
                 USER_NAME = "grafana-ds-build"
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
@@ -129,16 +128,44 @@ pipeline {
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         fixed {
-            echo "Fixed :-)"
+            script {
+                TEXT = "Build #${env.BUILD_NUMBER} fixed :-)\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
+                CHANNEL = "#grafana-ds-activity"
+                USER_NAME = "grafana-ds-build"
+                JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
+            }
+
+            sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         failure {
-            echo "Failed :-("
+            script {
+                TEXT = "Build #${env.BUILD_NUMBER} failed :-(\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
+                CHANNEL = "#grafana-ds-activity"
+                USER_NAME = "grafana-ds-build"
+                JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
+            }
+
+            sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         aborted {
-            echo "Unstable :-/"
+            script {
+                TEXT = "Build #${env.BUILD_NUMBER} unstable :-/\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
+                CHANNEL = "#grafana-ds-activity"
+                USER_NAME = "grafana-ds-build"
+                JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
+            }
+
+            sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         regression {
-            echo "Regression ;-("
+            script {
+                TEXT = "Build #${env.BUILD_NUMBER} regression ;-(\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
+                CHANNEL = "#grafana-ds-activity"
+                USER_NAME = "grafana-ds-build"
+                JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
+            }
+
+            sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
     }
 }
