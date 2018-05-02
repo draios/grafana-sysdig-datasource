@@ -21,10 +21,8 @@ request.post(
         if (err) {
             console.log(err);
             process.exit(1);
+        } else {
+            process.exit(0);
         }
-
-        console.log(body.url);
-        console.log(body.explanation);
-        process.exit(0);
     }
 );
