@@ -92,5 +92,29 @@ pipeline {
                 sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${LATEST_FILE_NAME}.tgz --acl public-read"
             }
         }
+
+        stage('Post deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                echo "Tagging repository v${VERSION}"
+            }
+        }
+
+        post {
+            fixed {
+                echo "Fixed :-)"
+            }
+            failure {
+                echo "Failed :-("
+            }
+            aborted {
+                echo "Unstable :-/"
+            }
+            regression {
+                echo "Regression ;-("
+            }
+        }
     }
 }
