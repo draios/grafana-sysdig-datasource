@@ -43,7 +43,7 @@ pipeline {
             environment {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
-                RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-latest"
+                LATEST_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
             }
             steps {
                 script {
@@ -61,12 +61,12 @@ pipeline {
                 echo "Deploying zip file...."
                 sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
                 sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${RELEASE_FILE_NAME}.zip --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${LATEST_FILE_NAME}.zip --acl public-read"
 
                 echo "Deploying tgz file...."
                 sh "tar zcvf ${BUILD_FILE_NAME}.tgz sysdig"
                 sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.tgz --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${RELEASE_FILE_NAME}.tgz --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${LATEST_FILE_NAME}.tgz --acl public-read"
             }
         }
     }
