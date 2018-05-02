@@ -119,7 +119,7 @@ pipeline {
     post {
         always {
             script {
-                TEXT = "${currentBuild.result}] v${VERSION}.${env.BUILD_NUMBER} ${env.BUILD_URL}"
+                TEXT = "${env.BRANCH_NAME} version v${VERSION}.${env.BUILD_NUMBER}: ${currentBuild.currentResult}\n\nJenkins result: ${env.BUILD_URL}"
                 CHANNEL = "#grafana-ds-activity"
                 USER_NAME = "grafana-ds-build"
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
