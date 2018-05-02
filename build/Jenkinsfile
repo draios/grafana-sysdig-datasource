@@ -8,6 +8,7 @@ pipeline {
 
     environment {
         VERSION = readFile "VERSION"
+        SLACK_URL = credentials('grafana-ds-build-slack-webhook')
     }
 
     options {
@@ -119,14 +120,15 @@ pipeline {
         always {
             // slackSend channel: '#grafana-ds-activity', color: 'good', message: '[${currentBuild.result}] #${env.BUILD_NUMBER} ${env.BUILD_URL}', teamDomain: 'sysdigcloud', token: credentials('slack-api-key')
 
-            script {
-                SLACK_URL = credentials('grafana-ds-build-slack-webhook')
-                text="Hello Davide"
-                channel="#grafana-ds-activity"
-                json="{ \"channel\": \"${channel}\", \"text\": \"${text}\" }"
-            }
+            // script {
+            //     text="Hello Davide"
+            //     channel="#grafana-ds-activity"
+            //     json="{ \"channel\": \"${channel}\", \"text\": \"${text}\" }"
+            // }
 
             echo "${SLACK_URL}"
+            echo "${SLACK_URL_ID}"
+            echo "${SLACK_URL_KEY}"
             // escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
 
 
