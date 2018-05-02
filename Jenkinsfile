@@ -10,7 +10,7 @@ pipeline {
     }
 
     stages {
-        stage('Prepare') {
+        stage('Prepare build') {
             steps {
                 echo "Cleaning up..."
                 sh "rm -rf dist"
@@ -28,19 +28,24 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Prepare deploy') {
             environment {
                 DIST_PATH = "dist"
+            }
+            steps {
+                echo "Cleaning up artifacts...."
+                sh "cp -R ${DIST_PATH} sysdig"
+                sh "rm -rf sysdig/test"
+            }
+        }
+
+        stage('Deploy') {
+            environment {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-${VERSION}.${env.BUILD_ID}"
                 RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-${VERSION}"
             }
             steps {
-                echo "${env.BRANCH_NAME}"
-                echo "Cleaning up artifacts...."
-                sh "cp -R ${DIST_PATH} sysdig"
-                sh "rm -rf sysdig/test"
-
                 echo "Deploying zip file...."
                 sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
                 sh "aws s3 cp ${BUILD_FILE_NAME}.zip s3://download.draios.com/dev/grafana-sysdig-datasource/${BUILD_FILE_NAME}.zip --acl public-read"
