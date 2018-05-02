@@ -18,9 +18,8 @@ pipeline {
     stages {
         stage('Prepare build') {
             steps {
-                sh "ls -la"
                 sh "rm -rf *"
-                checkout scm
+                git url: 'git@github.com:draios/grafana-sysdig-datasource.git', branch: ${env.BRANCH_NAME}
 
                 echo "Preparing environment"
                 sh "npm install"
@@ -127,8 +126,6 @@ pipeline {
             }
 
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-
-            sh "ls -la"
         }
         fixed {
             echo "Fixed :-)"
