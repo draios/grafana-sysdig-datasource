@@ -18,9 +18,13 @@ pipeline {
     stages {
         stage('Prepare build') {
             steps {
-                echo "Cleaning up..."
-                sh "rm -rf dist"
-                sh "rm -rf sysdig"
+                sh "rm -rf *"
+                withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
+                    sh("git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource")
+                    sh("cd grafana-sysdig-datasource")
+                    sh("git checkout ${env.BRANCH_NAME}")
+                }
+
                 echo "Preparing environment"
                 sh "npm install"
                 sh "./node_modules/.bin/yarn install"
@@ -108,7 +112,7 @@ pipeline {
             steps {
                 echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
 
-                withCredentials([usernamePassword(credentialsId: "jenkins-github-login", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
+                withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
                     sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
                     sh("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource --tags")
                 }
