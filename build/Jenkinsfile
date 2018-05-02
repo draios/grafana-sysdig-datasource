@@ -118,14 +118,7 @@ pipeline {
 
     post {
         always {
-            script {
-                TEXT = "Build #${env.BUILD_NUMBER} xxx\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-                CHANNEL = "#grafana-ds-activity"
-                USER_NAME = "grafana-ds-build"
-                JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-            }
-
-            sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
+            echo "${currentBuild}"
         }
         fixed {
             script {
