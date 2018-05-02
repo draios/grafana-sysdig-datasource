@@ -15,7 +15,7 @@ const json = {
 };
 
 request.post(
-    '${SLACK_URL}',
+    slackUrl,
     { json },
     (err, res, body) => {
         if (err) {
