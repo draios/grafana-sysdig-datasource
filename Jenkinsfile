@@ -6,7 +6,7 @@ pipeline {
     }
 
     environment {
-        VERSION = "v0.0.2"
+        VERSION = readFile "VERSION"
     }
 
     stages {
@@ -42,8 +42,8 @@ pipeline {
         stage('Deploy') {
             environment {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
-                BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-${VERSION}.${env.BUILD_ID}"
-                RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-${VERSION}"
+                BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
+                RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
             }
             steps {
                 echo "Deploying zip file...."
