@@ -77,27 +77,8 @@ pipeline {
         }
 
         stage('Deploy') {
-            environment {
-                FILE_NAME_PREFIX = "grafana-sysdig-datasource"
-                BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
-                LATEST_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
-                S3_BUCKET = "s3://download.draios.com"
-                DIST_PATH = "dist"
-            }
             steps {
-                echo "Cleaning up artifacts...."
-                sh "cp -R ${DIST_PATH} sysdig"
-                sh "rm -rf sysdig/test"
-
-                echo "Deploying zip file...."
-                sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${LATEST_FILE_NAME}.zip --acl public-read"
-
-                echo "Deploying tgz file...."
-                sh "tar zcvf ${BUILD_FILE_NAME}.tgz sysdig"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.tgz --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${LATEST_FILE_NAME}.tgz --acl public-read"
+                sh "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID}"
             }
         }
 
@@ -118,7 +99,6 @@ pipeline {
 
     post {
         always {
-            echo "${currentBuild}"
         }
         fixed {
             script {
@@ -128,6 +108,7 @@ pipeline {
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
             }
 
+            echo "${currentBuild}"
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         failure {
@@ -138,6 +119,7 @@ pipeline {
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
             }
 
+            echo "${currentBuild}"
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         aborted {
@@ -148,6 +130,7 @@ pipeline {
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
             }
 
+            echo "${currentBuild}"
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
         regression {
@@ -158,6 +141,7 @@ pipeline {
                 JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
             }
 
+            echo "${currentBuild}"
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
         }
     }
