@@ -101,10 +101,10 @@ pipeline {
             //     branch 'master'
             // }
             steps {
-                echo "Tagging repository v${VERSION}"
+                echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
 
                 withCredentials([usernamePassword(credentialsId: 'jenkins-github-login', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
-                    sh("git tag -a v${VERSION} -m 'Jenkins'")
+                    sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
                     sh("git push origin --tags")
                 }
             }
