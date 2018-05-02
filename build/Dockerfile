@@ -33,8 +33,8 @@ RUN apt-get update -y && \
     apt-get clean autoclean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* google-chrome-unstable_current_amd64.deb
 
-RUN groupadd ec2-user -g 500
-RUN useradd -m -d /home/ec2-user -g ec2-user -u 500 ec2-user
+RUN groupadd ec2-user -g 500 && \
+    useradd -m -d /home/ec2-user -g ec2-user -u 500 ec2-user
 
 # Install nodejs
 ENV NVM_DIR /usr/local/nvm
