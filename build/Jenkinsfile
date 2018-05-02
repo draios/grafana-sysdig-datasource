@@ -18,13 +18,9 @@ pipeline {
     stages {
         stage('Prepare build') {
             steps {
+                sh "ls -la"
                 sh "rm -rf *"
                 checkout scm
-                // withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
-                //     sh("git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource")
-                //     sh("cd grafana-sysdig-datasource")
-                //     sh("git checkout ${env.BRANCH_NAME}")
-                // }
 
                 echo "Preparing environment"
                 sh "npm install"
@@ -107,9 +103,9 @@ pipeline {
         }
 
         stage('Post deploy') {
-            // when {
-            //     branch 'master'
-            // }
+            when {
+                branch 'master'
+            }
             steps {
                 echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
 
@@ -131,6 +127,8 @@ pipeline {
             }
 
             sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
+
+            sh "ls -la"
         }
         fixed {
             echo "Fixed :-)"
