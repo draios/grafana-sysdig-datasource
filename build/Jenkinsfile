@@ -19,7 +19,9 @@ pipeline {
         stage('Prepare build') {
             steps {
                 sh "rm -rf *"
-                git url: "git@github.com:draios/grafana-sysdig-datasource.git", branch: "${env.BRANCH_NAME}"
+                withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
+                    git url: "https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}"
+                }
 
                 echo "Preparing environment"
                 sh "npm install"
