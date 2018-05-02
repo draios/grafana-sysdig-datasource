@@ -126,8 +126,13 @@ pipeline {
                 json="{ \"channel\": \"${channel}\", \"text\": \"${text}\" }"
             }
 
+            echo "${SLACK_URL}"
             // escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
-            sh "curl -s -d \'payload=${json}\' \'${SLACK_URL_PSW}\'"
+
+
+            // sh "curl -s -d \'payload=${json}\' \'${SLACK_URL_PSW}\'"
+            
+            
             // sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
         }
         fixed {
