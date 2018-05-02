@@ -121,8 +121,14 @@ pipeline {
 
             script {
                 SLACK_URL = credentials('grafana-ds-build-slack-webhook')
-                sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
+                text="Hello Davide"
+                channel="#grafana-ds-activity"
+                json="{\"channel\": \"${channel}\", \"text\": \"${text}\"}"
             }
+
+            // escapedText=$(echo $text | sed 's/"/\"/g' | sed "s/'/\'/g" )
+            sh "curl -s -d \'payload=${json}\' \'${SLACK_URL}\'"
+            // sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
         }
         fixed {
             echo "Fixed :-)"
