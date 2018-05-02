@@ -28,6 +28,32 @@ pipeline {
             }
         }
 
+        stage('Configure feature branch deploy') {
+            when {
+                not { branch 'master' }
+                not { branch 'dev' }
+            }
+            steps {
+                S3_DEST = "dev/grafana-sysdig-datasource/${env.BRANCH_NAME}"
+            }
+        }
+        stage('Configure dev deploy') {
+            when {
+                branch 'dev'
+            }
+            steps {
+                S3_DEST = "dev/grafana-sysdig-datasource"
+            }
+        }
+        stage('Configure master deploy') {
+            when {
+                branch 'master'
+            }
+            steps {
+                S3_DEST = "stable/grafana-sysdig-datasource"
+            }
+        }
+
         stage('Prepare deploy') {
             environment {
                 DIST_PATH = "dist"
@@ -44,20 +70,9 @@ pipeline {
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
                 LATEST_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
+                S3_BUCKET = "s3://download.draios.com"
             }
             steps {
-                script {
-                    S3_BUCKET = "s3://download.draios.com"
-                    S3_DEST = "dev/grafana-sysdig-datasource/${env.BRANCH_NAME}"
-
-                    withEnv(['BRANCH_NAME=dev']) {
-                        S3_DEST = "dev/grafana-sysdig-datasource"
-                    }
-                    withEnv(['BRANCH_NAME=master']) {
-                        S3_DEST = "stable/grafana-sysdig-datasource"
-                    }
-                }
-
                 echo "Deploying zip file...."
                 sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
                 sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read"
