@@ -108,9 +108,9 @@ pipeline {
             steps {
                 echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
 
-                withCredentials([usernamePassword(credentialsId: 'jenkins-github-login', passwordVariable: 'GIT_PASSWORD', usernameVariable: 'GIT_USERNAME')]) {
+                withCredentials([usernamePassword(credentialsId: "jenkins-github-login", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
                     sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
-                    sh('git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource --tags')
+                    sh("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource --tags")
                 }
             }
         }
