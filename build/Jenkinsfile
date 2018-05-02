@@ -101,20 +101,20 @@ pipeline {
                 echo "Tagging repository v${VERSION}"
             }
         }
+    }
 
-        post {
-            fixed {
-                echo "Fixed :-)"
-            }
-            failure {
-                echo "Failed :-("
-            }
-            aborted {
-                echo "Unstable :-/"
-            }
-            regression {
-                echo "Regression ;-("
-            }
+    post {
+        fixed {
+            echo "Fixed :-)"
+        }
+        failure {
+            echo "Failed :-("
+        }
+        aborted {
+            echo "Unstable :-/"
+        }
+        regression {
+            echo "Regression ;-("
         }
     }
 }
