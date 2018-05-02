@@ -119,8 +119,10 @@ pipeline {
         always {
             // slackSend channel: '#grafana-ds-activity', color: 'good', message: '[${currentBuild.result}] #${env.BUILD_NUMBER} ${env.BUILD_URL}', teamDomain: 'sysdigcloud', token: credentials('slack-api-key')
 
-            def slackURL = credentials('grafana-ds-build-slack-webhook')
-            sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${slackURL}"
+            script {
+                SLACK_URL = credentials('grafana-ds-build-slack-webhook')
+                sh "curl -X POST --data-urlencode \'payload={[text: \'bla\', channel: \'#grafana-ds-activity\']}\' ${SLACK_URL}"
+            }
         }
         fixed {
             echo "Fixed :-)"
