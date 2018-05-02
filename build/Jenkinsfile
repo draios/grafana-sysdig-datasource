@@ -107,10 +107,10 @@ pipeline {
             steps {
                 echo "Tagging repository v${VERSION}.${env.BUILD_ID}"
 
-                sshagent(credentials: ['jenkins-github-ssh-key']) {
-                    sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
-                    sh("git push origin --tags")
-                }
+                // sshagent(credentials: ['jenkins-github-ssh-key']) {
+                //     sh("git tag -a v${VERSION}.${env.BUILD_ID} -m 'Jenkins'")
+                //     sh("git push origin --tags")
+                // }
             }
         }
     }
