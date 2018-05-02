@@ -1,12 +1,9 @@
 pipeline {
     agent {
         dockerfile {
+            dir 'build'
             label 'builder-backend-j8'
         }
-    }
-
-    environment {
-        VERSION = readFile "VERSION"
     }
 
     stages {
@@ -49,6 +46,7 @@ pipeline {
 
         stage('Deploy') {
             environment {
+                VERSION = readFile "VERSION"
                 FILE_NAME_PREFIX = "grafana-sysdig-datasource"
                 BUILD_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}.${env.BUILD_ID}"
                 LATEST_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
