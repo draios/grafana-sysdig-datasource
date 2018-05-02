@@ -46,15 +46,20 @@ pipeline {
                 RELEASE_FILE_NAME = "${FILE_NAME_PREFIX}-v${VERSION}"
             }
             steps {
+                script {
+                    S3_BUCKET = 's3://download.draios.com'
+                    S3_DEST = 'dev/grafana-sysdig-datasource'
+                }
+
                 echo "Deploying zip file...."
                 sh "zip -ry ${BUILD_FILE_NAME}.zip sysdig"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.zip s3://download.draios.com/dev/grafana-sysdig-datasource/${BUILD_FILE_NAME}.zip --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.zip s3://download.draios.com/dev/grafana-sysdig-datasource/${RELEASE_FILE_NAME}.zip --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${RELEASE_FILE_NAME}.zip --acl public-read"
 
                 echo "Deploying tgz file...."
                 sh "tar zcvf ${BUILD_FILE_NAME}.tgz sysdig"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz s3://download.draios.com/dev/grafana-sysdig-datasource/${BUILD_FILE_NAME}.tgz --acl public-read"
-                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz s3://download.draios.com/dev/grafana-sysdig-datasource/${RELEASE_FILE_NAME}.tgz --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.tgz --acl public-read"
+                sh "aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${RELEASE_FILE_NAME}.tgz --acl public-read"
             }
         }
     }
