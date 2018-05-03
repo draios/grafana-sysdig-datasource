@@ -1,3 +1,5 @@
+const fs = require('fs');
+
 module.exports = function(grunt) {
 
   require('load-grunt-tasks')(grunt);
@@ -5,9 +7,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-execute');
   grunt.loadNpmTasks('grunt-contrib-clean');
 
+  const version = fs.readFileSync('VERSION').toString();
+
   grunt.initConfig({
 
-    clean: ["dist"],
+    clean: ['dist'],
 
     copy: {
       src_to_dist: {
@@ -20,6 +24,28 @@ module.exports = function(grunt) {
         expand: true,
         src: ['README.md'],
         dest: 'dist'
+      }
+    },
+
+    replace: {
+      dist: {
+        options: {
+          patterns: [
+            {
+              json: {
+                version
+              }
+            }
+          ]
+        },
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: ['src/plugin.json'], 
+            dest: 'dist/'
+          }
+        ]
       }
     },
 
@@ -78,5 +104,5 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('default', ['clean', 'copy:src_to_dist', 'copy:pluginDef', 'babel', 'mochaTest']);
+  grunt.registerTask('default', ['clean', 'copy:src_to_dist', 'copy:pluginDef', 'replace', 'babel', 'mochaTest']);
 };

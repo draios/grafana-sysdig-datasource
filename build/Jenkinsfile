@@ -1,0 +1,72 @@
+pipeline {
+    agent {
+        dockerfile {
+            dir 'build'
+            label 'builder-backend-j8'
+        }
+    }
+
+    environment {
+        VERSION = readFile "VERSION"
+        SLACK_URL = credentials('grafana-ds-build-slack-webhook')
+    }
+
+    options {
+        disableConcurrentBuilds()
+    }
+
+    stages {
+        stage('Prepare build') {
+            steps {
+                // At this point, Jenkins checked out the repository already.
+                // Also, the workspace is persistent.
+                // Since the previous build might have left some artifacts then now we're going to
+                // remove everything and checkout the repository again
+                sh "rm -rf *"
+
+                // NOTE: 'checkout scm' is equivalent to
+                // git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
+                checkout scm
+
+                // Prepare npm/yarn environment
+                sh "npm install"
+                sh "./node_modules/.bin/yarn install"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh "npm run build"
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                sh "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
+            }
+        }
+
+        stage('Tag') {
+            when {
+                branch 'master'
+            }
+            steps {
+                echo "Tagging repository v${VERSION}"
+
+                withCredentials([usernamePassword(credentialsId: "github-jenkins-user-token", passwordVariable: "GIT_PASSWORD", usernameVariable: "GIT_USERNAME")]) {
+                    sh("git tag -a v${VERSION}")
+                    sh("git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/draios/grafana-sysdig-datasource --tags")
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+            }
+            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
+        }
+    }
+}
