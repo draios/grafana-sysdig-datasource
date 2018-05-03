@@ -23,7 +23,7 @@ Here's how:
 
 ```
 # download plugin into grafana-sysdig directory
-curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.tgz -o sysdig.tgz
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.2.tgz -o sysdig.tgz
 mkdir grafana-sysdig
 tar zxf sysdig.tgz -C grafana-sysdig
 
@@ -53,7 +53,7 @@ Alternatively, You can use the Grafana container image as is, and mount the plug
 mkdir grafana-data
 mkdir grafana-data/plugins
 
-curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.tgz -o sysdig.tgz
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.2.tgz -o sysdig.tgz
 tar zxf sysdig.tgz -C grafana-data/plugins
 
 # start the container (with current user to give read/write permissions to data directory)
@@ -71,7 +71,7 @@ Open a shell on the host where Grafana is installed, then run the following comm
 ##### Linux
 
 ```
-curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.tgz -o sysdig.tgz
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.2.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 sudo cp -R sysdig /var/lib/grafana/plugins
 sudo service grafana-server restart
@@ -83,7 +83,7 @@ sudo service grafana-server restart
 ##### Mac
 
 ```
-curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.tgz -o sysdig.tgz
+curl https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.2.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 cp -R sysdig /usr/local/var/lib/grafana/plugins
 brew services restart grafana
@@ -94,7 +94,7 @@ For more information, refer to [Grafana installation on Mac page](http://docs.gr
 
 ##### Windows
 
-1. Download plugin from: https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.1.zip
+1. Download plugin from: https://download.sysdig.com/dev/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.0.2.zip
 2. Install the plugin to Grafana plugins folder
 3. Restart Grafana
 
@@ -145,5 +145,5 @@ Join our [Public Slack](https://slack.sysdig.com) channel (#grafana) for announc
 
 ## Changelog
 
-**v0.0.1**
+**v0.0.2**
 - The beginning...
