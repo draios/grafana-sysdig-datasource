@@ -99,20 +99,6 @@ const json = {
 	]
 };
 
-request.post(
-    slackUrl,
-    { json },
-    (err, res, body) => {
-        if (err) {
-            console.log(err);
-            process.exit(1);
-        } else {
-            process.exit(0);
-        }
-    }
-);
-
-
 const postData = JSON.stringify(json);
 
 const options = {
@@ -137,3 +123,17 @@ req.on('error', e => {
 
 req.write(postData);
 req.end();
+
+// request.post(
+//     slackUrl,
+//     { json },
+//     (err, res, body) => {
+//         if (err) {
+//             console.log(err);
+//             process.exit(1);
+//         } else {
+//             process.exit(0);
+//         }
+//     }
+// );
+
