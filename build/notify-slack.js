@@ -1,4 +1,4 @@
-const request = require('request');
+const http = require('http');
 
 const slackUrl = process.argv[2];
 const version = process.argv[3];
@@ -71,7 +71,6 @@ const json = {
             title_link: buildUrl,
 			text,
 			fallback: text,
-            pretext: text,
 			fields: [
 				{
 					title: 'Build number',
@@ -112,3 +111,29 @@ request.post(
         }
     }
 );
+
+
+const postData = JSON.stringify(json);
+
+const options = {
+  url: slackUrl,
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    // 'Content-Length': Buffer.byteLength(postData)
+  }
+};
+
+const req = http.request(options, res => {
+    res.on('end', () => {
+        process.exit(0);
+    });
+});
+
+req.on('error', e => {
+    console.error(`problem with request: ${e.message}`);
+    process.exit(1);
+});
+
+req.write(postData);
+req.end();
