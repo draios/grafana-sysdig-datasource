@@ -8,6 +8,7 @@ const buildUrl = process.argv[6];
 const result = process.argv[7];
 const startTime = process.argv[8];
 const duration = process.argv[9];
+const gitCommitHash = process.argv[10];
 
 const colors = {
     bad: '#FF871E',
@@ -85,6 +86,11 @@ const json = {
 				{
 					title: 'Repository and branch',
 					value: `https://github.com/draios/grafana-sysdig-datasource/tree/${branchName}`,
+					short: false
+				},
+				{
+					title: 'Latest commit',
+					value: `https://github.com/draios/grafana-sysdig-datasource/commit/${gitCommitHash}`,
 					short: false
                 }
 			],
