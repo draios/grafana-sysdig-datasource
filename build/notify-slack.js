@@ -23,41 +23,41 @@ let color;
 switch (result) {
     case 'SUCCESS':
         title = 'Build succeeded';
-        text = `The build ${buildNumber} succeeded in ${duration / 1000} seconds.`;
+        text = `The build #${buildNumber} succeeded in ${duration / 1000} seconds.`;
         color = colors.good;
         break;
 
-    case 'REGRESSION':
-        title = "Build failed";
-        text = `The build ${buildNumber} failed for the first time in ${duration / 1000} seconds.`;
-        color = colors.veryBad;
-        break;
+    // case 'REGRESSION':
+    //     title = "Build failed";
+    //     text = `The build ${buildNumber} failed for the first time in ${duration / 1000} seconds.`;
+    //     color = colors.veryBad;
+    //     break;
 
     case 'FAILURE':
-        title = "Build still failing";
-        text = `The build ${buildNumber} still failing in ${duration / 1000} seconds.`;
+        title = "Build failed";
+        text = `The build #${buildNumber} failed in ${duration / 1000} seconds.`;
         color = colors.bad;
         break;
     case 'ABORTED':
         title = "Build aborted";
-        text = `The build ${buildNumber} has been aborted in ${duration / 1000} seconds.`;
+        text = `The build #${buildNumber} has been aborted in ${duration / 1000} seconds.`;
         color = colors.unknown;
         break;
     case 'UNSTABLE':
         title = "Build unstable";
-        text = `The build ${buildNumber} is unstable in ${duration / 1000} seconds.`;
+        text = `The build #${buildNumber} is unstable in ${duration / 1000} seconds.`;
         color = colors.bad;
         break;
 
     case 'FIXED':
         title = "Build fixed";
-        text = `The build ${buildNumber} got fixed in ${duration / 1000} seconds.`;
+        text = `The build #${buildNumber} got fixed in ${duration / 1000} seconds.`;
         color = colors.good;
         break;
 
     default:
-        title = "Build ${result}";
-        text = `The build ${buildNumber} terminated with result ${result} in ${duration / 1000} seconds.`;
+        title = "Build terminated";
+        text = `The build #${buildNumber} terminated with result ${result} in ${duration / 1000} seconds.`;
         break;
 }
 
