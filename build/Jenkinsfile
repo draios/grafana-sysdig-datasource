@@ -69,62 +69,7 @@ pipeline {
             echo "${env.CHANGE_AUTHOR}"
             echo "${env.CHANGE_TARGET}"
             echo "${env.CHANGE_TARGET}"
-            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${currentBuild.changeSets}"
+            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration}"
         }
-    //     success {
-    //         script {
-    //             TEXT = "Build #${env.BUILD_NUMBER} still good :-)\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-    //             CHANNEL = "#grafana-ds-activity"
-    //             USER_NAME = "grafana-ds-build"
-    //             JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-    //         }
-
-    //         echo "${currentBuild}"
-    //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-    //     }
-    //     fixed {
-    //         script {
-    //             TEXT = "Build #${env.BUILD_NUMBER} fixed ;-)\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-    //             CHANNEL = "#grafana-ds-activity"
-    //             USER_NAME = "grafana-ds-build"
-    //             JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-    //         }
-
-    //         echo "${currentBuild}"
-    //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-    //     }
-    //     failure {
-    //         script {
-    //             TEXT = "Build #${env.BUILD_NUMBER} failed :-(\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-    //             CHANNEL = "#grafana-ds-activity"
-    //             USER_NAME = "grafana-ds-build"
-    //             JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-    //         }
-
-    //         echo "${currentBuild}"
-    //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-    //     }
-    //     aborted {
-    //         script {
-    //             TEXT = "Build #${env.BUILD_NUMBER} unstable :-/\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-    //             CHANNEL = "#grafana-ds-activity"
-    //             USER_NAME = "grafana-ds-build"
-    //             JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-    //         }
-
-    //         echo "${currentBuild}"
-    //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-    //     }
-    //     regression {
-    //         script {
-    //             TEXT = "Build #${env.BUILD_NUMBER} regression ;-(\n\nBranch name: ${env.BRANCH_NAME}\nVersion: : ${VERSION}.${env.BUILD_NUMBER}\nJenkins result: ${env.BUILD_URL}"
-    //             CHANNEL = "#grafana-ds-activity"
-    //             USER_NAME = "grafana-ds-build"
-    //             JSON="{ \"channel\": \"${CHANNEL}\", \"username\": \"${USER_NAME}\", \"text\": \"${TEXT}\" }"
-    //         }
-
-    //         echo "${currentBuild}"
-    //         sh "curl -s -d \'payload=${JSON}\' \'${SLACK_URL}\'"
-    //     }
     }
 }

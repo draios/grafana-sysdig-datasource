@@ -8,7 +8,6 @@ const buildUrl = process.argv[6];
 const result = process.argv[7];
 const startTime = process.argv[8];
 const duration = process.argv[9];
-const changeSets = process.argv[10];
 
 const colors = {
     bad: '#FF871E',
