@@ -1,5 +1,5 @@
-const http = require('http');
-const url = require("url");
+const https = require('https');
+const url = require('url');
 
 const slackUrl = process.argv[2];
 const version = process.argv[3];
@@ -103,7 +103,6 @@ const json = {
 const postData = JSON.stringify(json);
 const urlObj = url.parse(slackUrl);
 const options = {
-    protocol: urlObj.protocol,
     hostname: urlObj.hostname,
     path: urlObj.pathname,
     method: 'POST',
@@ -112,7 +111,7 @@ const options = {
         'Content-Length': Buffer.byteLength(postData)
     }
 };
-const req = http.request(options, res => {
+const req = https.request(options, res => {
     res.on('end', () => {
         process.exit(0);
     });
