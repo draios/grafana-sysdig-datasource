@@ -19,6 +19,17 @@ const colors = {
     unknown: '#B3C3C6',
 };
 
+const changeAnalysis = analyzeChange(previousResult, result);
+
+if (
+    branchName !== 'master' &&
+    changeAnalysis.isSuccessful &&
+    changeAnalysis.isFirstSuccess === false
+) {
+    // No need to post the successful message again
+    process.exit(0);
+}
+
 let title;
 let text;
 let color;
@@ -28,12 +39,6 @@ switch (result) {
         text = `The build #${buildNumber} succeeded in ${duration / 1000} seconds.`;
         color = colors.good;
         break;
-
-    // case 'REGRESSION':
-    //     title = "Build failed";
-    //     text = `The build ${buildNumber} failed for the first time in ${duration / 1000} seconds.`;
-    //     color = colors.veryBad;
-    //     break;
 
     case 'FAILURE':
         title = "Build failed";
@@ -125,3 +130,70 @@ req.on('error', e => {
 
 req.write(postData);
 req.end();
+
+
+function analyzeChange(previousResult, result) {
+    switch (result) {
+        case 'SUCCESS':
+        case 'FIXED':
+            switch (previousResult) {
+                case 'SUCCESS':
+                case 'FIXED':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: true,
+                    };
+                case 'FAILURE':
+                case 'ABORTED':
+                case 'UNSTABLE':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: true,
+                        isSuccessful: true,
+                    };
+
+                default:
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: true,
+                    };
+            }
+
+        case 'FAILURE':
+        case 'ABORTED':
+        case 'UNSTABLE':
+            switch (previousResult) {
+                case 'SUCCESS':
+                case 'FIXED':
+                    return {
+                        isFirstFailure: true,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+                case 'FAILURE':
+                case 'ABORTED':
+                case 'UNSTABLE':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+
+                default:
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+            }
+
+        default:
+            return {
+                isFirstFailure: false,
+                isFirstSuccess: false,
+                isSuccessful: false,
+            };
+    }
+}
