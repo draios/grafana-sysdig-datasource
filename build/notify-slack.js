@@ -15,6 +15,7 @@ const gitCommitHash = process.argv[11];
 const colors = {
     bad: '#FF871E',
     veryBad: '#EB3250',
+    warning: '#FAFA3C',
     good: '#55EB5A',
     unknown: '#B3C3C6',
 };
@@ -48,7 +49,7 @@ switch (result) {
     case 'ABORTED':
         title = "Build aborted";
         text = `The build #${buildNumber} has been aborted in ${duration / 1000} seconds.`;
-        color = colors.unknown;
+        color = colors.warning;
         break;
     case 'UNSTABLE':
         title = "Build unstable";
