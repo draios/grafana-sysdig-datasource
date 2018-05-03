@@ -1,32 +1,35 @@
 {
-  "type": "datasource",
-  "id": "sysdig",
-  "name": "Sysdig",
+    "type": "datasource",
+    "id": "sysdig",
+    "name": "Sysdig",
 
-  "metrics": true,
-  "alerting": false,
-  "annotations": false,
+    "metrics": true,
+    "alerting": false,
+    "annotations": false,
 
-  "info": {
-    "description": "Sysdig Datasource for Grafana",
-    "author": {
-      "name": "Sysdig",
-      "url": "https://sysdig.com"
+    "info": {
+        "description": "Sysdig Datasource for Grafana",
+        "author": {
+            "name": "Sysdig",
+            "url": "https://sysdig.com"
+        },
+        "logos": {
+            "small": "img/sysdig_logo.svg",
+            "large": "img/sysdig_logo.svg"
+        },
+        "links": [
+            { "name": "GitHub", "url": "https://github.com/draios/grafana-sysdig-datasource" },
+            {
+                "name": "MIT License",
+                "url": "https://github.com/draios/grafana-sysdig-datasource/blob/master/LICENSE"
+            }
+        ],
+        "version": "@@version",
+        "updated": "2018-05-03"
     },
-    "logos": {
-      "small": "img/sysdig_logo.svg",
-      "large": "img/sysdig_logo.svg"
-    },
-    "links": [
-      {"name": "GitHub", "url": "https://github.com/draios/grafana-sysdig-datasource"},
-      {"name": "MIT License", "url": "https://github.com/draios/grafana-sysdig-datasource/blob/master/LICENSE"}
-    ],
-    "version": "@@version",
-    "updated": "2018-05-03"
-  },
 
-  "dependencies": {
-    "grafanaVersion": "3.x.x",
-    "plugins": [ ]
-  }
+    "dependencies": {
+        "grafanaVersion": "3.x.x",
+        "plugins": []
+    }
 }

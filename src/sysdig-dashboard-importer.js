@@ -1,30 +1,28 @@
+/* global grafanaBootData */
+
 const GRAFANA_COLUMN_COUNT = 24;
 const SYSDIG_COLUMN_COUNT = 12;
 
 export class SysdigDashboardImporter {
     static convertToGrafana(sysdigDashboard, datasourceName) {
         return buildGrafanaDashboard(sysdigDashboard, {
-            datasourceName,
+            datasourceName
         });
     }
 
     static importFromSysdig(grafanaUrl, apiToken, grafanaDashboard) {
-        httpPost(
-            `${grafanaUrl}/api/dashboards/db`,
-            apiToken,
-            grafanaDashboard
-        );
+        httpPost(`${grafanaUrl}/api/dashboards/db`, apiToken, grafanaDashboard);
     }
 }
 
 function buildGrafanaDashboard(sysdigDashboard, options) {
-    const grafanaVersion = grafanaBootData &&
+    const grafanaVersion =
+        grafanaBootData &&
         grafanaBootData.settings &&
         grafanaBootData.settings.buildInfo &&
-        grafanaBootData.settings.buildInfo.version ?
-        grafanaBootData.settings.buildInfo.version :
-        'n.a.'
-    ;
+        grafanaBootData.settings.buildInfo.version
+            ? grafanaBootData.settings.buildInfo.version
+            : 'n.a.';
 
     const buildPanelFn = buildPanel.bind(null, sysdigDashboard, options);
     const panels = sysdigDashboard.items.map(buildPanelFn).filter((r) => r !== null);
@@ -41,19 +39,21 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
         dashboardPanelsConfiguration = {
             rows: panels.reduce((acc, panel) => {
                 if (acc.length === 0) {
-                    return [{
-                        panels: [panel],
-                    }];
+                    return [
+                        {
+                            panels: [panel]
+                        }
+                    ];
                 } else if (acc[acc.length - 1].panels[0].gridPos.x < panel.gridPos.x) {
                     acc[acc.length - 1].panels.push(panel);
                 } else {
                     acc.push({
-                        panels: [panel],
+                        panels: [panel]
                     });
                 }
 
                 return acc;
-            }, []),
+            }, [])
         };
 
         // remove grid layout
@@ -71,15 +71,15 @@ function buildGrafanaDashboard(sysdigDashboard, options) {
             title: sysdigDashboard.name,
             tags: ['sysdig'],
             timezone: 'browser',
-            time: { // default Sysdig: last 1 hour
+            time: {
+                // default Sysdig: last 1 hour
                 from: 'now-1h',
-                to: 'now',
+                to: 'now'
             },
-            graphTooltip: 1, // shared crosshair
+            graphTooltip: 1 // shared crosshair
         },
         dashboardPanelsConfiguration
     );
-
 }
 
 function buildPanel(sysdigDashboard, options, sysdigPanel, index) {
@@ -109,7 +109,7 @@ function buildPanel(sysdigDashboard, options, sysdigPanel, index) {
                 title: sysdigPanel.name,
                 gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
                 mode: 'markdown',
-                content: buildTextContentForUnavailablePanel(sysdigPanel),
+                content: buildTextContentForUnavailablePanel(sysdigPanel)
             };
     }
 }
@@ -123,36 +123,28 @@ function buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index) {
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
         targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
         legend: {
-            show: false, // retain Sysdig layout
+            show: false // retain Sysdig layout
         },
-        yaxes: buildPanelYAxes(sysdigPanel),
+        yaxes: buildPanelYAxes(sysdigPanel)
     };
 }
 
 function buildTimeSeriesAreaPanel(sysdigDashboard, options, sysdigPanel, index) {
-    return Object.assign(
-        {},
-        buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index),
-        {
-            stack: true,
-            fill: 7, // similar opacity used by Sysdig Monitor
-        }
-    );
+    return Object.assign({}, buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index), {
+        stack: true,
+        fill: 7 // similar opacity used by Sysdig Monitor
+    });
 }
 
 function buildHistogramPanel(sysdigDashboard, options, sysdigPanel, index) {
-    return Object.assign(
-        {},
-        buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index),
-        {
-            bars: true,
-            lines: false,
-            xaxis: {
-                buckets: sysdigPanel.customDisplayOptions.histogram.numberOfBuckets,
-                mode: 'histogram',
-            },
+    return Object.assign({}, buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index), {
+        bars: true,
+        lines: false,
+        xaxis: {
+            buckets: sysdigPanel.customDisplayOptions.histogram.numberOfBuckets,
+            mode: 'histogram'
         }
-    );
+    });
 }
 
 function buildTopPanel(sysdigDashboard, options, sysdigPanel, index) {
@@ -166,9 +158,9 @@ function buildTopPanel(sysdigDashboard, options, sysdigPanel, index) {
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
         targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
         legend: {
-            show: false, // retain Sysdig layout
+            show: false // retain Sysdig layout
         },
-        yaxes: buildPanelYAxes(sysdigPanel),
+        yaxes: buildPanelYAxes(sysdigPanel)
     };
 }
 
@@ -183,9 +175,9 @@ function buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index) {
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
         targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
         legend: {
-            show: false, // retain Sysdig layout
+            show: false // retain Sysdig layout
         },
-        yaxes: buildPanelYAxes(sysdigPanel),
+        yaxes: buildPanelYAxes(sysdigPanel)
     };
 }
 
@@ -242,7 +234,7 @@ function buildTimeSeriesTargets(sysdigDashboard, sysdigPanel) {
             segmentBy: keys.length === 1 ? keys[0].metricId.replace(/%25/g, '.') : null,
             filter: buildPanelFilter(sysdigDashboard, sysdigPanel),
             sortDirection: buildPanelSortDirection(sysdigPanel),
-            pageLimit: buildPanelPageLimit(sysdigPanel),
+            pageLimit: buildPanelPageLimit(sysdigPanel)
         };
     });
 }
@@ -285,8 +277,8 @@ function buildPanelGridLayout(sysdigDashboard, sysdigPanel) {
 
     // keep w/h ratio similar to Sysdig by reducing height by 50%
     return {
-        h: (layout.size_y) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2,
-        w: (layout.size_x) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
+        h: layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2,
+        w: layout.size_x / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
         x: (layout.col - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
         y: (layout.row - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2
     };
@@ -299,17 +291,16 @@ function buildPanelYAxes(sysdigPanel) {
         logBase: 1,
         min: null,
         max: null,
-        show: false,
-    }
-    const normalizedDisplayOptions = sysdigPanel.customDisplayOptions ?
-        sysdigPanel.customDisplayOptions :
-        {
-            yAxisLeftDomain: {
-                from: null,
-                to: null,
-            },
-        }
-    ;
+        show: false
+    };
+    const normalizedDisplayOptions = sysdigPanel.customDisplayOptions
+        ? sysdigPanel.customDisplayOptions
+        : {
+              yAxisLeftDomain: {
+                  from: null,
+                  to: null
+              }
+          };
 
     return [
         // left axis
@@ -317,8 +308,7 @@ function buildPanelYAxes(sysdigPanel) {
             show: true,
             min: normalizedDisplayOptions.yAxisLeftDomain.from,
             max: normalizedDisplayOptions.yAxisLeftDomain.to,
-            logBase: getPanelYAxisScale(normalizedDisplayOptions.yAxisScale
-),
+            logBase: getPanelYAxisScale(normalizedDisplayOptions.yAxisScale)
         }),
         // right axis
         _.assign({}, baseAxisConfig)
@@ -341,7 +331,9 @@ function getPanelYAxisScale(type) {
 }
 
 function httpPost(url, apiToken, data, success) {
-    const xhr = window.XMLHttpRequest ? new XMLHttpRequest() : new ActiveXObject("Microsoft.XMLHTTP");
+    const xhr = window.XMLHttpRequest
+        ? new XMLHttpRequest()
+        : new ActiveXObject('Microsoft.XMLHTTP');
     xhr.open('POST', url);
     xhr.onreadystatechange = function() {
         if (xhr.readyState > 3 && xhr.status === 200) {
