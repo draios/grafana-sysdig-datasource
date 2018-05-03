@@ -6,10 +6,11 @@ const version = process.argv[3];
 const buildNumber = process.argv[4];
 const branchName = process.argv[5];
 const buildUrl = process.argv[6];
-const result = process.argv[7];
-const startTime = process.argv[8];
-const duration = process.argv[9];
-const gitCommitHash = process.argv[10];
+const previousResult = process.argv[7];
+const result = process.argv[8];
+const startTime = process.argv[9];
+const duration = process.argv[10];
+const gitCommitHash = process.argv[11];
 
 const colors = {
     bad: '#FF871E',
