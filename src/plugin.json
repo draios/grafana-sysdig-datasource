@@ -1,18 +1,14 @@
 {
-  "name": "Sysdig",
-  "id": "sysdig",
   "type": "datasource",
-
-  "partials": {
-    "config": "public/app/plugins/datasource/sysdig/partials/config.html"
-  },
+  "id": "sysdig",
+  "name": "Sysdig",
 
   "metrics": true,
   "alerting": false,
   "annotations": false,
 
   "info": {
-    "description": "Sysdig Datasource",
+    "description": "Sysdig Datasource for Grafana",
     "author": {
       "name": "Sysdig",
       "url": "https://sysdig.com"
@@ -26,7 +22,7 @@
       {"name": "MIT License", "url": "https://github.com/draios/grafana-sysdig-datasource/blob/master/LICENSE"}
     ],
     "version": "@@version",
-    "updated": "2018-02-12"
+    "updated": "2018-05-03"
   },
 
   "dependencies": {
