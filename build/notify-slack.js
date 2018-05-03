@@ -10,11 +10,89 @@ const startTime = process.argv[8];
 const duration = process.argv[9];
 const changeSets = process.argv[10];
 
-const text = `Build #${buildNumber} ${result} (started at ${startTime} and lasted ${duration}\n\nBranch name: ${branchName}\nVersion: : ${version}.${buildNumber}\nJenkins result: ${buildUrl}\n\n${changeSets}`;
+const colors = {
+    bad: '#FF871E',
+    veryBad: '#EB3250',
+    good: '#55EB5A',
+    unknown: '#B3C3C6',
+};
+
+let title;
+let text;
+let color;
+switch (result) {
+    case 'SUCCESS':
+        title = 'Build succeeded';
+        text = `The build ${buildNumber} succeeded in ${duration / 1000} seconds.`;
+        color = colors.good;
+        break;
+
+    case 'REGRESSION':
+        title = "Build failed";
+        text = `The build ${buildNumber} failed for the first time in ${duration / 1000} seconds.`;
+        color = colors.veryBad;
+        break;
+
+    case 'FAILURE':
+        title = "Build still failing";
+        text = `The build ${buildNumber} still failing in ${duration / 1000} seconds.`;
+        color = colors.bad;
+        break;
+    case 'ABORTED':
+        title = "Build aborted";
+        text = `The build ${buildNumber} has been aborted in ${duration / 1000} seconds.`;
+        color = colors.unknown;
+        break;
+    case 'UNSTABLE':
+        title = "Build unstable";
+        text = `The build ${buildNumber} is unstable in ${duration / 1000} seconds.`;
+        color = colors.bad;
+        break;
+
+    case 'FIXED':
+        title = "Build fixed";
+        text = `The build ${buildNumber} got fixed in ${duration / 1000} seconds.`;
+        color = colors.good;
+        break;
+
+    default:
+        title = "Build ${result}";
+        text = `The build ${buildNumber} terminated with result ${result} in ${duration / 1000} seconds.`;
+        break;
+}
+
 const json = {
     channel: '#grafana-ds-activity',
     username: 'jenkins',
-    text
+    attachments: [
+		{
+			color,
+            title,
+            title_link: buildUrl,
+			text,
+			fallback: text,
+            pretext: text,
+			fields: [
+				{
+					title: 'Build number',
+					value: buildNumber,
+					short: true
+				},
+				{
+					title: 'Version',
+					value: version,
+					short: true
+				},
+				{
+					title: 'Repository and branch',
+					value: `https://github.com/draios/grafana-sysdig-datasource/tree/${branchName}`,
+					short: false
+                }
+			],
+			footer: 'Built by Jenkins',
+			ts: startTime / 1000
+		}
+	]
 };
 
 request.post(
