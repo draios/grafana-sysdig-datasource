@@ -1,50 +1,77 @@
+<!--               -->
+<!-- Configuration -->
+<!--               -->
 <h3 class="page-heading">Sysdig API Settings</h3>
-<div class="gf-form-group max-width-30">
-  <div class="gf-form">
-    <label class="gf-form-label width-7">Plan</label>
-      <div class="gf-form-select-wrapper">
-        <select
-          class="gf-form-input gf-size-auto"
-          ng-model="ctrl.plan"
-          ng-options="plan.text for plan in ctrl.planOptions"
-          ng-change="ctrl.handlePlanChange()"
-        ></select>
-      </div>
-  </div>
 
-  <div class="gf-form" ng-if="ctrl.isOnprem">
-    <label class="gf-form-label width-7">API Server</label>
-    <input
+<!-- License plan -->
+<div class="gf-form-group">
+  <div class="gf-form max-width-30">
+    <label class="gf-form-label width-7">Plan</label>
+    <div class="gf-form-select-wrapper max-width-23">
+      <select
       class="gf-form-input"
-      type="text"
-      ng-model="ctrl.current.url"
-      placeholder="{{suggestUrl}}"
-      bs-typeahead="getSuggestUrls"
-      min-length="0"
-      ng-pattern="/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/"
-      required
+      ng-model="ctrl.plan"
+      ng-options="plan.text for plan in ctrl.planOptions"
+      ng-change="ctrl.handlePlanChange()"
+      ></select>
+    </div>
+  </div>
+  
+  <!-- (Only Pro Software) Sysdig backend URL -->
+  <div class="gf-form max-width-30" ng-if="ctrl.isOnprem">
+    <label class="gf-form-label width-7">URL</label>
+    <input
+    class="gf-form-input"
+    type="text"
+    ng-model="ctrl.current.url"
+    placeholder="{{suggestUrl}}"
+    bs-typeahead="getSuggestUrls"
+    min-length="0"
+    ng-pattern="/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/"
+    required
     ></input>
     <info-popover mode="right-absolute">
-      Sysdig API Server URL
+      <p>
+        <strong>Sysdig API Server URL</strong>
+      </p>
+      <p>
+        Specify a complete HTTP URL (for example http://your_server:8080)
+      </p>
     </info-popover>
   </div>
-
-  <div class="gf-form">
+  
+  <!-- Sysdig API token -->
+  <div class="gf-form max-width-30">
     <label class="gf-form-label width-7">API Token</label>
     <input
-      type="text"
-      class="gf-form-input"
-      ng-model="ctrl.current.jsonData.apiToken"
+    type="text"
+    class="gf-form-input"
+    ng-model="ctrl.current.jsonData.apiToken"
     >
-    </input>
-    <info-popover mode="right-absolute">
-      You can find your API Token in the <strong>Sysdig Monitor API</strong> section of <a href="{{ctrl.current.url}}/#/settings/user" target="_blank">User Profile Settings page.</a>
-    </info-popover>
-  </div>
+  </input>
+</div>
+
+<!-- Note 1: Where to find API token -->
+<p>
+  <strong>Note</strong>: You can find your API Token in
+  <a href="{{ctrl.current.url}}/#/settings/user" target="_blank" style="text-decoration: underline;">Settings > User Profile > Sysdig Monitor API page.</a>
+</p>
+
+<!-- Note 2: Server proxy access -->
+<p class="grafana-info-box" ng-if="ctrl.isOnprem">
+  <strong>Note</strong>: All requests will be made from the browser to Grafana backend/server which in turn will forward the requests to the Sysdig backend/server and by that circumvent possible Cross-Origin Resource Sharing (CORS) requirements.
+  <br>
+  <br>
+  Make sure Sysdig backend/server is accessible from the Grafana backend/server.
+</p>
 </div>
 
 
+<!--                   -->
+<!-- Import dashboards -->
+<!--                   -->
 <h3 class="page-heading">Sysdig Monitor Dashboards</h3>
+
 <p>
   Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
 </p>
@@ -55,7 +82,7 @@
   Before importing dashboards, please save the data source.
 </p>
 
-<div class="gf-form-group max-width-30">
+<div class="gf-form-group max-width-30" ng-if="ctrl.isDashboardsImportDisabled() === false">
   <div class="gf-form-group">
     <table class="filter-table">
       <tbody>
