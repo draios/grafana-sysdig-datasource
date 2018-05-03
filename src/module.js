@@ -2,9 +2,6 @@ import {GenericDatasource} from './datasource';
 import {GenericDatasourceQueryCtrl} from './query_ctrl';
 import {SysdigConfigCtrl} from './config_ctrl';
 
-// class SysdigConfigCtrl {}
-// SysdigConfigCtrl.templateUrl = 'partials/config.html';
-
 class GenericQueryOptionsCtrl {}
 GenericQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
 
