@@ -122,21 +122,5 @@ req.on('error', e => {
     process.exit(1);
 });
 
-console.log(options);
-console.log(postData);
 req.write(postData);
 req.end();
-
-// request.post(
-//     slackUrl,
-//     { json },
-//     (err, res, body) => {
-//         if (err) {
-//             console.log(err);
-//             process.exit(1);
-//         } else {
-//             process.exit(0);
-//         }
-//     }
-// );
-
