@@ -6,17 +6,30 @@ const version = process.argv[3];
 const buildNumber = process.argv[4];
 const branchName = process.argv[5];
 const buildUrl = process.argv[6];
-const result = process.argv[7];
-const startTime = process.argv[8];
-const duration = process.argv[9];
-const gitCommitHash = process.argv[10];
+const previousResult = process.argv[7];
+const result = process.argv[8];
+const startTime = process.argv[9];
+const duration = process.argv[10];
+const gitCommitHash = process.argv[11];
 
 const colors = {
     bad: '#FF871E',
     veryBad: '#EB3250',
+    warning: '#FAFA3C',
     good: '#55EB5A',
     unknown: '#B3C3C6',
 };
+
+const changeAnalysis = analyzeChange(previousResult, result);
+
+if (
+    branchName !== 'master' &&
+    changeAnalysis.isSuccessful &&
+    changeAnalysis.isFirstSuccess === false
+) {
+    // No need to post the successful message again
+    process.exit(0);
+}
 
 let title;
 let text;
@@ -28,12 +41,6 @@ switch (result) {
         color = colors.good;
         break;
 
-    // case 'REGRESSION':
-    //     title = "Build failed";
-    //     text = `The build ${buildNumber} failed for the first time in ${duration / 1000} seconds.`;
-    //     color = colors.veryBad;
-    //     break;
-
     case 'FAILURE':
         title = "Build failed";
         text = `The build #${buildNumber} failed in ${duration / 1000} seconds.`;
@@ -42,7 +49,7 @@ switch (result) {
     case 'ABORTED':
         title = "Build aborted";
         text = `The build #${buildNumber} has been aborted in ${duration / 1000} seconds.`;
-        color = colors.unknown;
+        color = colors.warning;
         break;
     case 'UNSTABLE':
         title = "Build unstable";
@@ -124,3 +131,70 @@ req.on('error', e => {
 
 req.write(postData);
 req.end();
+
+
+function analyzeChange(previousResult, result) {
+    switch (result) {
+        case 'SUCCESS':
+        case 'FIXED':
+            switch (previousResult) {
+                case 'SUCCESS':
+                case 'FIXED':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: true,
+                    };
+                case 'FAILURE':
+                case 'ABORTED':
+                case 'UNSTABLE':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: true,
+                        isSuccessful: true,
+                    };
+
+                default:
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: true,
+                    };
+            }
+
+        case 'FAILURE':
+        case 'ABORTED':
+        case 'UNSTABLE':
+            switch (previousResult) {
+                case 'SUCCESS':
+                case 'FIXED':
+                    return {
+                        isFirstFailure: true,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+                case 'FAILURE':
+                case 'ABORTED':
+                case 'UNSTABLE':
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+
+                default:
+                    return {
+                        isFirstFailure: false,
+                        isFirstSuccess: false,
+                        isSuccessful: false,
+                    };
+            }
+
+        default:
+            return {
+                isFirstFailure: false,
+                isFirstSuccess: false,
+                isSuccessful: false,
+            };
+    }
+}
