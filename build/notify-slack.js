@@ -1,4 +1,5 @@
 const http = require('http');
+const url = require("url");
 
 const slackUrl = process.argv[2];
 const version = process.argv[3];
@@ -102,12 +103,13 @@ const json = {
 const postData = JSON.stringify(json);
 
 const options = {
-  url: slackUrl,
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    // 'Content-Length': Buffer.byteLength(postData)
-  }
+    hostname: url.parse(slackUrl).hostname,
+    path: url.parse(slackUrl).pathname,
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        // 'Content-Length': Buffer.byteLength(postData)
+    }
 };
 
 const req = http.request(options, res => {
@@ -117,7 +119,7 @@ const req = http.request(options, res => {
 });
 
 req.on('error', e => {
-    console.error(`problem with request: ${e.message}`);
+    console.error(`Slack notification failed: ${e.message}`);
     process.exit(1);
 });
 
