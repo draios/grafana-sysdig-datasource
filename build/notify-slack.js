@@ -108,7 +108,7 @@ const options = {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
-        // 'Content-Length': Buffer.byteLength(postData)
+        'Content-Length': Buffer.byteLength(postData)
     }
 };
 
