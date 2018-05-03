@@ -103,7 +103,8 @@ const json = {
 const postData = JSON.stringify(json);
 const urlObj = url.parse(slackUrl);
 const options = {
-    hostname: `${urlObj.protocol}//${urlObj.hostname}`,
+    protocol: urlObj.protocol,
+    hostname: urlObj.hostname,
     path: urlObj.pathname,
     method: 'POST',
     headers: {
