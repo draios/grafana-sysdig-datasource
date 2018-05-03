@@ -111,7 +111,6 @@ const options = {
         'Content-Length': Buffer.byteLength(postData)
     }
 };
-
 const req = http.request(options, res => {
     res.on('end', () => {
         process.exit(0);
@@ -123,6 +122,8 @@ req.on('error', e => {
     process.exit(1);
 });
 
+console.log(options);
+console.log(postData);
 req.write(postData);
 req.end();
 
