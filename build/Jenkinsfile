@@ -63,6 +63,12 @@ pipeline {
 
     post {
         always {
+            echo "${env.CHANGE_ID}"
+            echo "${env.CHANGE_URL}"
+            echo "${env.CHANGE_TITLE}"
+            echo "${env.CHANGE_AUTHOR}"
+            echo "${env.CHANGE_TARGET}"
+            echo "${env.CHANGE_TARGET}"
             sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${currentBuild.changeSets}"
         }
     //     success {
