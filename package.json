@@ -21,6 +21,7 @@
   "devDependencies": {
     "babel": "^6.23.0",
     "chai": "~3.5.0",
+    "eslint": "^4.19.1",
     "grunt": "^1.0.1",
     "grunt-babel": "~6.0.0",
     "grunt-cli": "^1.2.0",
