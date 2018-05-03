@@ -42,7 +42,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
+                sh "./build/upoad-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
             }
         }
 
