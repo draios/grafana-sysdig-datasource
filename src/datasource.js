@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export class GenericDatasource {
+export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.name = instanceSettings.name;
         this.q = $q;
@@ -64,36 +64,6 @@ export class GenericDatasource {
         };
 
         return DataService.fetch(this.backendSrv, this.apiToken, this.url, query, userTime);
-
-        // return this.q.all([
-        //   this.doRequest({
-        //     url: this.url + '/api/history/timelines',
-        //     data: query,
-        //     method: 'GET'
-        //   }),
-        //   this.doRequest({
-        //     url: this.url + '/api/v2/history/timelines/alignments',
-        //     data: query,
-        //     method: 'GET'
-        //   })
-        // ]).then((responses) => {
-        //   return getRequestTime(responses[0].data, responses[1].data, userTime);
-        // }).then((requestTime) => {
-        //   if (requestTime === null) {
-        //     // time window not available
-        //     return this.q.when({data: []});
-        //   } else {
-        //     const requests = getRequests(query, requestTime);
-
-        //     return this.doRequest({
-        //       url: this.url + '/api/data/batch',
-        //       data: { requests },
-        //       method: 'POST'
-        //     });
-        //   }
-        // }).then((response) => {
-        //   return parseResponses(query, response);
-        // });
     }
 
     buildQueryParameters(options) {
