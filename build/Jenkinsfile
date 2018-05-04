@@ -65,7 +65,7 @@ pipeline {
         always {
             script {
                 GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
-                if (env.CHANGE_ID) {
+                if (currentBuild.previousBuild) {
                     PREVIOUS_BUILD_RESULT = "${currentBuild.previousBuild.currentResult}"
                 } else {
                     PREVIOUS_BUILD_RESULT = "NONE"
