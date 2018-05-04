@@ -8,7 +8,7 @@
   <div class="gf-form max-width-30">
     <label class="gf-form-label width-7">Plan</label>
     <div class="gf-form-select-wrapper max-width-23">
-      <select class="gf-form-input" ng-model="ctrl.plan" ng-options="plan.text for plan in ctrl.planOptions" ng-change="ctrl.handlePlanChange()"></select>
+      <select class="gf-form-input" ng-model="ctrl.plan" ng-options="plan.text for plan in ctrl.planOptions" ng-change="ctrl.changePlan()"></select>
     </div>
   </div>
 
@@ -160,7 +160,7 @@
   <div class="gf-form-group">
     <table class="filter-table">
       <tbody>
-        <tr ng-repeat="dashboardSet in ctrl.dashboards">
+        <tr ng-repeat="dashboardSet in ctrl.dashboardSets">
           <td class="width-1">
             <i class="icon-gf icon-gf-dashboard"></i>
           </td>

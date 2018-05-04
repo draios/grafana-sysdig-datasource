@@ -9,10 +9,6 @@ export class SysdigDashboardImporter {
             datasourceName
         });
     }
-
-    static importFromSysdig(grafanaUrl, apiToken, grafanaDashboard) {
-        httpPost(`${grafanaUrl}/api/dashboards/db`, apiToken, grafanaDashboard);
-    }
 }
 
 function buildGrafanaDashboard(sysdigDashboard, options) {
@@ -328,23 +324,4 @@ function getPanelYAxisScale(type) {
         default:
             return 1;
     }
-}
-
-function httpPost(url, apiToken, data, success) {
-    const xhr = window.XMLHttpRequest
-        ? new XMLHttpRequest()
-        : new ActiveXObject('Microsoft.XMLHTTP');
-    xhr.open('POST', url);
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState > 3 && xhr.status === 200) {
-            if (success) {
-                success(xhr.responseText);
-            }
-        }
-    };
-    xhr.setRequestHeader('Accept', 'application/json');
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('Authorization', `Bearer ${apiToken}`);
-    xhr.send(JSON.stringify(data));
-    return xhr;
 }
