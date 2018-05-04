@@ -158,7 +158,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: true,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
 
                 case 'NONE':
@@ -205,7 +205,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: true,
                         isFirstFailure: false,
                         isFirstSuccess: true,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
 
                 default:
