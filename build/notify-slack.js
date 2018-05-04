@@ -1,3 +1,7 @@
+/* global require */
+/* global process */
+/* global Buffer */
+
 const https = require('https');
 const url = require('url');
 
@@ -17,7 +21,7 @@ const colors = {
     veryBad: '#EB3250',
     warning: '#FAFA3C',
     good: '#55EB5A',
-    unknown: '#B3C3C6',
+    unknown: '#B3C3C6'
 };
 
 const changeAnalysis = analyzeChange(previousResult, result);
@@ -43,30 +47,31 @@ switch (result) {
         break;
 
     case 'FAILURE':
-        title = "Build failed";
+        title = 'Build failed';
         text = `The build #${buildNumber} failed in ${duration / 1000} seconds.`;
         color = colors.bad;
         break;
     case 'ABORTED':
-        title = "Build aborted";
+        title = 'Build aborted';
         text = `The build #${buildNumber} has been aborted in ${duration / 1000} seconds.`;
         color = colors.warning;
         break;
     case 'UNSTABLE':
-        title = "Build unstable";
+        title = 'Build unstable';
         text = `The build #${buildNumber} is unstable in ${duration / 1000} seconds.`;
         color = colors.bad;
         break;
 
     case 'FIXED':
-        title = "Build fixed";
+        title = 'Build fixed';
         text = `The build #${buildNumber} got fixed in ${duration / 1000} seconds.`;
         color = colors.good;
         break;
 
     default:
-        title = "Build terminated";
-        text = `The build #${buildNumber} terminated with result ${result} in ${duration / 1000} seconds.`;
+        title = 'Build terminated';
+        text = `The build #${buildNumber} terminated with result ${result} in ${duration /
+            1000} seconds.`;
         break;
 }
 
@@ -74,38 +79,38 @@ const json = {
     channel: '#grafana-ds-activity',
     username: 'jenkins',
     attachments: [
-		{
-			color,
+        {
+            color,
             title,
             title_link: buildUrl,
-			text,
-			fallback: text,
-			fields: [
-				{
-					title: 'Build number',
-					value: buildNumber,
-					short: true
-				},
-				{
-					title: 'Version',
-					value: version,
-					short: true
-				},
-				{
-					title: 'Repository and branch',
-					value: `https://github.com/draios/grafana-sysdig-datasource/tree/${branchName}`,
-					short: false
-				},
-				{
-					title: 'Latest commit',
-					value: `https://github.com/draios/grafana-sysdig-datasource/commit/${gitCommitHash}`,
-					short: false
+            text,
+            fallback: text,
+            fields: [
+                {
+                    title: 'Build number',
+                    value: buildNumber,
+                    short: true
+                },
+                {
+                    title: 'Version',
+                    value: version,
+                    short: true
+                },
+                {
+                    title: 'Repository and branch',
+                    value: `https://github.com/draios/grafana-sysdig-datasource/tree/${branchName}`,
+                    short: false
+                },
+                {
+                    title: 'Latest commit',
+                    value: `https://github.com/draios/grafana-sysdig-datasource/commit/${gitCommitHash}`,
+                    short: false
                 }
-			],
-			footer: 'Built by Jenkins',
-			ts: startTime / 1000
-		}
-	]
+            ],
+            footer: 'Built by Jenkins',
+            ts: startTime / 1000
+        }
+    ]
 };
 
 const postData = JSON.stringify(json);
@@ -119,20 +124,19 @@ const options = {
         'Content-Length': Buffer.byteLength(postData)
     }
 };
-const req = https.request(options, res => {
+const req = https.request(options, (res) => {
     res.on('end', () => {
         process.exit(0);
     });
 });
 
-req.on('error', e => {
+req.on('error', (e) => {
     console.error(`Slack notification failed: ${e.message}`);
     process.exit(1);
 });
 
 req.write(postData);
 req.end();
-
 
 function analyzeChange(previousResult, result) {
     switch (result) {
@@ -145,7 +149,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
                 case 'FAILURE':
                 case 'ABORTED':
@@ -154,7 +158,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: true,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
 
                 case 'NONE':
@@ -162,7 +166,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: true,
                         isFirstFailure: false,
                         isFirstSuccess: true,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
 
                 default:
@@ -170,7 +174,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
             }
 
@@ -184,7 +188,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: true,
                         isFirstSuccess: false,
-                        isSuccessful: false,
+                        isSuccessful: false
                     };
                 case 'FAILURE':
                 case 'ABORTED':
@@ -193,7 +197,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
-                        isSuccessful: false,
+                        isSuccessful: false
                     };
 
                 case 'NONE':
@@ -201,7 +205,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: true,
                         isFirstFailure: false,
                         isFirstSuccess: true,
-                        isSuccessful: true,
+                        isSuccessful: true
                     };
 
                 default:
@@ -209,7 +213,7 @@ function analyzeChange(previousResult, result) {
                         isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
-                        isSuccessful: false,
+                        isSuccessful: false
                     };
             }
 
@@ -218,7 +222,7 @@ function analyzeChange(previousResult, result) {
                 isFirstBuild: false,
                 isFirstFailure: false,
                 isFirstSuccess: false,
-                isSuccessful: false,
+                isSuccessful: false
             };
     }
 }

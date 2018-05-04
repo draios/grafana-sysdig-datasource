@@ -1,0 +1,17 @@
+{
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module"
+    },
+    "globals": {
+        "_": true,
+        "ActiveXObject": true,
+        "console": true,
+        "window": true,
+        "XMLHttpRequest": true
+    },
+    "rules": {
+        "no-console": "off"
+    }
+}
