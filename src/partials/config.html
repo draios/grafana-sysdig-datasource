@@ -8,62 +8,135 @@
   <div class="gf-form max-width-30">
     <label class="gf-form-label width-7">Plan</label>
     <div class="gf-form-select-wrapper max-width-23">
-      <select
-      class="gf-form-input"
-      ng-model="ctrl.plan"
-      ng-options="plan.text for plan in ctrl.planOptions"
-      ng-change="ctrl.handlePlanChange()"
-      ></select>
+      <select class="gf-form-input" ng-model="ctrl.plan" ng-options="plan.text for plan in ctrl.planOptions" ng-change="ctrl.handlePlanChange()"></select>
     </div>
   </div>
-  
+
   <!-- (Only Pro Software) Sysdig backend URL -->
-  <div class="gf-form max-width-30" ng-if="ctrl.isOnprem">
-    <label class="gf-form-label width-7">URL</label>
-    <input
-    class="gf-form-input"
-    type="text"
-    ng-model="ctrl.current.url"
-    placeholder="{{suggestUrl}}"
-    bs-typeahead="getSuggestUrls"
-    min-length="0"
-    ng-pattern="/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/"
-    required
-    ></input>
-    <info-popover mode="right-absolute">
-      <p>
-        <strong>Sysdig API Server URL</strong>
-      </p>
-      <p>
-        Specify a complete HTTP URL (for example http://your_server:8080)
-      </p>
-    </info-popover>
+  <div class="gf-form-inline" ng-if="ctrl.isOnprem">
+    <div class="gf-form max-width-30">
+      <label class="gf-form-label width-7">URL</label>
+      <input class="gf-form-input" type="text" ng-model="ctrl.current.url" placeholder="{{suggestUrl}}" bs-typeahead="getSuggestUrls"
+        min-length="0" ng-pattern="/^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/" required>
+      </input>
+      <info-popover mode="right-absolute">
+        <p>
+          <strong>Sysdig API Server URL</strong>
+        </p>
+      </info-popover>
+    </div>
+    <div class="gf-form">
+      <label class="gf-form-label query-keyword pointer" ng-click="ctrl.showAccessHelp = !ctrl.showAccessHelp">
+        Help&nbsp;
+        <i class="fa fa-caret-down" ng-show="ctrl.showAccessHelp"></i>
+        <i class="fa fa-caret-right" ng-hide="ctrl.showAccessHelp">&nbsp;</i>
+      </label>
+    </div>
   </div>
-  
-  <!-- Sysdig API token -->
-  <div class="gf-form max-width-30">
-    <label class="gf-form-label width-7">API Token</label>
-    <input
-    type="text"
-    class="gf-form-input"
-    ng-model="ctrl.current.jsonData.apiToken"
-    >
-  </input>
+
+  <div class="alert alert-info" ng-show="ctrl.showAccessHelp">
+    <div class="alert-body">
+      <strong>Note</strong>: All requests will be made from the browser to Grafana backend/server which in turn will forward the
+      requests to the Sysdig backend/server and by that circumvent possible Cross-Origin Resource Sharing (CORS) requirements.
+      <br>
+      <br> Make sure Sysdig backend/server is accessible from the Grafana backend/server.
+    </div>
+  </div>
 </div>
 
-<!-- Note 1: Where to find API token -->
-<p>
-  <strong>Note</strong>: You can find your API Token in
-  <a href="{{ctrl.current.url}}/#/settings/user" target="_blank" style="text-decoration: underline;">Settings > User Profile > Sysdig Monitor API page.</a>
-</p>
+<div class="gf-form-group">
+  <h4 class="page-heading">Auth</h4>
 
-<!-- Note 2: Server proxy access -->
-<p class="grafana-info-box" ng-if="ctrl.isOnprem">
-  <strong>Note</strong>: All requests will be made from the browser to Grafana backend/server which in turn will forward the requests to the Sysdig backend/server and by that circumvent possible Cross-Origin Resource Sharing (CORS) requirements.
-  <br>
-  <br>
-  Make sure Sysdig backend/server is accessible from the Grafana backend/server.
-</p>
+  <!-- Sysdig API token -->
+  <p class="sysdig-section-info">
+    Enter the API token. You can find your API Token in
+    <a href="{{ctrl.current.url}}/#/settings/user" target="_blank" style="text-decoration: underline;">Settings > User Profile > Sysdig Monitor API page.</a>
+  </p>
+  <div class="gf-form max-width-30">
+    <label class="gf-form-label width-7">API Token</label>
+    <input type="text" class="gf-form-input" ng-model="ctrl.current.jsonData.apiToken">
+    </input>
+  </div>
+
+  <!-- Other HTTP authentication settings (only for on-prem version) -->
+  <p class="sysdig-section-info" ng-if="ctrl.isOnprem">
+    Other HTTP settings for the Pro Software deployment of Sysdig.
+  </p>
+  <div class="gf-form-group" ng-if="ctrl.isOnprem && ctrl.current.access=='proxy'">
+    <!-- Enable/disable credentials cross-site -->
+    <div class="gf-form-inline">
+      <gf-form-switch class="gf-form" label="With Credentials" tooltip="Whether credentials such as cookies or auth headers should be sent with cross-site requests."
+        checked="current.withCredentials" label-class="width-16" switch-class="max-width-6"></gf-form-switch>
+    </div>
+
+    <!-- TLS verification -->
+    <div class="gf-form-inline" ng-if="ctrl.isOnprem && ctrl.current.access=='proxy'">
+      <gf-form-switch class="gf-form" label="Skip TLS Verification (Insecure)" label-class="width-16" checked="ctrl.current.jsonData.tlsSkipVerify"
+        switch-class="max-width-6"></gf-form-switch>
+    </div>
+
+    <!-- Enable/disable TLS certificats -->
+    <div class="gf-form-inline">
+      <gf-form-switch class="gf-form" label="TLS Client Auth" label-class="width-16" checked="ctrl.current.jsonData.tlsAuth" switch-class="max-width-6"></gf-form-switch>
+    </div>
+    <div class="gf-form-inline">
+      <gf-form-switch class="gf-form" label="With CA Cert" tooltip="Needed for verifing self-signed TLS Certs" checked="ctrl.current.jsonData.tlsAuthWithCACert"
+        label-class="width-16" switch-class="max-width-6"></gf-form-switch>
+    </div>
+  </div>
+
+  <!-- TLS certificates (only for on-prem version with certificates) -->
+  <div class="gf-form-group" ng-if="ctrl.isOnprem && (ctrl.current.jsonData.tlsAuth || ctrl.current.jsonData.tlsAuthWithCACert) && ctrl.current.access=='proxy'">
+    <div class="gf-form">
+      <h6>TLS Auth Details</h6>
+      <info-popover mode="header">TLS Certs are encrypted and stored in the Grafana database.</info-popover>
+    </div>
+    <div ng-if="ctrl.current.jsonData.tlsAuthWithCACert">
+      <div class="gf-form-inline">
+        <div class="gf-form gf-form--v-stretch">
+          <label class="gf-form-label width-7">CA Cert</label>
+        </div>
+        <div class="gf-form gf-form--grow" ng-if="!ctrl.current.secureJsonFields.tlsCACert">
+          <textarea rows="7" class="gf-form-input gf-form-textarea" ng-model="ctrl.current.secureJsonData.tlsCACert" placeholder="Begins with -----BEGIN CERTIFICATE-----"></textarea>
+        </div>
+
+        <div class="gf-form" ng-if="ctrl.current.secureJsonFields.tlsCACert">
+          <input type="text" class="gf-form-input max-width-12" disabled="disabled" value="configured">
+          <a class="btn btn-secondary gf-form-btn" href="#" ng-click="ctrl.current.secureJsonFields.tlsCACert = false">reset</a>
+        </div>
+      </div>
+    </div>
+
+    <div ng-if="ctrl.current.jsonData.tlsAuth">
+      <div class="gf-form-inline">
+        <div class="gf-form gf-form--v-stretch">
+          <label class="gf-form-label width-7">Client Cert</label>
+        </div>
+        <div class="gf-form gf-form--grow" ng-if="!ctrl.current.secureJsonFields.tlsClientCert">
+          <textarea rows="7" class="gf-form-input gf-form-textarea" ng-model="ctrl.current.secureJsonData.tlsClientCert" placeholder="Begins with -----BEGIN CERTIFICATE-----"
+            required></textarea>
+        </div>
+        <div class="gf-form" ng-if="ctrl.current.secureJsonFields.tlsClientCert">
+          <input type="text" class="gf-form-input max-width-12" disabled="disabled" value="configured">
+          <a class="btn btn-secondary gf-form-btn" href="#" ng-click="ctrl.current.secureJsonFields.tlsClientCert = false">reset</a>
+        </div>
+      </div>
+
+      <div class="gf-form-inline">
+        <div class="gf-form gf-form--v-stretch">
+          <label class="gf-form-label width-7">Client Key</label>
+        </div>
+        <div class="gf-form gf-form--grow" ng-if="!ctrl.current.secureJsonFields.tlsClientKey">
+          <textarea rows="7" class="gf-form-input gf-form-textarea" ng-model="ctrl.current.secureJsonData.tlsClientKey" placeholder="Begins with -----BEGIN RSA PRIVATE KEY-----"
+            required></textarea>
+        </div>
+        <div class="gf-form" ng-if="ctrl.current.secureJsonFields.tlsClientKey">
+          <input type="text" class="gf-form-input max-width-12" disabled="disabled" value="configured">
+          <a class="btn btn-secondary gf-form-btn" href="#" ng-click="ctrl.current.secureJsonFields.tlsClientKey = false">reset</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 
@@ -72,11 +145,12 @@
 <!--                   -->
 <h3 class="page-heading">Sysdig Monitor Dashboards</h3>
 
-<p>
+<p class="sysdig-section-info">
   Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
 </p>
-<p>
-  You can visit your existing dashboards at <a href="{{ctrl.current.url}}/#/dashboards" target="_blank" style="text-decoration: underline;">Sysdig Monitor Dashboards page</a>.
+<p class="sysdig-section-info">
+  You can visit your existing dashboards at
+  <a href="{{ctrl.current.url}}/#/dashboards" target="_blank" style="text-decoration: underline;">Sysdig Monitor Dashboards page</a>.
 </p>
 <p class="grafana-info-box" ng-if="ctrl.isDashboardsImportDisabled()">
   Before importing dashboards, please save the data source.
@@ -94,11 +168,7 @@
             <span>{{dashboardSet.title}}</span>
           </td>
           <td>
-            <button
-              class="btn btn-secondary btn-small"
-              ng-disabled="ctrl.isDashboardsImportDisabled()"
-              ng-click="ctrl.importDashboards(dashboardSet.id)"
-            >
+            <button class="btn btn-secondary btn-small" ng-disabled="ctrl.isDashboardsImportDisabled()" ng-click="ctrl.importDashboards(dashboardSet.id)">
               Import
             </button>
             <div style="display: inline-block; margin: 0 10px; min-width: 13px;">

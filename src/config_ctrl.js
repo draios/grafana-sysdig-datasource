@@ -15,6 +15,7 @@ export class SysdigConfigCtrl {
             { id: 'SHARED', title: 'Shared dashboards', importStatus: 'none' }
         ];
 
+        this.current.access = 'proxy';
         this.current.url = this.current.url || CLOUD_URL;
         this.isOnprem = this.current.url !== CLOUD_URL;
         this.plan = this.isOnprem ? this.planOptions[1] : this.planOptions[0];
