@@ -61,8 +61,8 @@ export class SysdigConfigCtrl {
             .datasourceRequest(datasourceOptions)
             .then(({ data }) => {
                 const convertedDashboards = data.dashboards
-                    .filter(filterDashboardBySetId.bind(dashboardSetId))
-                    .map(convertDashboard.bind(this.current.name));
+                    .filter(filterDashboardBySetId.bind(null, dashboardSetId))
+                    .map(convertDashboard.bind(null, this.current.name));
 
                 const options = {
                     overwrite: true
