@@ -1,0 +1,12 @@
+.sysdig-section-info {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+.sysdig-section-info + .sysdig-section-info {
+    margin-top: 0.5rem;
+}
+
+h3 + .sysdig-section-info,
+h4 + .sysdig-section-info {
+    margin-top: 0;
+}
