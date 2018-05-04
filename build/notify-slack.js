@@ -28,6 +28,7 @@ const changeAnalysis = analyzeChange(previousResult, result);
 
 if (
     branchName !== 'master' &&
+    changeAnalysis.isFirstBuild === false &&
     changeAnalysis.isSuccessful &&
     changeAnalysis.isFirstSuccess === false
 ) {
@@ -145,6 +146,7 @@ function analyzeChange(previousResult, result) {
                 case 'SUCCESS':
                 case 'FIXED':
                     return {
+                        isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
                         isSuccessful: true
@@ -153,6 +155,15 @@ function analyzeChange(previousResult, result) {
                 case 'ABORTED':
                 case 'UNSTABLE':
                     return {
+                        isFirstBuild: false,
+                        isFirstFailure: false,
+                        isFirstSuccess: true,
+                        isSuccessful: true,
+                    };
+
+                case 'NONE':
+                    return {
+                        isFirstBuild: true,
                         isFirstFailure: false,
                         isFirstSuccess: true,
                         isSuccessful: true
@@ -160,6 +171,7 @@ function analyzeChange(previousResult, result) {
 
                 default:
                     return {
+                        isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
                         isSuccessful: true
@@ -173,6 +185,7 @@ function analyzeChange(previousResult, result) {
                 case 'SUCCESS':
                 case 'FIXED':
                     return {
+                        isFirstBuild: false,
                         isFirstFailure: true,
                         isFirstSuccess: false,
                         isSuccessful: false
@@ -181,13 +194,23 @@ function analyzeChange(previousResult, result) {
                 case 'ABORTED':
                 case 'UNSTABLE':
                     return {
+                        isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
                         isSuccessful: false
                     };
 
+                case 'NONE':
+                    return {
+                        isFirstBuild: true,
+                        isFirstFailure: false,
+                        isFirstSuccess: true,
+                        isSuccessful: true,
+                    };
+
                 default:
                     return {
+                        isFirstBuild: false,
                         isFirstFailure: false,
                         isFirstSuccess: false,
                         isSuccessful: false
@@ -196,6 +219,7 @@ function analyzeChange(previousResult, result) {
 
         default:
             return {
+                isFirstBuild: false,
                 isFirstFailure: false,
                 isFirstSuccess: false,
                 isSuccessful: false
