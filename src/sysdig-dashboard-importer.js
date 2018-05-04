@@ -273,7 +273,7 @@ function buildPanelGridLayout(sysdigDashboard, sysdigPanel) {
 
     // keep w/h ratio similar to Sysdig by reducing height by 50%
     return {
-        h: layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2,
+        h: Math.ceil(layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2 * 1.5),
         w: layout.size_x / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
         x: (layout.col - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
         y: (layout.row - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2
