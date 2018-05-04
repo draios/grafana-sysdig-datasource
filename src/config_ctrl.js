@@ -1,6 +1,7 @@
 import { SysdigDashboardImporter } from './sysdig-dashboard-importer';
 
 const CLOUD_URL = 'https://app.sysdigcloud.com';
+const DEFAULT_ONPREM_URL = 'https://your-sysdig.local';
 
 export class SysdigConfigCtrl {
     /** @ngInject */
@@ -10,13 +11,14 @@ export class SysdigConfigCtrl {
             { id: 'onprem', text: 'Pro Software' }
         ];
 
-        this.dashboards = [
+        this.dashboardSets = [
             { id: 'PRIVATE', title: 'My dashboards', importStatus: 'none' },
             { id: 'SHARED', title: 'Shared dashboards', importStatus: 'none' }
         ];
 
         this.current.access = 'proxy';
-        this.current.url = this.current.url || CLOUD_URL;
+        this.current.url =
+            this.current.url && /^\s*$/.test(this.current.url) ? this.current.url : CLOUD_URL;
         this.isOnprem = this.current.url !== CLOUD_URL;
         this.plan = this.isOnprem ? this.planOptions[1] : this.planOptions[0];
 
@@ -24,11 +26,11 @@ export class SysdigConfigCtrl {
         this.backendSrv = backendSrv;
     }
 
-    handlePlanChange() {
+    changePlan() {
         this.isOnprem = this.plan.id === 'onprem';
 
         if (this.isOnprem && this.current.url === CLOUD_URL) {
-            this.current.url = 'https://your-sysdig.local';
+            this.current.url = DEFAULT_ONPREM_URL;
         }
     }
 
@@ -39,7 +41,7 @@ export class SysdigConfigCtrl {
     importDashboards(id) {
         this.testing = null;
 
-        const dashboardSet = this.dashboards.filter((set) => set.id === id)[0];
+        const dashboardSet = this.dashboardSets.filter((set) => set.id === id)[0];
         dashboardSet.importStatus = 'executing';
 
         const options = {
