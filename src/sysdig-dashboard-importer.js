@@ -146,34 +146,20 @@ function buildHistogramPanel(sysdigDashboard, options, sysdigPanel, index) {
 function buildTopPanel(sysdigDashboard, options, sysdigPanel, index) {
     console.warn(`top panels will be converted to time series`);
 
-    return {
-        type: 'graph',
-        datasource: options.datasourceName,
-        id: index,
-        title: sysdigPanel.name,
-        gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
-        targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
-        legend: {
-            show: false // retain Sysdig layout
-        },
-        yaxes: buildPanelYAxes(sysdigPanel)
-    };
+    return buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index);
 }
 
 function buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index) {
     console.warn(`top panels will be converted to time series`);
 
     return {
-        type: 'graph',
+        type: 'singlestat',
         datasource: options.datasourceName,
         id: index,
         title: sysdigPanel.name,
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
-        targets: buildTimeSeriesTargets(sysdigDashboard, sysdigPanel),
-        legend: {
-            show: false // retain Sysdig layout
-        },
-        yaxes: buildPanelYAxes(sysdigPanel)
+        targets: buildSummaryTargets(sysdigDashboard, sysdigPanel),
+        decimals: 1 // retain default precision used in Monitor
     };
 }
 
@@ -224,10 +210,34 @@ function buildTimeSeriesTargets(sysdigDashboard, sysdigPanel) {
     return values.map((value, i) => {
         return {
             refId: i.toString(),
+            isSingleDataPoint: false,
             target: value.metricId.replace(/%25/g, '.'),
             timeAggregation: value.aggregation,
             groupAggregation: value.groupAggregation,
             segmentBy: keys.length === 1 ? keys[0].metricId.replace(/%25/g, '.') : null,
+            filter: buildPanelFilter(sysdigDashboard, sysdigPanel),
+            sortDirection: buildPanelSortDirection(sysdigPanel),
+            pageLimit: buildPanelPageLimit(sysdigPanel)
+        };
+    });
+}
+
+function buildSummaryTargets(sysdigDashboard, sysdigPanel) {
+    const values = sysdigPanel.metrics.filter((metric) => {
+        return metric.metricId !== 'timestamp' && metric.aggregation !== undefined;
+    });
+    if (values.length !== 1) {
+        console.warn('Expected exactly one value metric');
+    }
+
+    return values.map((value, i) => {
+        return {
+            refId: i.toString(),
+            isSingleDataPoint: true,
+            target: value.metricId.replace(/%25/g, '.'),
+            timeAggregation: value.aggregation,
+            groupAggregation: value.groupAggregation,
+            segmentBy: null,
             filter: buildPanelFilter(sysdigDashboard, sysdigPanel),
             sortDirection: buildPanelSortDirection(sysdigPanel),
             pageLimit: buildPanelPageLimit(sysdigPanel)

@@ -92,6 +92,17 @@
     </div>
   </div>
 
+  <!-- Time series vs data point -->
+  <div class="gf-form gf-form-inline">
+    <div class="gf-form gf-form--grow">
+      <div class="gf-form gf-form--grow">
+        <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-16" checked="ctrl.target.isSingleDataPoint"
+          on-change="ctrl.refresh()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Display options for segmented data -->
   <div class="gf-form-inline" ng-if="ctrl.target.segmentBy">
     <div class="gf-form">
       <label class="gf-form-label width-8 query-keyword">
