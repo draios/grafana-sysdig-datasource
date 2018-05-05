@@ -48,7 +48,7 @@
   <h4 class="page-heading">Auth</h4>
 
   <!-- Sysdig API token -->
-  <p class="sysdig-section-info">
+  <p class="sysdig-config-editor-info">
     Enter the API token. You can find your API Token in
     <a href="{{ctrl.current.url}}/#/settings/user" target="_blank" style="text-decoration: underline;">Settings > User Profile > Sysdig Monitor API page.</a>
   </p>
@@ -59,7 +59,7 @@
   </div>
 
   <!-- Other HTTP authentication settings (only for on-prem version) -->
-  <p class="sysdig-section-info" ng-if="ctrl.isOnprem">
+  <p class="sysdig-config-editor-info" ng-if="ctrl.isOnprem">
     Other HTTP settings for the Pro Software deployment of Sysdig.
   </p>
   <div class="gf-form-group" ng-if="ctrl.isOnprem && ctrl.current.access=='proxy'">
@@ -145,10 +145,10 @@
 <!--                   -->
 <h3 class="page-heading">Sysdig Monitor Dashboards</h3>
 
-<p class="sysdig-section-info">
+<p class="sysdig-config-editor-info">
   Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
 </p>
-<p class="sysdig-section-info">
+<p class="sysdig-config-editor-info">
   You can visit your existing dashboards at
   <a href="{{ctrl.current.url}}/#/dashboards" target="_blank" style="text-decoration: underline;">Sysdig Monitor Dashboards page</a>.
 </p>
