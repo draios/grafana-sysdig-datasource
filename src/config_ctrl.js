@@ -1,4 +1,5 @@
 import { SysdigDashboardImporter } from './sysdig-dashboard-importer';
+import './css/config-editor.css!';
 
 const CLOUD_URL = 'https://app.sysdigcloud.com';
 const DEFAULT_ONPREM_URL = 'https://your-sysdig.local';
