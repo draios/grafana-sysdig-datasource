@@ -1,7 +1,8 @@
 <query-editor-row query-ctrl="ctrl" class="generic-datasource-query-row" has-text-edit-mode="true">
+  <!-- Metric and aggregations -->
   <div class="gf-form gf-form-inline">
     <div class="gf-form gf-form--grow">
-      <label class="gf-form-label width-8 query-keyword">
+      <label class="gf-form-label width-10">
         Metric
       </label>
       <div class="gf-form gf-form--grow">
@@ -12,7 +13,7 @@
     </div>
 
     <div class="gf-form">
-      <label class="gf-form-label query-keyword">
+      <label class="gf-form-label">
         Time aggregation
       </label>
       <div class="gf-form">
@@ -23,7 +24,7 @@
     </div>
 
     <div class="gf-form">
-      <label class="gf-form-label query-keyword">
+      <label class="gf-form-label">
         Group aggregation
       </label>
       <div class="gf-form">
@@ -34,9 +35,10 @@
     </div>
   </div>
 
-  <div class="gf-form-inline">
+  <!-- Segmentation -->
+  <div class="gf-form gf-form-inline">
     <div class="gf-form gf-form--grow">
-      <label class="gf-form-label width-8 query-keyword">
+      <label class="gf-form-label width-10">
         Segment by
       </label>
       <div class="gf-form gf-form--grow">
@@ -47,9 +49,10 @@
     </div>
   </div>
 
+  <!-- Filter -->
   <div class="gf-form-inline">
     <div class="gf-form gf-form--grow">
-      <label class="gf-form-label width-8 query-keyword">
+      <label class="gf-form-label width-10">
         Filter
       </label>
       <div class="gf-form gf-form--grow">
@@ -60,15 +63,15 @@
 
   <div class="gf-form-inline" ng-if="ctrl.target.segmentBy">
     <div class="gf-form">
-      <label class="gf-form-label width-8 query-keyword">
+      <label class="gf-form-label width-10">
         Display
       </label>
-      <div class="gf-form width-8">
+      <div class="gf-form width-10">
         <gf-form-dropdown model="ctrl.target.sortDirection" class="gf-form-dropdown sysdig-query-editor-dropdown--grow" allow-custom="true"
           lookup-text="true" placeholder="top" get-options="ctrl.getSortDirectionOptions()" on-change="ctrl.onChangeParameter()">
         </gf-form-dropdown>
       </div>
-      <div class="gf-form width-8">
+      <div class="gf-form width-10">
         <input type="number" class="gf-form-input" ng-model="ctrl.target.pageLimit" spellcheck="false" placeholder="number of elements (10 by default)"
           ng-blur="ctrl.onChangeParameter()">
       </div>
