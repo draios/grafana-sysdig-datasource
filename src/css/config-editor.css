@@ -1,0 +1,12 @@
+.sysdig-config-editor-info {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+.sysdig-config-editor-info + .sysdig-config-editor-info {
+    margin-top: 0.5rem;
+}
+
+h3 + .sysdig-config-editor-info,
+h4 + .sysdig-config-editor-info {
+    margin-top: 0;
+}
