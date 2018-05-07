@@ -127,6 +127,51 @@ class BaseBuilder {
             gridPos: this.getTargetGridLayout(sysdigDashboard, sysdigPanel)
         };
     }
+
+    static getValueFormat(value, metrics) {
+        const metricConfiguration = _.find(metrics, (m) => m.id === value.metricId);
+
+        if (metricConfiguration === undefined) {
+            // metric not found, return default format
+            return 'short';
+        } else {
+            // NOTE: For unit mapping, refer to public/app/core/utils/kbn.ts
+            const isRate = value.aggregation === 'timeAvg';
+            switch (metricConfiguration.type) {
+                case 'string':
+                case 'providerServiceEnum':
+                case 'bool':
+                    return 'none';
+
+                case 'int':
+                case 'number':
+                case 'double':
+                    return 'short';
+
+                case 'byte':
+                    if (isRate) {
+                        return 'Bps';
+                    } else {
+                        return 'bytes';
+                    }
+
+                case 'relativeTime':
+                    return 'ns';
+
+                case '%':
+                case 'ratio':
+                    return 'percent';
+
+                case 'date':
+                case 'dateTime':
+                case 'absoluteTime':
+                    return 'dateTimeAsIso';
+
+                default:
+                    return 'short';
+            }
+        }
+    }
 }
 
 class TimeSeriesBuilder extends BaseBuilder {
@@ -139,12 +184,12 @@ class TimeSeriesBuilder extends BaseBuilder {
                 legend: {
                     show: false // retain Sysdig layout
                 },
-                yaxes: this.buildPanelYAxes(sysdigPanel, options)
+                yaxes: this.buildPanelYAxes(sysdigDashboard, sysdigPanel, options)
             }
         );
     }
 
-    static buildTargets(sysdigDashboard, sysdigPanel) {
+    static getValues(sysdigDashboard, sysdigPanel) {
         const values = sysdigPanel.metrics
             .filter((metric) => {
                 return metric.metricId !== 'timestamp' && metric.aggregation !== undefined;
@@ -154,6 +199,10 @@ class TimeSeriesBuilder extends BaseBuilder {
             console.warn('Expected at least one value metric');
         }
 
+        return values;
+    }
+
+    static getKeys(sysdigDashboard, sysdigPanel) {
         const keys = sysdigPanel.metrics
             .filter((metric) => {
                 return metric.metricId !== 'timestamp' && metric.aggregation === undefined;
@@ -162,6 +211,13 @@ class TimeSeriesBuilder extends BaseBuilder {
         if (keys.length > 1) {
             console.warn('Expected at most one key metric');
         }
+
+        return keys;
+    }
+
+    static buildTargets(sysdigDashboard, sysdigPanel) {
+        const values = this.getValues(sysdigDashboard, sysdigPanel);
+        const keys = this.getKeys(sysdigDashboard, sysdigPanel);
 
         return values.map((value, i) => {
             return {
@@ -206,16 +262,7 @@ class TimeSeriesBuilder extends BaseBuilder {
         return Number.parseInt(normalizedDisplayOptions.valueLimit.count) || null;
     }
 
-    static buildPanelYAxes(sysdigPanel) {
-        // TODO set proper format
-        const baseAxisConfig = {
-            format: 'short',
-            label: null,
-            logBase: 1,
-            min: null,
-            max: null,
-            show: false
-        };
+    static buildPanelYAxes(sysdigDashboard, sysdigPanel, options) {
         const normalizedDisplayOptions = sysdigPanel.customDisplayOptions
             ? sysdigPanel.customDisplayOptions
             : {
@@ -244,9 +291,20 @@ class TimeSeriesBuilder extends BaseBuilder {
                 break;
         }
 
+        const baseAxisConfig = {
+            label: null,
+            logBase: 1,
+            min: null,
+            max: null,
+            show: false
+        };
+
+        const values = this.getValues(sysdigDashboard, sysdigPanel);
+
         return [
             // left axis
             _.assign({}, baseAxisConfig, {
+                format: this.getValueFormat(values[0], options.metrics),
                 show: true,
                 min: normalizedDisplayOptions.yAxisLeftDomain.from,
                 max: normalizedDisplayOptions.yAxisLeftDomain.to,
@@ -294,6 +352,8 @@ class NumberBuilder extends BaseBuilder {
 
         if (value) {
             // TODO set proper format
+            const format = this.getValueFormat(value, options.metrics);
+
             return Object.assign(
                 {},
                 this.getBasePanelConfiguration(
@@ -305,7 +365,7 @@ class NumberBuilder extends BaseBuilder {
                 ),
                 {
                     targets: this.buildTargets(sysdigDashboard, sysdigPanel),
-                    format: 'short'
+                    format
                 }
             );
         } else {
