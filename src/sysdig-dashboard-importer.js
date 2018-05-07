@@ -280,12 +280,12 @@ function buildPanelGridLayout(sysdigDashboard, sysdigPanel) {
     const index = sysdigDashboard.items.indexOf(sysdigPanel);
     const layout = sysdigDashboard.layout[index];
 
-    // keep w/h ratio similar to Sysdig by reducing height by 50%
+    // keep w/h ratio similar to Sysdig by reducing height by 80%
     return {
-        h: Math.ceil(layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2 * 1.5),
+        h: Math.ceil(layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT * 0.8),
         w: layout.size_x / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
         x: (layout.col - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
-        y: (layout.row - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT / 2
+        y: Math.floor((layout.row - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT * 0.8)
     };
 }
 
