@@ -158,8 +158,7 @@ function buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index) {
         id: index,
         title: sysdigPanel.name,
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
-        targets: buildSummaryTargets(sysdigDashboard, sysdigPanel),
-        decimals: 1 // retain default precision used in Monitor
+        targets: buildSummaryTargets(sysdigDashboard, sysdigPanel)
     };
 }
 
