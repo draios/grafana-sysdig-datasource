@@ -1,4 +1,4 @@
-import { SysdigDashboardImporter } from './sysdig-dashboard-importer';
+import DashboardsService from './dashboards_service';
 import './css/config-editor.css!';
 
 const CLOUD_URL = 'https://app.sysdigcloud.com';
@@ -27,6 +27,20 @@ export class SysdigConfigCtrl {
         this.backendSrv = backendSrv;
     }
 
+    getBackendConfiguration() {
+        return {
+            backendSrv: this.backendSrv,
+            withCredentials: this.current.withCredentials,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Sysdig-Product': 'SDC',
+                Authorization: `Bearer ${this.current.jsonData.apiToken}`
+            },
+            apiToken: this.current.jsonData.apiToken,
+            url: `/api/datasources/proxy/${this.current.id}`
+        };
+    }
+
     changePlan() {
         this.isOnprem = this.plan.id === 'onprem';
 
@@ -46,66 +60,18 @@ export class SysdigConfigCtrl {
         dashboardSet.importStatus = 'executing';
         dashboardSet.importMessage = null;
 
-        const datasourceOptions = {
-            url: `/api/datasources/proxy/${this.current.id}/ui/dashboards`,
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Sysdig-Product': 'SDC',
-                Authorization: `Bearer ${this.current.jsonData.apiToken}`
-            }
-        };
-
-        console.info('Sysdig dashboards import: Starting...');
-
-        this.backendSrv
-            .datasourceRequest(datasourceOptions)
-            .then(({ data }) => {
-                const convertedDashboards = data.dashboards
-                    .filter(filterDashboardBySetId.bind(null, dashboardSetId))
-                    .map(convertDashboard.bind(null, this.current.name));
-
-                const options = {
-                    overwrite: true
-                };
-
-                return saveDashboards(this.backendSrv, convertedDashboards, options);
-            })
+        DashboardsService.importFromSysdig(
+            this.getBackendConfiguration(),
+            this.current.name,
+            dashboardSetId
+        )
             .then(() => {
-                console.info('Sysdig dashboards import: Completed');
                 dashboardSet.importStatus = 'success';
             })
             .catch((error) => {
-                console.info('Sysdig dashboards import: Failed', error);
                 dashboardSet.importStatus = 'error';
                 dashboardSet.importMessage = error;
             });
-
-        function filterDashboardBySetId(setId, dashboard) {
-            switch (dashboardSetId) {
-                case 'PRIVATE':
-                    return dashboard.isShared === false;
-                case 'SHARED':
-                    return dashboard.isShared === true;
-            }
-        }
-
-        function convertDashboard(datasourceName, dashboard) {
-            return SysdigDashboardImporter.convertToGrafana(dashboard, datasourceName);
-        }
-
-        function saveDashboards(backendSrv, dashboards, options) {
-            if (dashboards.length > 0) {
-                const dashboard = dashboards[0];
-                return backendSrv.saveDashboard(dashboard, options).then(() => {
-                    console.log(`Sysdig dashboards import: Imported '${dashboard.title}'`);
-
-                    return saveDashboards(backendSrv, dashboards.slice(1), options);
-                });
-            } else {
-                return backendSrv.$q.when({});
-            }
-        }
     }
 }
 
