@@ -1,4 +1,4 @@
-import { SysdigDashboardImporter } from './sysdig-dashboard-importer';
+import SysdigDashboardHelper from './sysdig_dashboard_helper';
 import './css/config-editor.css!';
 
 const CLOUD_URL = 'https://app.sysdigcloud.com';
@@ -91,7 +91,7 @@ export class SysdigConfigCtrl {
         }
 
         function convertDashboard(datasourceName, dashboard) {
-            return SysdigDashboardImporter.convertToGrafana(dashboard, datasourceName);
+            return SysdigDashboardHelper.convertToGrafana(dashboard, datasourceName);
         }
 
         function saveDashboards(backendSrv, dashboards, options) {

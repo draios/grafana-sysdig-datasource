@@ -3,7 +3,7 @@
 const GRAFANA_COLUMN_COUNT = 24;
 const SYSDIG_COLUMN_COUNT = 12;
 
-export class SysdigDashboardImporter {
+export default class SysdigDashboardHelper {
     static convertToGrafana(sysdigDashboard, datasourceName) {
         return buildGrafanaDashboard(sysdigDashboard, {
             datasourceName
