@@ -14,7 +14,11 @@ export default class DataService {
             promise
         });
 
-        const scheduleFetchFn = _.debounce(this.scheduleFetch.bind(this), 1000);
+        //
+        // Debounce fetch so that all panels' requests can be batched together
+        // Note that this function will be called synchronously once per panel
+        //
+        const scheduleFetchFn = _.debounce(this.scheduleFetch.bind(this), 0);
         scheduleFetchFn();
 
         return promise.promise;
