@@ -35,7 +35,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             };
         }
 
-        return this.datasource.metricFindQuery({ type: 'METRIC_TYPE_VALUE' }).then((data) => {
+        return this.datasource.metricFindQuery().then((data) => {
             return data.map(parseMetric);
         });
     }
@@ -49,7 +49,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         ];
 
         return this.datasource
-            .metricFindQuery({ type: 'METRIC_TYPE_VALUE' })
+            .metricFindQuery()
             .then((data) => {
                 return data.filter((m) => m.id === this.target.target)[0];
             })
@@ -71,7 +71,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         ];
 
         return this.datasource
-            .metricFindQuery({ type: 'METRIC_TYPE_VALUE' })
+            .metricFindQuery()
             .then((data) => {
                 return data.filter((m) => m.id === this.target.target)[0];
             })
