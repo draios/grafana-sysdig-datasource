@@ -1,6 +1,7 @@
 import _ from 'lodash';
 import DataService from './data_service';
 import ApiService from './api_service';
+import MetricsService from './metrics_service';
 
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
@@ -16,27 +17,6 @@ export class SysdigDatasource {
             'Content-Type': 'application/json',
             'X-Sysdig-Product': 'SDC',
             Authorization: `Bearer ${this.apiToken}`
-        };
-
-        this.metricsCache = {
-            timestamp: null,
-            data: null,
-            promise: null,
-            load(promise) {
-                this.promise = promise;
-                return promise;
-            },
-            setData(data) {
-                this.timestamp = Date.now();
-                this.data = data;
-                this.promise = null;
-            },
-            isLoading() {
-                return this.isValid() === false && this.promise !== null;
-            },
-            isValid() {
-                return this.timestamp !== null && this.timestamp >= Date.now() - 60000;
-            }
         };
     }
 
@@ -97,54 +77,14 @@ export class SysdigDatasource {
     }
 
     metricFindQuery() {
-        if (this.metricsCache.isValid()) {
-            return this.q.when(this.metricsCache.data);
-        } else if (this.metricsCache.isLoading()) {
-            return this.metricsCache.promise;
-        } else {
-            return this.metricsCache.load(
-                ApiService.send(this.getBackendConfiguration(), {
-                    url: 'api/data/metrics?light=true'
-                })
-                    .then((result) => {
-                        const plottableMetricTypes = [
-                            '%',
-                            'byte',
-                            'date',
-                            'int',
-                            'number',
-                            'relativeTime'
-                        ];
-
-                        return Object.values(result.data)
-                            .map((m) =>
-                                _.assign(m, {
-                                    isNumeric: plottableMetricTypes.indexOf(m.type) >= 0
-                                })
-                            )
-                            .filter((m) => {
-                                return m.isNumeric;
-                            })
-                            .sort((a, b) => a.id.localeCompare(b.id));
-                    })
-                    .then((data) => {
-                        this.metricsCache.setData(data);
-
-                        return data;
-                    })
-            );
-        }
+        return MetricsService.findMetrics(this.getBackendConfiguration());
     }
 
     findSegmentBy(target) {
         if (target === 'select metric') {
-            return this.q.when([]);
+            return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
         } else {
-            return ApiService.send(this.getBackendConfiguration(), {
-                url: `api/data/metrics/${target}/segmentationMetrics`
-            }).then((result) => {
-                return result.data.segmentationMetrics.sort((a, b) => a.localeCompare(b));
-            });
+            return MetricsService.findSegmentations(this.getBackendConfiguration(), target);
         }
     }
 
