@@ -1,17 +1,23 @@
 import ApiService from './api_service';
+import MetricsService from './metrics_service';
 import SysdigDashboardHelper from './sysdig_dashboard_helper';
 
 export default class DashboardsService {
     static importFromSysdig(backend, datasourceName, dashboardSetId) {
         console.info('Sysdig dashboards import: Starting...');
 
-        return ApiService.send(backend, {
-            url: 'ui/dashboards'
-        })
-            .then(({ data }) => {
-                const convertedDashboards = data.dashboards
+        return backend.backendSrv.$q
+            .all([
+                ApiService.send(backend, {
+                    url: 'ui/dashboards'
+                }),
+                MetricsService.findMetrics(backend)
+            ])
+            .then((results) => {
+                const metrics = results[1];
+                const convertedDashboards = results[0].data.dashboards
                     .filter(filterDashboardBySetId.bind(null, dashboardSetId))
-                    .map(convertDashboard.bind(null, datasourceName));
+                    .map(convertDashboard.bind(null, datasourceName, metrics));
 
                 const options = {
                     overwrite: true
@@ -39,8 +45,8 @@ export default class DashboardsService {
             }
         }
 
-        function convertDashboard(datasourceName, dashboard) {
-            return SysdigDashboardHelper.convertToGrafana(dashboard, datasourceName);
+        function convertDashboard(datasourceName, metrics, dashboard) {
+            return SysdigDashboardHelper.convertToGrafana(dashboard, { datasourceName, metrics });
         }
 
         function saveDashboards(backendSrv, dashboards, options) {

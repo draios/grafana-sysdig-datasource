@@ -4,10 +4,8 @@ const GRAFANA_COLUMN_COUNT = 24;
 const SYSDIG_COLUMN_COUNT = 12;
 
 export default class SysdigDashboardHelper {
-    static convertToGrafana(sysdigDashboard, datasourceName) {
-        return buildGrafanaDashboard(sysdigDashboard, {
-            datasourceName
-        });
+    static convertToGrafana(sysdigDashboard, options) {
+        return buildGrafanaDashboard(sysdigDashboard, options);
     }
 }
 
@@ -121,7 +119,7 @@ function buildTimeSeriesPanel(sysdigDashboard, options, sysdigPanel, index) {
         legend: {
             show: false // retain Sysdig layout
         },
-        yaxes: buildPanelYAxes(sysdigPanel)
+        yaxes: buildPanelYAxes(sysdigPanel, options)
     };
 }
 
@@ -152,13 +150,15 @@ function buildTopPanel(sysdigDashboard, options, sysdigPanel, index) {
 function buildSummaryPanel(sysdigDashboard, options, sysdigPanel, index) {
     console.warn(`top panels will be converted to time series`);
 
+    // TODO set proper format
     return {
         type: 'singlestat',
         datasource: options.datasourceName,
         id: index,
         title: sysdigPanel.name,
         gridPos: buildPanelGridLayout(sysdigDashboard, sysdigPanel),
-        targets: buildSummaryTargets(sysdigDashboard, sysdigPanel)
+        targets: buildSummaryTargets(sysdigDashboard, sysdigPanel),
+        format: 'short'
     };
 }
 
@@ -290,6 +290,7 @@ function buildPanelGridLayout(sysdigDashboard, sysdigPanel) {
 }
 
 function buildPanelYAxes(sysdigPanel) {
+    // TODO set proper format
     const baseAxisConfig = {
         format: 'short',
         label: null,
