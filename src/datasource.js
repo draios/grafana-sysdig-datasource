@@ -494,11 +494,7 @@ function getRequest(target, requestTime) {
             format: {
                 type: 'data'
             },
-            time: {
-                from: requestTime.from * 1000000,
-                to: requestTime.to * 1000000,
-                sampling: requestTime.sampling * 1000000
-            },
+            time: getTime(),
             metrics: getMetrics(),
             sort: getSort(),
             paging: getPaging(),
@@ -520,17 +516,39 @@ function getRequest(target, requestTime) {
         return null;
     }
 
-    function getMetrics() {
-        const metrics = {
-            k0: 'timestamp',
-            v0: target.target
+    function getTime() {
+        return {
+            from: requestTime.from * 1000000,
+            to: requestTime.to * 1000000,
+            sampling:
+                (target.isSingleDataPoint
+                    ? requestTime.to - requestTime.from
+                    : requestTime.sampling) * 1000000
         };
+    }
+    function getMetrics() {
+        if (target.isSingleDataPoint) {
+            const metrics = {
+                v0: target.target
+            };
 
-        if (target.segmentBy) {
-            metrics.k1 = target.segmentBy;
+            if (target.segmentBy) {
+                metrics.k0 = target.segmentBy;
+            }
+
+            return metrics;
+        } else {
+            const metrics = {
+                k0: 'timestamp',
+                v0: target.target
+            };
+
+            if (target.segmentBy) {
+                metrics.k1 = target.segmentBy;
+            }
+
+            return metrics;
         }
-
-        return metrics;
     }
 
     function getSort() {
@@ -553,19 +571,32 @@ function getRequest(target, requestTime) {
     }
 
     function getGroupBy() {
-        const groupBy = [
-            {
-                metric: 'k0',
-                value: requestTime.sampling * 1000000
-            }
-        ];
+        if (target.isSingleDataPoint) {
+            const groupBy = [];
 
-        if (target.segmentBy) {
-            groupBy.push({
-                metric: 'k1'
-            });
+            if (target.segmentBy) {
+                groupBy.push({
+                    metric: 'k0'
+                });
+            }
+
+            return groupBy;
+        } else {
+            const groupBy = [
+                {
+                    metric: 'k0',
+                    value: requestTime.sampling * 1000000
+                }
+            ];
+
+            if (target.segmentBy) {
+                groupBy.push({
+                    metric: 'k1'
+                });
+            }
+
+            return groupBy;
         }
-        return groupBy;
     }
 }
 
