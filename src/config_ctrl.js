@@ -33,8 +33,9 @@ export class SysdigConfigCtrl {
         ];
 
         this.current.access = 'proxy';
-        this.current.url =
-            this.current.url && /^\s*$/.test(this.current.url) ? this.current.url : CLOUD_URL;
+
+        const isUrlNotEmpty = this.current.url && /^\s*$/.test(this.current.url) === false;
+        this.current.url = isUrlNotEmpty ? this.current.url : CLOUD_URL;
         this.isOnprem = this.current.url !== CLOUD_URL;
         this.plan = this.isOnprem ? this.planOptions[1] : this.planOptions[0];
 
