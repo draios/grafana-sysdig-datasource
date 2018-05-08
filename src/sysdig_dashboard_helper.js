@@ -96,6 +96,9 @@ export default class SysdigDashboardHelper {
             case 'summary':
                 return NumberBuilder;
 
+            case 'table':
+                return TableBuilder;
+
             default:
                 console.warn(`${panel.showAs} panels cannot be exported to Grafana`);
                 return DefaultBuilder;
@@ -450,6 +453,22 @@ class NumberBuilder extends BaseBuilder {
                 groupAggregation: value.groupAggregation
             }
         ];
+    }
+}
+
+class TableBuilder extends TimeSeriesBuilder {
+    static build(sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
+            transform: 'timeseries_aggregations',
+            sort: {
+                col: 0,
+                desc: false
+            }
+        });
+    }
+
+    static isSingleDataPoint() {
+        return true;
     }
 }
 
