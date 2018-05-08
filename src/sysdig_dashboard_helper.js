@@ -215,6 +215,10 @@ class TimeSeriesBuilder extends BaseBuilder {
         return keys;
     }
 
+    static isSingleDataPoint() {
+        return false;
+    }
+
     static buildTargets(sysdigDashboard, sysdigPanel) {
         const values = this.getValues(sysdigDashboard, sysdigPanel);
         const keys = this.getKeys(sysdigDashboard, sysdigPanel);
@@ -222,7 +226,7 @@ class TimeSeriesBuilder extends BaseBuilder {
         return values.map((value, i) => {
             return {
                 refId: i.toString(),
-                isSingleDataPoint: false,
+                isSingleDataPoint: this.isSingleDataPoint(),
                 target: value.metricId,
                 timeAggregation: value.aggregation,
                 groupAggregation: value.groupAggregation,
@@ -336,13 +340,31 @@ class HistogramBuilder extends TimeSeriesBuilder {
             }
         });
     }
+
+    static isSingleDataPoint() {
+        return true;
+    }
+
+    static getValueFormat() {
+        // the axis will count items in each bucket
+        return 'short';
+    }
 }
 
 class BarChartBuilder extends TimeSeriesBuilder {
-    static build(...args) {
-        console.warn(`top panels will be converted to time series`);
+    static build(sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
+            bars: true,
+            lines: false,
+            xaxis: {
+                mode: 'series',
+                values: ['total']
+            }
+        });
+    }
 
-        return super.build(...args);
+    static isSingleDataPoint() {
+        return true;
     }
 }
 

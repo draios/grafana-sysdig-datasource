@@ -385,11 +385,13 @@ function getRequest(target, requestTime) {
 
 function parseResponses(options, response) {
     const data = options.targets.map((target, i) => {
+        const isSingleDataPoint = target.isSingleDataPoint;
+
         if (response[i].data) {
             const map = response[i].data.reduce((acc, d) => {
                 let t;
 
-                const segmentPropName = target.isSingleDataPoint ? 'k0' : 'k1';
+                const segmentPropName = isSingleDataPoint ? 'k0' : 'k1';
                 if (target.segmentBy) {
                     t =
                         options.targets.length === 1
@@ -406,7 +408,7 @@ function parseResponses(options, response) {
                     };
                 }
 
-                if (target.isSingleDataPoint) {
+                if (isSingleDataPoint) {
                     acc[t].datapoints.push([d.v0, response[i].time.from]);
                 } else {
                     acc[t].datapoints.push([d.v0, d.k0 / 1000]);
@@ -415,7 +417,21 @@ function parseResponses(options, response) {
                 return acc;
             }, {});
 
-            return Object.values(map).sort((a, b) => a.target.localeCompare(b.target));
+            if (isSingleDataPoint) {
+                return Object.values(map).sort((a, b) => {
+                    if (a.datapoints[0][0] === b.datapoints[0][0]) {
+                        return a.target.localeCompare(b.target);
+                    } else {
+                        if (target.sortDirection === 'desc') {
+                            return b.datapoints[0][0] - a.datapoints[0][0];
+                        } else {
+                            return a.datapoints[0][0] - b.datapoints[0][0];
+                        }
+                    }
+                });
+            } else {
+                return Object.values(map).sort((a, b) => a.target.localeCompare(b.target));
+            }
         } else {
             return {
                 target: target.target,
