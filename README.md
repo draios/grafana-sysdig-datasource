@@ -121,19 +121,26 @@ After creating the datasource you will have the ability to import your Sysdig Mo
 ![grafana-import-sysdig-dashboards](https://user-images.githubusercontent.com/5033993/36926796-684fb0ac-1e2e-11e8-9769-541d2fd857b0.gif)
 
 
+### 4. Create your panels
+
+With the Sysdig datasource installed you can add your custom panels.
+
+**NOTE** In Sysdig, number panels, bar charts and histograms display aggregated data (i.e. a single data point across the entire time window). By default, Grafana loads time series and then apply an additional aggregation to data points to calculate a single value (displayed in the Singlestat panel for instance).
+
+In order to maintain the same aggregation mechanism and precision offered by Sysdig API, you can create panels with the "Fetch single data point" flag turned on. This will instruct the datasource to make an aggregated data request to the API.
+
 
 ## Current limitations
 
 The Sysdig datasource is in beta version. We'll iterate quickly to make it more complete and robust, in the meanwhile you might encounter some issues. Here is a list of known limitations:
 
-1. First off, we'll try to support a wider range of Grafana versions, for now we tested the datasource with Grafana 4.6 and 5.0. If you're using other versions of Grafana, we'll be happy to make it working for you!
+1. The datasource has been tested with Grafana 4.6 and the latest release (5.1). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
 2. [Templating](http://docs.grafana.org/reference/templating/) is not supported yet, but will come soon
 3. We'll leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet
-4. With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655)
-5. [Singlestat](http://docs.grafana.org/features/panels/singlestat/) is available, but Grafana will apply an additional aggregation on top of the time and group aggregation Sysdig applies. For this reason, numbers might not match what you see in Sysdig
-6. Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are very different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not create table panels
-7. Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels
-8. Sysdig doesn't support exponential y-axis scale
+4. Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are quiet different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not create table panels. This might not be true forever...
+5. Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels
+6. With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655)
+7. Sysdig doesn't support exponential y-axis scale
 
 
 ## Support / Community
