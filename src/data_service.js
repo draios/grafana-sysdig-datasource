@@ -389,11 +389,12 @@ function parseResponses(options, response) {
             const map = response[i].data.reduce((acc, d) => {
                 let t;
 
+                const segmentPropName = target.isSingleDataPoint ? 'k0' : 'k1';
                 if (target.segmentBy) {
                     t =
                         options.targets.length === 1
-                            ? targetToString(d.k1)
-                            : `${targetToString(target.target)} (${d.k1})`;
+                            ? targetToString(d[segmentPropName])
+                            : `${targetToString(target.target)} (${d[segmentPropName]})`;
                 } else {
                     t = targetToString(target.target);
                 }
@@ -405,7 +406,11 @@ function parseResponses(options, response) {
                     };
                 }
 
-                acc[t].datapoints.push([d.v0, d.k0 / 1000]);
+                if (target.isSingleDataPoint) {
+                    acc[t].datapoints.push([d.v0, response[i].time.from]);
+                } else {
+                    acc[t].datapoints.push([d.v0, d.k0 / 1000]);
+                }
 
                 return acc;
             }, {});
