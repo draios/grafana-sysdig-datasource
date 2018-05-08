@@ -64,11 +64,22 @@ export class SysdigDatasource {
         });
 
         const targets = _.map(options.targets, (target) => {
-            return Object.assign({}, target, {
-                target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
-                filter: this.templateSrv.replace(target.filter, options.scopedVars, 'regex'),
-                pageLimit: Number.parseInt(target.pageLimit) || 10
-            });
+            if (target.target === undefined) {
+                // here's the query control panel sending the first request with empty configuration
+                return Object.assign({}, target, {
+                    target: 'net.bytes.total',
+                    timeAggregation: 'timeAvg',
+                    groupAggregation: 'avg',
+                    filter: undefined,
+                    pageLimit: 10
+                });
+            } else {
+                return Object.assign({}, target, {
+                    target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+                    filter: this.templateSrv.replace(target.filter, options.scopedVars, 'regex'),
+                    pageLimit: Number.parseInt(target.pageLimit) || 10
+                });
+            }
         });
 
         options.targets = targets;
@@ -81,7 +92,7 @@ export class SysdigDatasource {
     }
 
     findSegmentBy(target) {
-        if (target === 'select metric') {
+        if (target === undefined || target === 'select metric') {
             return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
         } else {
             return MetricsService.findSegmentations(this.getBackendConfiguration(), target);

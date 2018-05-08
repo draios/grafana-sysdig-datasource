@@ -6,10 +6,10 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         super($scope, $injector);
 
         this.scope = $scope;
-        this.target.target = this.target.target || 'select metric';
+        this.target.target = this.target.target || 'net.bytes.total';
         this.target.timeAggregation = this.target.timeAggregation || 'timeAvg';
         this.target.groupAggregation = this.target.groupAggregation || 'avg';
-        this.target.segmentation = this.target.segmentation || null;
+        this.target.segmentBy = this.target.segmentBy || null;
         this.target.sortDirection = this.target.sortDirection || 'desc';
         this.target.pageLimit = this.target.pageLimit || 10;
     }
