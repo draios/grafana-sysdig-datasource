@@ -21,6 +21,7 @@
 * Build system (#1, #6, #9, #10)
 * Add ESLint and Prettier to the tooling (#7)
 
-### v0.0.1 (2/16/2018)
+### v0.0.1
+(2/16/2018)
 
 * The beginning...
