@@ -392,5 +392,13 @@ function parseResponses(options, response) {
 
     return {
         data: Array.concat(...data)
+            .filter((d, i) => i === 0)
+            .map((d) =>
+                Object.assign({}, d, {
+                    type: 'table',
+                    columns: [{ text: 'a' }, { text: 'b' }],
+                    rows: [[1, 2], [3, 4]]
+                })
+            )
     };
 }
