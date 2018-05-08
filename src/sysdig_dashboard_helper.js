@@ -252,18 +252,16 @@ class TimeSeriesBuilder extends BaseBuilder {
         return normalizedDisplayOptions.valueLimit.direction || null;
     }
 
-    static getTargetPageLimit(sysdigPanel) {
-        const normalizedDisplayOptions = Object.assign(
-            {
-                valueLimit: {
-                    direction: null,
-                    count: null
-                }
-            },
-            sysdigPanel.customDisplayOptions
-        );
+    static parseValueLimitCount(sysdigPanel) {
+        return sysdigPanel.customDisplayOptions &&
+            sysdigPanel.customDisplayOptions.valueLimit &&
+            Number.parseInt(sysdigPanel.customDisplayOptions.valueLimit.count, 10)
+            ? Number.parseInt(sysdigPanel.customDisplayOptions.valueLimit.count, 10)
+            : 10;
+    }
 
-        return Number.parseInt(normalizedDisplayOptions.valueLimit.count) || null;
+    static getTargetPageLimit(sysdigPanel) {
+        return this.parseValueLimitCount(sysdigPanel);
     }
 
     static buildPanelYAxes(sysdigDashboard, sysdigPanel, options) {
@@ -348,6 +346,14 @@ class HistogramBuilder extends TimeSeriesBuilder {
     static getValueFormat() {
         // the axis will count items in each bucket
         return 'short';
+    }
+
+    static getTargetPageLimit(sysdigPanel) {
+        // apply a "premium" x10 to limit the effect of data pagination to bucket values
+        // Grafana will get all the entities and will define buckets on top of that
+        // However, if pagination limits the number of entries exported via API, bucket values
+        // will not be correct.
+        return this.parseValueLimitCount(sysdigPanel) * 10;
     }
 }
 
