@@ -215,6 +215,10 @@ class TimeSeriesBuilder extends BaseBuilder {
         return keys;
     }
 
+    static isSingleDataPoint() {
+        return false;
+    }
+
     static buildTargets(sysdigDashboard, sysdigPanel) {
         const values = this.getValues(sysdigDashboard, sysdigPanel);
         const keys = this.getKeys(sysdigDashboard, sysdigPanel);
@@ -222,7 +226,7 @@ class TimeSeriesBuilder extends BaseBuilder {
         return values.map((value, i) => {
             return {
                 refId: i.toString(),
-                isSingleDataPoint: false,
+                isSingleDataPoint: this.isSingleDataPoint(),
                 target: value.metricId,
                 timeAggregation: value.aggregation,
                 groupAggregation: value.groupAggregation,
@@ -248,18 +252,16 @@ class TimeSeriesBuilder extends BaseBuilder {
         return normalizedDisplayOptions.valueLimit.direction || null;
     }
 
-    static getTargetPageLimit(sysdigPanel) {
-        const normalizedDisplayOptions = Object.assign(
-            {
-                valueLimit: {
-                    direction: null,
-                    count: null
-                }
-            },
-            sysdigPanel.customDisplayOptions
-        );
+    static parseValueLimitCount(sysdigPanel) {
+        return sysdigPanel.customDisplayOptions &&
+            sysdigPanel.customDisplayOptions.valueLimit &&
+            Number.parseInt(sysdigPanel.customDisplayOptions.valueLimit.count, 10)
+            ? Number.parseInt(sysdigPanel.customDisplayOptions.valueLimit.count, 10)
+            : 10;
+    }
 
-        return Number.parseInt(normalizedDisplayOptions.valueLimit.count) || null;
+    static getTargetPageLimit(sysdigPanel) {
+        return this.parseValueLimitCount(sysdigPanel);
     }
 
     static buildPanelYAxes(sysdigDashboard, sysdigPanel, options) {
@@ -336,13 +338,39 @@ class HistogramBuilder extends TimeSeriesBuilder {
             }
         });
     }
+
+    static isSingleDataPoint() {
+        return true;
+    }
+
+    static getValueFormat() {
+        // the axis will count items in each bucket
+        return 'short';
+    }
+
+    static getTargetPageLimit(sysdigPanel) {
+        // apply a "premium" x10 to limit the effect of data pagination to bucket values
+        // Grafana will get all the entities and will define buckets on top of that
+        // However, if pagination limits the number of entries exported via API, bucket values
+        // will not be correct.
+        return this.parseValueLimitCount(sysdigPanel) * 10;
+    }
 }
 
 class BarChartBuilder extends TimeSeriesBuilder {
-    static build(...args) {
-        console.warn(`top panels will be converted to time series`);
+    static build(sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
+            bars: true,
+            lines: false,
+            xaxis: {
+                mode: 'series',
+                values: ['total']
+            }
+        });
+    }
 
-        return super.build(...args);
+    static isSingleDataPoint() {
+        return true;
     }
 }
 
