@@ -124,7 +124,9 @@ After creating the datasource you will have the ability to import your Sysdig Mo
 
 With the Sysdig datasource installed you can add your custom panels.
 
-**NOTE** In Sysdig, number panels, bar charts and histograms display aggregated data (i.e. a single data point across the entire time window). By default, Grafana loads time series and then apply an additional aggregation to data points to calculate a single value (displayed in the Singlestat panel for instance).
+**Few words about aggregated panels**
+
+In Sysdig, number panels, bar charts and histograms display aggregated data (i.e. a single data point across the entire time window). By default, Grafana loads time series and then apply an additional aggregation to data points to calculate a single value (displayed in the Singlestat panel for instance).
 
 In order to maintain the same aggregation mechanism and precision offered by Sysdig API, you can create panels with the "Fetch single data point" flag turned on. This will instruct the datasource to make an aggregated data request to the API.
 
@@ -146,4 +148,4 @@ The Sysdig datasource is in beta version. We'll iterate quickly to make it more 
 
 The Sysdig Datasource Plugin for Grafana is currently in beta. We'd love to hear from you and help you with it!
 
-Join our [Public Slack](https://slack.sysdig.com) channel (#grafana) for announcements and discussions.
+Join our [Public Slack](https://slack.sysdig.com) channel ([#grafana](https://sysdig.slack.com/messages/CA7RSQXK9)) for announcements and discussions.
