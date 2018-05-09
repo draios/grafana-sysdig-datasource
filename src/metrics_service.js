@@ -15,6 +15,7 @@
 //
 import _ from 'lodash';
 import ApiService from './api_service';
+import TimeService from './time_service';
 
 export default class MetricsService {
     static findMetrics(backend) {
@@ -68,6 +69,56 @@ export default class MetricsService {
             return backend.backendSrv.$q.when([]);
         }
     }
+
+    static findLabelValues(backend, templateSrv, query, options) {
+        const interpolated = templateSrv.replace(query, {}, this.interpolateQueryExpr);
+        const labelNameRegex = '([A-Za-z][A-Za-z0-9]*(?:[\\._\\-:][a-zA-Z0-9]+)*)';
+        const labelValuesExprRegex = `label_values\\((?:${labelNameRegex})\\)`;
+        const labelValuesQuery = interpolated.match(`^${labelValuesExprRegex}$`);
+        if (labelValuesQuery) {
+            const labelName = labelValuesQuery[1];
+            return TimeService.validateTimeWindow(backend, options.userTime).then((requestTime) => {
+                return ApiService.send(backend, {
+                    method: 'POST',
+                    url: 'api/data/entity/metadata',
+                    data: {
+                        time: { from: requestTime.from * 1000000, to: requestTime.to * 1000000 },
+                        metrics: [labelName],
+                        filter: null,
+                        paging: { from: 0, to: 99 }
+                    }
+                }).then((result) => result.data.data.map((d) => d[labelName]));
+            });
+        } else {
+            return backend.backendSrv.$q.when([]);
+        }
+        // var metricFindQuery = new PrometheusMetricFindQuery(this, interpolated, this.timeSrv);
+        // return metricFindQuery.process();
+    }
+
+    interpolateQueryExpr(value, variable) {
+        // if no multi or include all do not regexEscape
+        if (!variable.multi && !variable.includeAll) {
+            return prometheusRegularEscape(value);
+        }
+
+        if (typeof value === 'string') {
+            return prometheusSpecialRegexEscape(value);
+        }
+
+        var escapedValues = _.map(value, prometheusSpecialRegexEscape);
+        return escapedValues.join('|');
+    }
+}
+
+function prometheusSpecialRegexEscape(value) {
+    return prometheusRegularEscape(
+        value.replace(/\\/g, '\\\\\\\\').replace(/[$^*{}[]+?.()]/g, '\\\\$&')
+    );
+}
+
+function prometheusRegularEscape(value) {
+    return value.replace(/'/g, "\\\\'");
 }
 
 const metricsCache = {

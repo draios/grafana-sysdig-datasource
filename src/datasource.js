@@ -63,13 +63,11 @@ export class SysdigDatasource {
             return this.q.when({ data: [] });
         }
 
-        const userTime = {
-            from: Math.trunc(options.range.from.valueOf() / 1000),
-            to: Math.trunc(options.range.to.valueOf() / 1000),
-            sampling: Math.trunc(query.intervalMs / 1000)
-        };
-
-        return DataService.fetch(this.getBackendConfiguration(), query, userTime);
+        return DataService.fetch(
+            this.getBackendConfiguration(),
+            query,
+            convertRangeToUserTime(options.range, query.intervalMs)
+        );
     }
 
     buildQueryParameters(options) {
@@ -91,7 +89,11 @@ export class SysdigDatasource {
             } else {
                 return Object.assign({}, target, {
                     target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
-                    filter: this.templateSrv.replace(target.filter, options.scopedVars, 'regex'),
+                    filter: this.templateSrv.replace(
+                        target.filter,
+                        options.scopedVars,
+                        this.formatTemplateValue
+                    ),
                     pageLimit: Number.parseInt(target.pageLimit) || 10
                 });
             }
@@ -102,8 +104,94 @@ export class SysdigDatasource {
         return options;
     }
 
-    metricFindQuery() {
-        return MetricsService.findMetrics(this.getBackendConfiguration());
+    formatTemplateValue(value) {
+        if (typeof value === 'string') {
+            //
+            // single selection
+            //
+            return format(value);
+        } else {
+            //
+            // "all"
+            //
+            return value.map(format).join(', ');
+        }
+
+        function format(value) {
+            const parsed = parseLabelValue(value);
+
+            // encapsulate value within double-quotes to make the output valid with both strings and null values
+            // also, null values must be returned as "null" strings
+            return parsed ? `"${parsed}"` : `${parsed}`;
+        }
+    }
+
+    metricFindQuery(query, options) {
+        if (query) {
+            return MetricsService.findLabelValues(
+                this.getBackendConfiguration(),
+                this.templateSrv,
+                query,
+                { userTime: convertRangeToUserTime(options.range) }
+            ).then((result) =>
+                result
+                    // NOTE: The backend doesn't support multi-value scope expressions with null (see https://sysdig.atlassian.net/browse/SMBACK-1745)
+                    .filter((v) => v !== null)
+                    .sort(this.getLabelValuesSorter(options.variable.sort))
+                    .map((labelValue) => ({
+                        text: formatLabelValue(labelValue)
+                    }))
+            );
+        } else {
+            return MetricsService.findMetrics(this.getBackendConfiguration());
+        }
+    }
+
+    getLabelValuesSorter(mode) {
+        switch (mode) {
+            case 0: // disabled
+            case 1: // alphabetical (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 3: // numerical (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a - b;
+                };
+
+            case 2: // alphabetical (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 4: // numerical (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a - b;
+                };
+
+            case 5: // alphabetical, case insensitive (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 6: // alphabetical, case insensitive (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.toLowerCase().localeCompare(b.toLowerCase());
+                };
+        }
     }
 
     findSegmentBy(target) {
@@ -135,4 +223,25 @@ export class SysdigDatasource {
     doRequest(options) {
         return ApiService.send(this.getBackendConfiguration(), options);
     }
+}
+
+function convertRangeToUserTime(range, intervalMs) {
+    const userTime = {
+        from: Math.trunc(range.from.valueOf() / 1000),
+        to: Math.trunc(range.to.valueOf() / 1000)
+    };
+
+    if (intervalMs) {
+        userTime.sampling = Math.trunc(intervalMs / 1000);
+    }
+
+    return userTime;
+}
+
+function formatLabelValue(labelValue) {
+    return labelValue || 'n/a';
+}
+
+function parseLabelValue(labelValue) {
+    return labelValue === 'n/a' ? null : labelValue;
 }
