@@ -37,27 +37,27 @@ pipeline {
                 // Also, the workspace is persistent.
                 // Since the previous build might have left some artifacts then now we're going to
                 // remove everything and checkout the repository again
-                sh "rm -rf *"
+                bash "rm -rf *"
 
                 // NOTE: 'checkout scm' is equivalent to
                 // git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
                 checkout scm
 
                 // Prepare npm/yarn environment
-                sh "npm install"
-                sh "./node_modules/.bin/yarn install"
+                bash "npm install"
+                bash "./node_modules/.bin/yarn install"
             }
         }
 
         stage('Build') {
             steps {
-                sh "npm run build"
+                bash "npm run build"
             }
         }
 
         stage('Deploy') {
             steps {
-                sh "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
+                bash "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
             }
         }
 
