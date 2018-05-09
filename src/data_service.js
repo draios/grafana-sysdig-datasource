@@ -15,6 +15,7 @@
 //
 import _ from 'lodash';
 import ApiService from './api_service';
+import TimeService from './time_service';
 
 let fetchQueue;
 
@@ -65,21 +66,9 @@ export default class DataService {
     }
 
     static fetchBatch(batch) {
-        const userTime = batch.userTime;
         const q = batch.backend.backendSrv.$q;
 
-        q
-            .all([
-                ApiService.send(batch.backend, {
-                    url: `api/history/timelines`
-                }),
-                ApiService.send(batch.backend, {
-                    url: `api/v2/history/timelines/alignments`
-                })
-            ])
-            .then((responses) => {
-                return getRequestTime(responses[0].data, responses[1].data, userTime);
-            })
+        TimeService.validateTimeWindow(batch.backend, batch.userTime)
             .then((requestTime) => {
                 //
                 // get list of data requests to batch
@@ -223,63 +212,6 @@ export default class DataService {
 
 function getBatchId(userTime) {
     return `${userTime.from} - ${userTime.to} - ${userTime.sampling}`;
-}
-
-function getRequestTime(timelines, alignments, userTime) {
-    const fromUs = userTime.from * 1000000;
-    const toUs = userTime.to * 1000000;
-    const timespan = toUs - fromUs;
-
-    //
-    // Use alignments that allow the required timespan
-    //
-    const validAlignments = alignments.filter((a) => {
-        return timespan <= a.max * 1000000;
-    });
-
-    if (validAlignments.length === 0) {
-        return null;
-    }
-
-    //
-    // Set min sampling
-    //
-    const minSampling = validAlignments[0].sampling * 1000000;
-
-    //
-    // Filter timelines so that sampling is valid, and the requested time window is partially or
-    // entirely overlapping with a given timeline
-    //
-    const validTimelines = timelines.agents.filter((t) => {
-        return (
-            t.from !== null &&
-            t.to !== null &&
-            minSampling <= t.sampling &&
-            ((fromUs <= t.from && toUs >= t.from) ||
-                (fromUs >= t.from && toUs <= t.to) ||
-                (fromUs <= t.to && toUs >= t.to))
-        );
-    });
-
-    if (validTimelines.length === 0) {
-        return null;
-    }
-
-    //
-    // Align time window with required alignment
-    //
-    const alignTo = validAlignments[0].alignTo * 1000000;
-    const alignedFrom = Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000);
-    const alignedTo = Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000);
-
-    //
-    // Adjust time window according to timeline (might miss first or last portion)
-    //
-    return {
-        from: Math.max(alignedFrom, validTimelines[0].from / 1000000),
-        to: Math.min(alignedTo, validTimelines[0].to / 1000000),
-        sampling: Math.trunc(minSampling / 1000000)
-    };
 }
 
 function getRequests(options, requestTime) {

@@ -1,0 +1,97 @@
+//
+//  Copyright 2018 Draios Inc.
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+//
+import ApiService from './api_service';
+
+export default class DataService {
+    static validateTimeWindow(backend, userTime) {
+        const q = backend.backendSrv.$q;
+
+        return q
+            .all([
+                ApiService.send(backend, {
+                    url: `api/history/timelines`
+                }),
+                ApiService.send(backend, {
+                    url: `api/v2/history/timelines/alignments`
+                })
+            ])
+            .then((responses) => {
+                return getRequestTime(responses[0].data, responses[1].data, userTime);
+            });
+    }
+}
+
+function getRequestTime(timelines, alignments, userTime) {
+    const fromUs = userTime.from * 1000000;
+    const toUs = userTime.to * 1000000;
+    const timespan = toUs - fromUs;
+
+    //
+    // Use alignments that allow the required timespan
+    //
+    const validAlignments = alignments.filter((a) => {
+        return timespan <= a.max * 1000000;
+    });
+
+    if (validAlignments.length === 0) {
+        return null;
+    }
+
+    //
+    // Set min sampling
+    //
+    const minSampling = validAlignments[0].sampling * 1000000;
+
+    //
+    // Filter timelines so that sampling is valid, and the requested time window is partially or
+    // entirely overlapping with a given timeline
+    //
+    const validTimelines = timelines.agents.filter((t) => {
+        return (
+            t.from !== null &&
+            t.to !== null &&
+            minSampling <= t.sampling &&
+            ((fromUs <= t.from && toUs >= t.from) ||
+                (fromUs >= t.from && toUs <= t.to) ||
+                (fromUs <= t.to && toUs >= t.to))
+        );
+    });
+
+    if (validTimelines.length === 0) {
+        return null;
+    }
+
+    //
+    // Align time window with required alignment
+    //
+    const alignTo = validAlignments[0].alignTo * 1000000;
+    const alignedFrom = Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000);
+    const alignedTo = Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000);
+
+    //
+    // Adjust time window according to timeline (might miss first or last portion)
+    //
+    const requestTime = {
+        from: Math.max(alignedFrom, validTimelines[0].from / 1000000),
+        to: Math.min(alignedTo, validTimelines[0].to / 1000000)
+    };
+
+    if (userTime.sampling) {
+        requestTime.sampling = Math.trunc(minSampling / 1000000);
+    }
+
+    return requestTime;
+}
