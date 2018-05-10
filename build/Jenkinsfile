@@ -57,7 +57,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh "./build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}"
+                sh "/bin/bash -c './build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}'"
             }
         }
 
