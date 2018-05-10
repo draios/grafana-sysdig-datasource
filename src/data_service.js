@@ -16,6 +16,7 @@
 import _ from 'lodash';
 import ApiService from './api_service';
 import TimeService from './time_service';
+import FormatterService from './formatter_service';
 
 let fetchQueue;
 
@@ -342,10 +343,12 @@ function parseResponses(options, response) {
                 if (target.segmentBy) {
                     t =
                         options.targets.length === 1
-                            ? targetToString(d[segmentPropName])
-                            : `${targetToString(target.target)} (${d[segmentPropName]})`;
+                            ? FormatterService.formatLabelValue(d[segmentPropName])
+                            : `${FormatterService.formatLabelValue(target.target)} (${
+                                  d[segmentPropName]
+                              })`;
                 } else {
-                    t = targetToString(target.target);
+                    t = FormatterService.formatLabelValue(target.target);
                 }
 
                 if (acc[t] === undefined) {
@@ -390,8 +393,4 @@ function parseResponses(options, response) {
     return {
         data: Array.concat(...data)
     };
-}
-
-function targetToString(target) {
-    return target || 'n/a';
 }
