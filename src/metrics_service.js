@@ -96,7 +96,10 @@ export default class MetricsService {
             const metricPattern = metricsQuery[1];
             const metricNameRegex = new RegExp(metricPattern);
             return this.findMetrics(backend).then((result) =>
-                result.filter((info) => metricNameRegex.test(info.id)).map((info) => info.id)
+                result
+                    // filter out all tags/labels/other string metrics
+                    .filter((info) => info.type !== 'string' && metricNameRegex.test(info.id))
+                    .map((info) => info.id)
             );
         }
 
