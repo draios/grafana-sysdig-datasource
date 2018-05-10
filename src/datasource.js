@@ -88,7 +88,7 @@ export class SysdigDatasource {
                 });
             } else {
                 return Object.assign({}, target, {
-                    target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
+                    target: this.templateSrv.replace(target.target, options.scopedVars),
                     filter: this.templateSrv.replace(
                         target.filter,
                         options.scopedVars,
@@ -128,7 +128,7 @@ export class SysdigDatasource {
 
     metricFindQuery(query, options) {
         if (query) {
-            return MetricsService.findLabelValues(
+            return MetricsService.queryMetrics(
                 this.getBackendConfiguration(),
                 this.templateSrv,
                 query,
@@ -198,7 +198,10 @@ export class SysdigDatasource {
         if (target === undefined || target === 'select metric') {
             return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
         } else {
-            return MetricsService.findSegmentations(this.getBackendConfiguration(), target);
+            return MetricsService.findSegmentations(
+                this.getBackendConfiguration(),
+                this.templateSrv.replace(target)
+            );
         }
     }
 
@@ -226,16 +229,20 @@ export class SysdigDatasource {
 }
 
 function convertRangeToUserTime(range, intervalMs) {
-    const userTime = {
-        from: Math.trunc(range.from.valueOf() / 1000),
-        to: Math.trunc(range.to.valueOf() / 1000)
-    };
+    if (range) {
+        const userTime = {
+            from: Math.trunc(range.from.valueOf() / 1000),
+            to: Math.trunc(range.to.valueOf() / 1000)
+        };
 
-    if (intervalMs) {
-        userTime.sampling = Math.trunc(intervalMs / 1000);
+        if (intervalMs) {
+            userTime.sampling = Math.trunc(intervalMs / 1000);
+        }
+
+        return userTime;
+    } else {
+        return null;
     }
-
-    return userTime;
 }
 
 function formatLabelValue(labelValue) {
