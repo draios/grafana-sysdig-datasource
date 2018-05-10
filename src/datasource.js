@@ -17,6 +17,8 @@ import _ from 'lodash';
 import DataService from './data_service';
 import ApiService from './api_service';
 import MetricsService from './metrics_service';
+import TemplatingService from './templating_service';
+import FormatterService from './formatter_service';
 
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
@@ -88,11 +90,20 @@ export class SysdigDatasource {
                 });
             } else {
                 return Object.assign({}, target, {
-                    target: this.templateSrv.replace(target.target, options.scopedVars),
-                    filter: this.templateSrv.replace(
+                    target: TemplatingService.simpleReplace(
+                        this.templateSrv,
+                        target.target,
+                        options.scopedVars
+                    ),
+                    segmentBy: TemplatingService.simpleReplace(
+                        this.templateSrv,
+                        target.segmentBy,
+                        options.scopedVars
+                    ),
+                    filter: TemplatingService.replace(
+                        this.templateSrv,
                         target.filter,
-                        options.scopedVars,
-                        this.formatTemplateValue
+                        options.scopedVars
                     ),
                     pageLimit: Number.parseInt(target.pageLimit) || 10
                 });
@@ -102,28 +113,6 @@ export class SysdigDatasource {
         options.targets = targets;
 
         return options;
-    }
-
-    formatTemplateValue(value) {
-        if (typeof value === 'string') {
-            //
-            // single selection
-            //
-            return format(value);
-        } else {
-            //
-            // "all"
-            //
-            return value.map(format).join(', ');
-        }
-
-        function format(value) {
-            const parsed = parseLabelValue(value);
-
-            // encapsulate value within double-quotes to make the output valid with both strings and null values
-            // also, null values must be returned as "null" strings
-            return parsed ? `"${parsed}"` : `${parsed}`;
-        }
     }
 
     metricFindQuery(query, options) {
@@ -139,7 +128,7 @@ export class SysdigDatasource {
                     .filter((v) => v !== null)
                     .sort(this.getLabelValuesSorter(options.variable.sort))
                     .map((labelValue) => ({
-                        text: formatLabelValue(labelValue)
+                        text: FormatterService.formatLabelValue(labelValue)
                     }))
             );
         } else {
@@ -243,12 +232,4 @@ function convertRangeToUserTime(range, intervalMs) {
     } else {
         return null;
     }
-}
-
-function formatLabelValue(labelValue) {
-    return labelValue || 'n/a';
-}
-
-function parseLabelValue(labelValue) {
-    return labelValue === 'n/a' ? null : labelValue;
 }
