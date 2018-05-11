@@ -6,7 +6,7 @@ _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb0
 Plugin to connect Grafana with Sysdig.
 
 <p align="center">
-    <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="900" />
+    <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="1200" />
 </p>
 
 
@@ -113,7 +113,7 @@ In Grafana, select **Add Data Sources**:
 4. **API Token**: In your Sysdig UI go to _Settings -> User Profile -> Sysdig Monitor API token_. Copy the token and paste it.
 
 <p align="center">
-    <img alt="Add Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788137-d0932188-52dd-11e8-845a-3ba9c5f99842.gif" width="600" />
+    <img alt="Add Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788137-d0932188-52dd-11e8-845a-3ba9c5f99842.gif" width="900" />
 </p>
 
 
@@ -122,7 +122,7 @@ In Grafana, select **Add Data Sources**:
 After creating the datasource you will have the ability to import your Sysdig Monitor dashboards into Grafana. Click **Import** to get all your dashboards from Sysdig. Go to **Dashboards Home page** and pull down your dashboard selection to see all your dashboards here.
 
 <p align="center">
-    <img alt="Import Sysdig dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="600" />
+    <img alt="Import Sysdig dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="900" />
 </p>
 
 
@@ -192,10 +192,10 @@ A couple of notes about variables for metric names:
 2. *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex
 
 <p align="center">
-    <img width="600" alt="Metric variable configuration" src="https://user-images.githubusercontent.com/5033993/39940750-26fb6bec-550f-11e8-9cad-97af134d4252.png">
+    <img width="900" alt="Metric variable configuration" src="https://user-images.githubusercontent.com/5033993/39940750-26fb6bec-550f-11e8-9cad-97af134d4252.png">
 </p>
 <p align="center">
-    <img width="600" alt="Metric variable" src="https://user-images.githubusercontent.com/5033993/39940748-26b4ef64-550f-11e8-8935-d044716a9891.png">
+    <img width="900" alt="Metric variable" src="https://user-images.githubusercontent.com/5033993/39940748-26b4ef64-550f-11e8-8935-d044716a9891.png">
 </p>
 
 
@@ -209,10 +209,10 @@ A couple of notes about variables for label names:
 2. *Query* variables can use the `label_names(pattern)` function, that returns a list of label names matching the specific `pattern` regex
 
 <p align="center">
-    <img width="600" alt="Segmentation variable configuration" src="https://user-images.githubusercontent.com/5033993/39940754-275b9846-550f-11e8-8ce4-130e3d4f3dac.png">
+    <img width="900" alt="Segmentation variable configuration" src="https://user-images.githubusercontent.com/5033993/39940754-275b9846-550f-11e8-8ce4-130e3d4f3dac.png">
 </p>
 <p align="center">
-    <img width="600" alt="Segmentation variable" src="https://user-images.githubusercontent.com/5033993/39940749-26d92ec4-550f-11e8-8e3e-1f21dae9cfcc.png">
+    <img width="900" alt="Segmentation variable" src="https://user-images.githubusercontent.com/5033993/39940749-26d92ec4-550f-11e8-8e3e-1f21dae9cfcc.png">
 </p>
 
 
@@ -228,17 +228,17 @@ Some notes about variables for label values:
 4. Variables must not be enclosed by quotes, the final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`)
 
 <p align="center">
-    <img width="600" alt="Filter variable configuration" src="https://user-images.githubusercontent.com/5033993/39940752-27214a42-550f-11e8-854b-f696c321c383.png">
+    <img width="900" alt="Filter variable configuration" src="https://user-images.githubusercontent.com/5033993/39940752-27214a42-550f-11e8-854b-f696c321c383.png">
 </p>
 <p align="center">
-    <img width="600" alt="Filter variable" src="https://user-images.githubusercontent.com/5033993/39940747-26936a74-550f-11e8-8af2-a2217598ba1e.png">
+    <img width="900" alt="Filter variable" src="https://user-images.githubusercontent.com/5033993/39940747-26936a74-550f-11e8-8af2-a2217598ba1e.png">
 </p>
 
 
 And here is the final result, with dynamic rows and panels:
 
 <p align="center">
-    <img width="600" alt="Final dashboard with variables" src="https://user-images.githubusercontent.com/5033993/39940746-26706f88-550f-11e8-81c2-51cc9233c18c.png">
+    <img width="1200" alt="Final dashboard with variables" src="https://user-images.githubusercontent.com/5033993/39940746-26706f88-550f-11e8-81c2-51cc9233c18c.png">
 </p>
 
 ---
