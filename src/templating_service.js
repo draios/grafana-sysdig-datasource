@@ -1,6 +1,43 @@
 import FormatterService from './formatter_service';
 
 export default class TemplatingService {
+    static validateLabelValuesQuery(templateSrv, query) {
+        const labelNamePattern = '([A-Za-z][A-Za-z0-9]*(?:[\\._\\-:][a-zA-Z0-9]+)*)';
+        const functionPattern = `label_values\\((?:${labelNamePattern})\\)`;
+        const regex = query.match(`^${functionPattern}$`);
+        if (regex) {
+            return { labelName: regex[1] };
+        } else {
+            return null;
+        }
+    }
+
+    static validateLabelNamesQuery(templateSrv, query) {
+        const functionPattern = `label_names\\((?:(.+))\\)`;
+        const regex = query.match(`^${functionPattern}$`);
+        if (regex) {
+            const pattern = regex[1];
+            const patternRegex = new RegExp(pattern);
+
+            return { pattern, regex: patternRegex };
+        } else {
+            return null;
+        }
+    }
+
+    static validateMetricsQuery(templateSrv, query) {
+        const functionPattern = `metrics\\((?:(.+))\\)`;
+        const regex = query.match(`^${functionPattern}$`);
+        if (regex) {
+            const pattern = regex[1];
+            const patternRegex = new RegExp(pattern);
+
+            return { pattern, regex: patternRegex };
+        } else {
+            return null;
+        }
+    }
+
     static simpleReplace(templateSrv, input, scopedVars) {
         return templateSrv.replace(input, scopedVars);
     }

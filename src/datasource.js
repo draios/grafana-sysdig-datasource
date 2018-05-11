@@ -132,7 +132,11 @@ export class SysdigDatasource {
                     }))
             );
         } else {
-            return MetricsService.findMetrics(this.getBackendConfiguration());
+            return (
+                MetricsService.findMetrics(this.getBackendConfiguration())
+                    // filter out all tags/labels/other string metrics
+                    .filter((metric) => metric.isNumeric)
+            );
         }
     }
 
