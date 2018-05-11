@@ -135,7 +135,18 @@ export class SysdigDatasource {
             return (
                 MetricsService.findMetrics(this.getBackendConfiguration())
                     // filter out all tags/labels/other string metrics
-                    .filter((metric) => metric.isNumeric)
+                    .then((result) => result.filter((metric) => metric.isNumeric))
+            );
+        }
+    }
+
+    findSegmentBy(target) {
+        if (target === undefined || target === 'select metric') {
+            return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
+        } else {
+            return MetricsService.findSegmentations(
+                this.getBackendConfiguration(),
+                TemplatingService.simpleReplace(this.templateSrv, target)
             );
         }
     }
@@ -184,17 +195,6 @@ export class SysdigDatasource {
                     else if (b === null) return 1;
                     else return a.toLowerCase().localeCompare(b.toLowerCase());
                 };
-        }
-    }
-
-    findSegmentBy(target) {
-        if (target === undefined || target === 'select metric') {
-            return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
-        } else {
-            return MetricsService.findSegmentations(
-                this.getBackendConfiguration(),
-                this.templateSrv.replace(target)
-            );
         }
     }
 
