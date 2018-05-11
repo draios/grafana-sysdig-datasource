@@ -191,10 +191,10 @@ A couple of notes about variables for metric names:
 1. You can use a *Query*, *Custom*, or *Constant* variables. Please note that *Multi-value* and *Include All option* must be disabled
 2. *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex
 
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Metric variable configuration" src="https://user-images.githubusercontent.com/5033993/39940750-26fb6bec-550f-11e8-9cad-97af134d4252.png">
 </p>
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Metric variable" src="https://user-images.githubusercontent.com/5033993/39940748-26b4ef64-550f-11e8-8935-d044716a9891.png">
 </p>
 
@@ -208,10 +208,10 @@ A couple of notes about variables for label names:
 1. You can use a *Query*, *Custom*, or *Constant* variables. Please note that *Multi-value* and *Include All option* must be disabled
 2. *Query* variables can use the `label_names(pattern)` function, that returns a list of label names matching the specific `pattern` regex
 
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Segmentation variable configuration" src="https://user-images.githubusercontent.com/5033993/39940754-275b9846-550f-11e8-8ce4-130e3d4f3dac.png">
 </p>
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Segmentation variable" src="https://user-images.githubusercontent.com/5033993/39940749-26d92ec4-550f-11e8-8e3e-1f21dae9cfcc.png">
 </p>
 
@@ -227,17 +227,17 @@ Some notes about variables for label values:
 3. *Multi-value* variables, or variables with *Include All option* enabled can **only** be used with `in` and `not ... in` operators
 4. Variables must not be enclosed by quotes, the final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`)
 
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Filter variable configuration" src="https://user-images.githubusercontent.com/5033993/39940752-27214a42-550f-11e8-854b-f696c321c383.png">
 </p>
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Filter variable" src="https://user-images.githubusercontent.com/5033993/39940747-26936a74-550f-11e8-8af2-a2217598ba1e.png">
 </p>
 
 
 And here is the final result, with dynamic rows and panels:
 
-<p style="text-align: center;">
+<p align="center">
     <img width="600" alt="Final dashboard with variables" src="https://user-images.githubusercontent.com/5033993/39940746-26706f88-550f-11e8-81c2-51cc9233c18c.png">
 </p>
 
