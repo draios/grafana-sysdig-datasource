@@ -5,7 +5,9 @@ _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb0
 
 Plugin to connect Grafana with Sysdig.
 
-![grafana-create-sysdig-panel](https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif)
+<p style="text-align: center;">
+    <img title="grafana-create-sysdig-panel" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="600" />
+</p>
 
 
 ## Getting started!
@@ -110,14 +112,17 @@ In Grafana, select **Add Data Sources**:
 3. **Plan**: Pick _Basic/Pro Cloud_ if you use Sysdig SaaS or _Pro Software_ if you use on premises
 4. **API Token**: In your Sysdig UI go to _Settings -> User Profile -> Sysdig Monitor API token_. Copy the token and paste it.
 
-![grafana-create-sysdig-ds](https://user-images.githubusercontent.com/5033993/39788137-d0932188-52dd-11e8-845a-3ba9c5f99842.gif)
+<p style="text-align: center;">
+    <img title="grafana-create-sysdig-ds" src="https://user-images.githubusercontent.com/5033993/39788137-d0932188-52dd-11e8-845a-3ba9c5f99842.gif" width="600" />
+</p>
 
 
 ### 3. Import Sysdig dashboards
 
 After creating the datasource you will have the ability to import your Sysdig Monitor dashboards into Grafana. Click **Import** to get all your dashboards from Sysdig. Go to **Dashboards Home page** and pull down your dashboard selection to see all your dashboards here.
 
-![grafana-import-sysdig-dashboards](https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif)
+<p style="text-align: center;">
+    <img title="grafana-import-sysdig-dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="600" />
 
 
 
