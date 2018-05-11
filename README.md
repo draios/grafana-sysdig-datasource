@@ -6,7 +6,7 @@ _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb0
 Plugin to connect Grafana with Sysdig.
 
 <p align="center">
-    <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="600" />
+    <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="900" />
 </p>
 
 
