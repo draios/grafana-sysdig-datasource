@@ -184,10 +184,6 @@ A couple of notes about variables for metric names:
 1. You can use a *Query*, *Custom*, or *Constant* variables. Please note that *Multi-value* and *Include All option* must be disabled
 2. *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex
 
-Here's an example:
-
-![image](https://user-images.githubusercontent.com/5033993/39896008-5bd25cb2-5461-11e8-9cd3-c71be36dbbe7.png)
-
 
 ### Label names
 
@@ -208,7 +204,7 @@ Some notes about variables for label values:
 1. You can use a *Query*, *Custom*, or *Constant* variables
 2. *Query* variables can use the `label_values(label_name)` function, that returns a list of label values for the specified label name
 3. *Multi-value* variables, or variables with *Include All option* enabled can **only** be used with `in` and `not ... in` operators
-4. Don't forget the double-quotes around variable names!
+4. Variables must not be enclosed by quotes, the final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`)
 
 
 ---
