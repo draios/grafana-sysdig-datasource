@@ -18,7 +18,7 @@ export default class TemplatingService {
 
     static validateLabelNamesQuery(query) {
         if (query) {
-            const functionPattern = `label_names\\((?:(.+))\\)`;
+            const functionPattern = `label_names\\((?:(.*))\\)`;
             const regex = query.match(`^${functionPattern}$`);
             if (regex) {
                 const pattern = regex[1];
@@ -35,7 +35,7 @@ export default class TemplatingService {
 
     static validateMetricsQuery(query) {
         if (query) {
-            const functionPattern = `metrics\\((?:(.+))\\)`;
+            const functionPattern = `metrics\\((?:(.*))\\)`;
             const regex = query.match(`^${functionPattern}$`);
             if (regex) {
                 const pattern = regex[1];
