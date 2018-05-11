@@ -459,7 +459,7 @@ class DefaultBuilder extends BaseBuilder {
             {},
             this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index, 'text'),
             {
-                mode: 'markdown',
+                mode: 'html',
                 content: this.getContent(sysdigPanel)
             }
         );
@@ -491,7 +491,7 @@ class DefaultBuilder extends BaseBuilder {
                 break;
         }
 
-        return `**${panelType} panels** cannot be exported from Sysdig Monitor to Grafana.`;
+        return `<div class="text-center muted"><strong>${panelType}</strong> cannot be exported from Sysdig Monitor to Grafana.</div>`;
     }
 }
 
