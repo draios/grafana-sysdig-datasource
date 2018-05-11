@@ -90,12 +90,12 @@ export class SysdigDatasource {
                 });
             } else {
                 return Object.assign({}, target, {
-                    target: TemplatingService.simpleReplace(
+                    target: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
                         target.target,
                         options.scopedVars
                     ),
-                    segmentBy: TemplatingService.simpleReplace(
+                    segmentBy: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
                         target.segmentBy,
                         options.scopedVars
@@ -146,7 +146,7 @@ export class SysdigDatasource {
         } else {
             return MetricsService.findSegmentations(
                 this.getBackendConfiguration(),
-                TemplatingService.simpleReplace(this.templateSrv, target)
+                TemplatingService.replaceSingleMatch(this.templateSrv, target)
             );
         }
     }

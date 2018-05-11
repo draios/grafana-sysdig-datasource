@@ -70,9 +70,7 @@ export default class MetricsService {
 
     static queryMetrics(backend, templateSrv, query, options) {
         let queryOptions;
-        if (
-            (queryOptions = TemplatingService.validateLabelValuesQuery(templateSrv, query)) !== null
-        ) {
+        if ((queryOptions = TemplatingService.validateLabelValuesQuery(query)) !== null) {
             //
             // return list of label values
             //
@@ -88,9 +86,7 @@ export default class MetricsService {
                     }
                 }).then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
             });
-        } else if (
-            (queryOptions = TemplatingService.validateLabelNamesQuery(templateSrv, query)) !== null
-        ) {
+        } else if ((queryOptions = TemplatingService.validateLabelNamesQuery(query)) !== null) {
             //
             // return list of label names
             //
@@ -102,9 +98,7 @@ export default class MetricsService {
                     )
                     .map((metric) => metric.id)
             );
-        } else if (
-            (queryOptions = TemplatingService.validateMetricsQuery(templateSrv, query)) !== null
-        ) {
+        } else if ((queryOptions = TemplatingService.validateMetricsQuery(query)) !== null) {
             //
             // return list of metric names
             //
