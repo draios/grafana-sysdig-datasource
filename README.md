@@ -253,7 +253,7 @@ The Sysdig datasource is in beta version. We'll iterate quickly to make it more 
 4. Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are quite different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not create table panels. This might not be true forever...
 5. Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels
 6. With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655)
-7. Sysdig doesn't support exponential y-axis scale
+7. Grafana doesn't support exponential y-axis scale (the import from Sysdig will fallback to linear scale)
 
 
 ## Support / Community
