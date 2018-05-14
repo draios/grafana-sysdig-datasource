@@ -17,6 +17,8 @@ import _ from 'lodash';
 import DataService from './data_service';
 import ApiService from './api_service';
 import MetricsService from './metrics_service';
+import TemplatingService from './templating_service';
+import FormatterService from './formatter_service';
 
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
@@ -63,13 +65,11 @@ export class SysdigDatasource {
             return this.q.when({ data: [] });
         }
 
-        const userTime = {
-            from: Math.trunc(options.range.from.valueOf() / 1000),
-            to: Math.trunc(options.range.to.valueOf() / 1000),
-            sampling: Math.trunc(query.intervalMs / 1000)
-        };
-
-        return DataService.fetch(this.getBackendConfiguration(), query, userTime);
+        return DataService.fetch(
+            this.getBackendConfiguration(),
+            query,
+            convertRangeToUserTime(options.range, query.intervalMs)
+        );
     }
 
     buildQueryParameters(options) {
@@ -90,8 +90,21 @@ export class SysdigDatasource {
                 });
             } else {
                 return Object.assign({}, target, {
-                    target: this.templateSrv.replace(target.target, options.scopedVars, 'regex'),
-                    filter: this.templateSrv.replace(target.filter, options.scopedVars, 'regex'),
+                    target: TemplatingService.replaceSingleMatch(
+                        this.templateSrv,
+                        target.target,
+                        options.scopedVars
+                    ),
+                    segmentBy: TemplatingService.replaceSingleMatch(
+                        this.templateSrv,
+                        target.segmentBy,
+                        options.scopedVars
+                    ),
+                    filter: TemplatingService.replace(
+                        this.templateSrv,
+                        target.filter,
+                        options.scopedVars
+                    ),
                     pageLimit: Number.parseInt(target.pageLimit) || 10
                 });
             }
@@ -102,15 +115,86 @@ export class SysdigDatasource {
         return options;
     }
 
-    metricFindQuery() {
-        return MetricsService.findMetrics(this.getBackendConfiguration());
+    metricFindQuery(query, options) {
+        if (query) {
+            return MetricsService.queryMetrics(
+                this.getBackendConfiguration(),
+                this.templateSrv,
+                query,
+                { userTime: convertRangeToUserTime(options.range) }
+            ).then((result) =>
+                result
+                    // NOTE: The backend doesn't support multi-value scope expressions with null (see https://sysdig.atlassian.net/browse/SMBACK-1745)
+                    .filter((v) => v !== null)
+                    .sort(this.getLabelValuesSorter(options.variable.sort))
+                    .map((labelValue) => ({
+                        text: FormatterService.formatLabelValue(labelValue)
+                    }))
+            );
+        } else {
+            return (
+                MetricsService.findMetrics(this.getBackendConfiguration())
+                    // filter out all tags/labels/other string metrics
+                    .then((result) => result.filter((metric) => metric.isNumeric))
+            );
+        }
     }
 
     findSegmentBy(target) {
         if (target === undefined || target === 'select metric') {
             return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
         } else {
-            return MetricsService.findSegmentations(this.getBackendConfiguration(), target);
+            return MetricsService.findSegmentations(
+                this.getBackendConfiguration(),
+                TemplatingService.replaceSingleMatch(this.templateSrv, target)
+            );
+        }
+    }
+
+    getLabelValuesSorter(mode) {
+        switch (mode) {
+            case 0: // disabled
+            case 1: // alphabetical (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 3: // numerical (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a - b;
+                };
+
+            case 2: // alphabetical (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 4: // numerical (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a - b;
+                };
+
+            case 5: // alphabetical, case insensitive (asc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.localeCompare(b);
+                };
+
+            case 6: // alphabetical, case insensitive (desc)
+                return (a, b) => {
+                    if (a === null) return -1;
+                    else if (b === null) return 1;
+                    else return a.toLowerCase().localeCompare(b.toLowerCase());
+                };
         }
     }
 
@@ -134,5 +218,22 @@ export class SysdigDatasource {
 
     doRequest(options) {
         return ApiService.send(this.getBackendConfiguration(), options);
+    }
+}
+
+function convertRangeToUserTime(range, intervalMs) {
+    if (range) {
+        const userTime = {
+            from: Math.trunc(range.from.valueOf() / 1000),
+            to: Math.trunc(range.to.valueOf() / 1000)
+        };
+
+        if (intervalMs) {
+            userTime.sampling = Math.trunc(intervalMs / 1000);
+        }
+
+        return userTime;
+    } else {
+        return null;
     }
 }

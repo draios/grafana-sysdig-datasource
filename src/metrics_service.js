@@ -15,6 +15,8 @@
 //
 import _ from 'lodash';
 import ApiService from './api_service';
+import TimeService from './time_service';
+import TemplatingService from './templating_service';
 
 export default class MetricsService {
     static findMetrics(backend) {
@@ -38,14 +40,11 @@ export default class MetricsService {
                         ];
 
                         return Object.values(result.data)
-                            .map((m) =>
-                                _.assign(m, {
-                                    isNumeric: plottableMetricTypes.indexOf(m.type) >= 0
+                            .map((metric) =>
+                                _.assign(metric, {
+                                    isNumeric: plottableMetricTypes.indexOf(metric.type) >= 0
                                 })
                             )
-                            .filter((m) => {
-                                return m.isNumeric;
-                            })
                             .sort((a, b) => a.id.localeCompare(b.id));
                     })
                     .then((data) => {
@@ -64,6 +63,51 @@ export default class MetricsService {
             }).then((result) => {
                 return result.data.segmentationMetrics.sort((a, b) => a.localeCompare(b));
             });
+        } else {
+            return backend.backendSrv.$q.when([]);
+        }
+    }
+
+    static queryMetrics(backend, templateSrv, query, options) {
+        let queryOptions;
+        if ((queryOptions = TemplatingService.validateLabelValuesQuery(query)) !== null) {
+            //
+            // return list of label values
+            //
+            return TimeService.validateTimeWindow(backend, options.userTime).then((requestTime) => {
+                return ApiService.send(backend, {
+                    method: 'POST',
+                    url: 'api/data/entity/metadata',
+                    data: {
+                        time: { from: requestTime.from * 1000000, to: requestTime.to * 1000000 },
+                        metrics: [queryOptions.labelName],
+                        filter: null,
+                        paging: { from: 0, to: 99 }
+                    }
+                }).then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
+            });
+        } else if ((queryOptions = TemplatingService.validateLabelNamesQuery(query)) !== null) {
+            //
+            // return list of label names
+            //
+            return this.findMetrics(backend).then((result) =>
+                result
+                    // filter out all tags/labels/other string metrics
+                    .filter(
+                        (metric) => metric.isNumeric === false && queryOptions.regex.test(metric.id)
+                    )
+                    .map((metric) => metric.id)
+            );
+        } else if ((queryOptions = TemplatingService.validateMetricsQuery(query)) !== null) {
+            //
+            // return list of metric names
+            //
+            return this.findMetrics(backend).then((result) =>
+                result
+                    // filter out all non tags/labels/other string metrics
+                    .filter((metric) => metric.isNumeric && queryOptions.regex.test(metric.id))
+                    .map((metric) => metric.id)
+            );
         } else {
             return backend.backendSrv.$q.when([]);
         }
