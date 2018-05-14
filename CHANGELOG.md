@@ -1,5 +1,18 @@
 # Changelog
 
+### v0.2
+(...)
+
+**What's new**
+
+
+**What's improved or fixed**
+
+
+**What's internal**
+
+
+
 ### v0.1
 (5/14/2018)
 
