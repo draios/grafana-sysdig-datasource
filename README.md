@@ -74,39 +74,39 @@ user@host:~$ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafa
 The plugin can be installed on any host where Grafana is installed. To install the plugin:
 
 1. Open a shell terminal.
-2. Run the following series of commands for the operating system:
+2. Run the relevant series of commands for the operating system:
 
 ##### Linux
 
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
-tar zxf sysdig.tgz
-sudo cp -R sysdig /var/lib/grafana/plugins
-sudo service grafana-server restart
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ tar zxf sysdig.tgz
+user@host:~$ sudo cp -R sysdig /var/lib/grafana/plugins
+user@host:~$ sudo service grafana-server restart
 ```
 
-**Note**: You might find Grafana plugins installed in `/usr/share/grafana/plugins`, but Sysdig plugin must be installed in `/var/lib/grafana/plugins` instead.
+> **Note**: Grafana plugins are installed in `/usr/share/grafana/plugins`. However, the Sysdig plugin must be installed in `/var/lib/grafana/plugins` instead.
 
 
 ##### Mac
 
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
-tar zxf sysdig.tgz
-cp -R sysdig /usr/local/var/lib/grafana/plugins
-brew services restart grafana
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ tar zxf sysdig.tgz
+user@host:~$ cp -R sysdig /usr/local/var/lib/grafana/plugins
+user@host:~$ brew services restart grafana
 ```
 
-For more information, refer to [Grafana installation on Mac page](http://docs.grafana.org/installation/mac/).
+> **Note:** For more information, refer to the [Grafana installation on Mac](http://docs.grafana.org/installation/mac/) documentation.
 
 
 ##### Windows
 
-1. Download plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.zip
-2. Install the plugin to Grafana plugins folder
-3. Restart Grafana
+1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.zip
+2. Install the plugin in the Grafana plugins folder.
+3. Restart Grafana.
 
-For more information, refer to [Grafana installation on Windows page](http://docs.grafana.org/installation/windows/).
+> **Note:** For more information, refer to the [Grafana installation on Windows](http://docs.grafana.org/installation/windows/) documentation.
 
 
 ### 2. Add datasource
@@ -130,8 +130,6 @@ After creating the datasource you will have the ability to import your Sysdig Mo
 <p align="center">
     <img alt="Import Sysdig dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="900" />
 </p>
-
-
 
 
 ## Panels
