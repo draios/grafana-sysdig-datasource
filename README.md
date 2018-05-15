@@ -1,74 +1,80 @@
 _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb026e5d45b9dc4def48c525dd8cdb_
 
 
-## Sysdig Datasource Plugin for Grafana (beta)
+## Sysdig Datasource Plugin for Grafana (Beta)
 
-Plugin to connect Grafana with Sysdig.
+This README discusses the installation and configuration instructions for the Sysdig datasource plugin for Grafana.
+
+> **Note:** The Sysdig datasource plugin is currently not included in the [official & community built plugin page](https://grafana.com/plugins), and needs to be installed manually.
 
 <p align="center">
     <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="1200" />
 </p>
 
 
-## Getting started!
+## Getting Started
 
-### 1. Installation
+### Installation
 
-At this time, the Sysdig datasource is not included in the [Official & community built plugin page](https://grafana.com/plugins). You will need to install the plugin manually.
+There are several installation approaches available for the Sysdig datasource plugin:
 
+#### Using a Grafana Docker Container
 
-#### Grafana Docker container
+An easy and flexible way to add the Sysdig datasource plugin to a Grafana container is to create a custom image:
 
-An easy and flexible way to add the Sysdig datasource plugin to your Grafana container is to create a custom image.
-
-Here's how:
-
+1. Download the plugin to the _grafana-sysdig_ directory:
 ```
-# download plugin into grafana-sysdig directory
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
-mkdir grafana-sysdig
-tar zxf sysdig.tgz -C grafana-sysdig
-
-# create container image Dockerfile
-echo "ARG GRAFANA_VERSION=\"latest\"
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ mkdir grafana-sysdig
+user@host:~$ tar zxf sysdig.tgz -C grafana-sysdig
+user@host:~$ cd grafana-sysdig
+```
+2. Create a container image Dockerfile:
+```
+user@host:grafana-sysdig$ echo "ARG GRAFANA_VERSION=\"latest\"
 
 FROM grafana/grafana:\${GRAFANA_VERSION}
 
 ADD grafana-sysdig /var/lib/grafana/plugins/sysdig
 " > Dockerfile
-
-# build the image...
-docker build -t grafana-sysdig .
-
-# ... and run it!
-docker run -d -p 3000:3000 --name grafana grafana-sysdig
+```
+3. Build the image:
+```
+user@host:grafana-sysdig$ docker build -t grafana-sysdig .
+```
+4. Run the image:
+```
+user@host:grafana-sysdig$ docker run -d -p 3000:3000 --name grafana grafana-sysdig
 ```
 
-For more information, refer to [Grafana installation using Docker page](http://docs.grafana.org/installation/docker/).
+> **Note:** For more information, refer to the [Grafana installation using Docker](http://docs.grafana.org/installation/docker/) page.
 
 ---
 
-Alternatively, You can use the Grafana container image as is, and mount the plugin directory on your host to make it available in the container.
+Alternatively, the default Grafana container image can be used as is, and the plugin directory can be mounted on the host to make it available in the container:
 
+1. Prepare the Grafana data directory and download the plugin:
 ```
-# prepare Grafana data directory and download the plugin 
-mkdir grafana-data
-mkdir grafana-data/plugins
-
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
-tar zxf sysdig.tgz -C grafana-data/plugins
-
-# start the container (with current user to give read/write permissions to data directory)
+user@host:~$ mkdir grafana-data
+user@host:~$ mkdir grafana-data/plugins
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ tar zxf sysdig.tgz -C grafana-data/plugins
+```
+2. Start the container with the current user, to give read/write permissions to the data directory:
+```
 ID=$(id -u)
-docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
+user@host:~$ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
 ```
 
-For more information, refer to [Grafana installation page](http://docs.grafana.org/installation/docker/#grafana-container-using-bind-mounts) and [Docker documentation](https://docs.docker.com/storage/bind-mounts/).
+> **Note:** For more information, refer to the [Grafana installation documentation](http://docs.grafana.org/installation/docker/#grafana-container-using-bind-mounts) and the [Docker documentation](https://docs.docker.com/storage/bind-mounts/).
 
 
-#### Using Grafana installed on host
+#### Using Grafana Installed on the Host
 
-Open a shell on the host where Grafana is installed, then run the following commands:
+The plugin can be installed on any host where Grafana is installed. To install the plugin:
+
+1. Open a shell terminal.
+2. Run the following series of commands for the operating system:
 
 ##### Linux
 
