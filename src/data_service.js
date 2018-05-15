@@ -340,7 +340,7 @@ function getRequest(target, requestTime) {
 
 function parseResponses(options, response) {
     const isTabularFormat = options.targets[0].isTabularFormat;
-    const isMultiSegmentations = options.targets.length > 1;
+    const isSingleTarget = options.targets.length === 1;
     const data = options.targets.map((target, i) => {
         const isSingleDataPoint = target.isSingleDataPoint;
 
@@ -351,7 +351,7 @@ function parseResponses(options, response) {
                 const segmentPropName = isSingleDataPoint ? 'k0' : 'k1';
                 if (target.segmentBy) {
                     t =
-                        isMultiSegmentations || isTabularFormat
+                        isSingleTarget || isTabularFormat
                             ? FormatterService.formatLabelValue(d[segmentPropName])
                             : `${FormatterService.formatLabelValue(target.target)} (${
                                   d[segmentPropName]

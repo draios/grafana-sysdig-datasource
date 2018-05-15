@@ -93,12 +93,13 @@ export class SysdigDatasource {
                 const targetOptions = {
                     segmentBy: isTabularFormat === false ? target.segmentBy : targets[0].segmentBy,
                     filter: isTabularFormat === false ? target.filter : targets[0].filter,
-                    pageLimit: isTabularFormat === false ? target.pageLimit : targets[0].pageLimit,
-                    sortDirection:
-                        isTabularFormat === false ? target.sortDirection : targets[0].sortDirection,
 
-                    // only the first target is allowed to set the "single data point" property
-                    isSingleDataPoint: targets[0].isSingleDataPoint
+                    // pagination configuration is set for first target only
+                    pageLimit: targets[0].pageLimit,
+                    sortDirection: targets[0].sortDirection,
+
+                    // "single data point" configuration is set for first target only
+                    isSingleDataPoint: isTabularFormat || targets[0].isSingleDataPoint
                 };
 
                 return Object.assign({}, target, targetOptions, {

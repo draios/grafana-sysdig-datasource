@@ -79,7 +79,7 @@ limitations under the License.
   </div>
 
   <!-- Time series vs data point -->
-  <div class="gf-form gf-form-inline" ng-if="ctrl.isFirstTarget()">
+  <div class="gf-form gf-form-inline" ng-if="ctrl.panel.type !== 'table' && ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <div class="gf-form gf-form--grow">
         <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-11" checked="ctrl.target.isSingleDataPoint"
@@ -89,7 +89,7 @@ limitations under the License.
   </div>
 
   <!-- Display options for segmented data -->
-  <div class="gf-form-inline" ng-if="ctrl.target.segmentBy && (ctrl.panel.type !== 'table' || ctrl.isFirstTarget())">
+  <div class="gf-form-inline" ng-if="ctrl.panel.type !== 'table' && ctrl.target.segmentBy && ctrl.isFirstTarget()">
     <div class="gf-form">
       <label class="gf-form-label width-11">
         Display
