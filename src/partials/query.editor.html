@@ -79,7 +79,7 @@ limitations under the License.
   </div>
 
   <!-- Time series vs data point -->
-  <div class="gf-form gf-form-inline">
+  <div class="gf-form gf-form-inline" ng-if="ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <div class="gf-form gf-form--grow">
         <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-16" checked="ctrl.target.isSingleDataPoint"

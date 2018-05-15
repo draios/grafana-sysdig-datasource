@@ -34,6 +34,10 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         // return this.panel.type !== 'table';
     }
 
+    isFirstTarget() {
+        return this.panel.targets.indexOf(this.target) === 0;
+    }
+
     getMetricOptions() {
         const shouldLoadTimeSeries = this.shouldLoadTimeSeries();
 

@@ -78,7 +78,7 @@ export class SysdigDatasource {
             return target.target !== 'select metric';
         });
 
-        const targets = _.map(options.targets, (target) => {
+        const targets = _.map(options.targets, (target, i, targets) => {
             if (target.target === undefined) {
                 // here's the query control panel sending the first request with empty configuration
                 return Object.assign({}, target, {
@@ -105,7 +105,10 @@ export class SysdigDatasource {
                         target.filter,
                         options.scopedVars
                     ),
-                    pageLimit: Number.parseInt(target.pageLimit) || 10
+                    pageLimit: Number.parseInt(target.pageLimit) || 10,
+
+                    // only the first target is allowed to set the "single data point" property
+                    isSingleDataPoint: targets[0].isSingleDataPoint
                 });
             }
         });
