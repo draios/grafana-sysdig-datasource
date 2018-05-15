@@ -516,6 +516,37 @@ class TableBuilder extends TimeSeriesBuilder {
             ]
         });
     }
+
+    static buildTargets(sysdigDashboard, sysdigPanel) {
+        const keys = this.getKeys(sysdigDashboard, sysdigPanel);
+        const filterMetrics = (metric) => metric.metricId !== keys[0].metricId;
+
+        return sysdigPanel.metrics
+            .map(parseSysdigPanelValue)
+            .filter(filterMetrics)
+            .map((value, i) => {
+                return {
+                    refId: i.toString(),
+                    isSingleDataPoint: this.isSingleDataPoint(),
+                    isTabularFormat: this.isTabularFormat(),
+                    target: value.metricId,
+                    timeAggregation: value.aggregation || 'concat',
+                    groupAggregation: value.groupAggregation || 'concat',
+                    segmentBy: keys.length >= 1 ? keys[0].metricId : null,
+                    filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
+                    sortDirection: this.getTargetSortDirection(sysdigPanel),
+                    pageLimit: this.getTargetPageLimit(sysdigPanel)
+                };
+            });
+    }
+
+    static getKeys(sysdigDashboard, sysdigPanel) {
+        return sysdigPanel.metrics
+            .filter((metric) => {
+                return metric.aggregation === undefined;
+            })
+            .map(parseSysdigPanelKey);
+    }
 }
 
 class DefaultBuilder extends BaseBuilder {

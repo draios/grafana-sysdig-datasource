@@ -411,7 +411,12 @@ function parseResponses(options, response) {
                 return [
                     targetDataset.target,
                     ...data.map((dataset) => {
-                        return dataset[i].datapoints[0][0];
+                        if (dataset.length > i) {
+                            return dataset[i].datapoints[0][0];
+                        } else {
+                            // there are cases where datasets don't have the same length (and specifically some are empty, some others not)
+                            return null;
+                        }
                     })
                 ];
             })
