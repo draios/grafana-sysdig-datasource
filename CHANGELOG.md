@@ -4,10 +4,10 @@
 (...)
 
 **What's new**
-
+* Support for tables ([#28](https://github.com/draios/grafana-sysdig-datasource/pull/28))
 
 **What's improved or fixed**
-
+* Documentation ([#27](https://github.com/draios/grafana-sysdig-datasource/pull/27))
 
 **What's internal**
 
