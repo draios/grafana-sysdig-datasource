@@ -129,17 +129,22 @@ export class SysdigDatasource {
     }
 
     metricFindQuery(query, options) {
+        const normOptions = Object.assign(
+            { areLabelsIncluded: false, range: null, variable: null },
+            options
+        );
+
         if (query) {
             return MetricsService.queryMetrics(
                 this.getBackendConfiguration(),
                 this.templateSrv,
                 query,
-                { userTime: convertRangeToUserTime(options.range) }
+                { userTime: convertRangeToUserTime(normOptions.range) }
             ).then((result) =>
                 result
                     // NOTE: The backend doesn't support multi-value scope expressions with null (see https://sysdig.atlassian.net/browse/SMBACK-1745)
                     .filter((v) => v !== null)
-                    .sort(this.getLabelValuesSorter(options.variable.sort))
+                    .sort(this.getLabelValuesSorter(normOptions.variable.sort))
                     .map((labelValue) => ({
                         text: FormatterService.formatLabelValue(labelValue)
                     }))
@@ -148,7 +153,13 @@ export class SysdigDatasource {
             return (
                 MetricsService.findMetrics(this.getBackendConfiguration())
                     // filter out all tags/labels/other string metrics
-                    .then((result) => result.filter((metric) => metric.isNumeric))
+                    .then((result) => {
+                        if (normOptions.areLabelsIncluded) {
+                            return result;
+                        } else {
+                            return result.filter((metric) => metric.isNumeric);
+                        }
+                    })
             );
         }
     }

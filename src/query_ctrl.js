@@ -32,19 +32,17 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         this.target.isTabularFormat = this.panel.type === 'table';
     }
 
-    shouldLoadTimeSeries() {
-        return true;
-    }
-
     isFirstTarget() {
         return this.panel.targets.indexOf(this.target) === 0;
     }
 
     getMetricOptions() {
-        const shouldLoadTimeSeries = this.shouldLoadTimeSeries();
-
         let parseMetric;
-        if (shouldLoadTimeSeries) {
+        let options = {
+            areLabelsIncluded: this.panel.type === 'table'
+        };
+
+        if (this.panel.type !== 'table') {
             parseMetric = (m) => ({ text: m.id, value: m.id });
         } else {
             parseMetric = (m) => {
@@ -56,32 +54,40 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             };
         }
 
-        return this.datasource.metricFindQuery().then((data) => {
+        return this.datasource.metricFindQuery(null, options).then((data) => {
             return data.map(parseMetric);
+        });
+    }
+
+    getAggregationOptions() {
+        let options = {
+            areLabelsIncluded: this.panel.type === 'table'
+        };
+
+        return this.datasource.metricFindQuery(null, options).then((data) => {
+            return data.filter((m) => m.id === this.target.target)[0];
         });
     }
 
     getTimeAggregationOptions() {
         const options = [
-            { value: 'timeAvg', text: 'Rate' },
             { value: 'avg', text: 'Average' },
+            { value: 'timeAvg', text: 'Rate' },
+            { value: 'sum', text: 'Sum' },
             { value: 'min', text: 'Min' },
             { value: 'max', text: 'Max' },
-            { value: 'concat', text: 'Concat' }
+            { value: 'count', text: 'Count' },
+            { value: 'concat', text: 'Concat' },
+            { value: 'distinct', text: 'Distinct' }
         ];
 
-        return this.datasource
-            .metricFindQuery()
-            .then((data) => {
-                return data.filter((m) => m.id === this.target.target)[0];
-            })
-            .then((m) => {
-                if (m) {
-                    return options.filter((d) => m.timeAggregations.indexOf(d.value) >= 0);
-                } else {
-                    return [];
-                }
-            });
+        return this.getAggregationOptions().then((m) => {
+            if (m) {
+                return options.filter((d) => m.aggregations.indexOf(d.value) >= 0);
+            } else {
+                return [];
+            }
+        });
     }
 
     getGroupAggregationOptions() {
@@ -90,21 +96,18 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             { value: 'sum', text: 'Sum' },
             { value: 'min', text: 'Min' },
             { value: 'max', text: 'Max' },
-            { value: 'concat', text: 'Concat' }
+            { value: 'count', text: 'Count' },
+            { value: 'concat', text: 'Concat' },
+            { value: 'distinct', text: 'Distinct' }
         ];
 
-        return this.datasource
-            .metricFindQuery()
-            .then((data) => {
-                return data.filter((m) => m.id === this.target.target)[0];
-            })
-            .then((m) => {
-                if (m) {
-                    return options.filter((d) => m.groupAggregations.indexOf(d.value) >= 0);
-                } else {
-                    return [];
-                }
-            });
+        return this.getAggregationOptions().then((m) => {
+            if (m) {
+                return options.filter((d) => m.groupAggregations.indexOf(d.value) >= 0);
+            } else {
+                return [];
+            }
+        });
     }
 
     getSortDirectionOptions() {
