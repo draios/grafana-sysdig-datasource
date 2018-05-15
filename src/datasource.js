@@ -89,7 +89,19 @@ export class SysdigDatasource {
                     pageLimit: 10
                 });
             } else {
-                return Object.assign({}, target, {
+                const isTabularFormat = targets[0].isTabularFormat;
+                const targetOptions = {
+                    segmentBy: isTabularFormat === false ? target.segmentBy : targets[0].segmentBy,
+                    filter: isTabularFormat === false ? target.filter : targets[0].filter,
+                    pageLimit: isTabularFormat === false ? target.pageLimit : targets[0].pageLimit,
+                    sortDirection:
+                        isTabularFormat === false ? target.sortDirection : targets[0].sortDirection,
+
+                    // only the first target is allowed to set the "single data point" property
+                    isSingleDataPoint: targets[0].isSingleDataPoint
+                };
+
+                return Object.assign({}, target, targetOptions, {
                     target: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
                         target.target,
@@ -97,18 +109,16 @@ export class SysdigDatasource {
                     ),
                     segmentBy: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
-                        target.segmentBy,
+                        targetOptions.segmentBy,
                         options.scopedVars
                     ),
                     filter: TemplatingService.replace(
                         this.templateSrv,
-                        target.filter,
+                        targetOptions.filter,
                         options.scopedVars
                     ),
-                    pageLimit: Number.parseInt(target.pageLimit) || 10,
 
-                    // only the first target is allowed to set the "single data point" property
-                    isSingleDataPoint: targets[0].isSingleDataPoint
+                    pageLimit: Number.parseInt(targetOptions.pageLimit) || 10
                 });
             }
         });
