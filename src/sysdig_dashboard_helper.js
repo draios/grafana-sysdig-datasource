@@ -491,7 +491,29 @@ class TableBuilder extends TimeSeriesBuilder {
             sort: {
                 col: 1,
                 desc: true
-            }
+            },
+            styles: [
+                ...sysdigPanel.metrics.map((metric) => {
+                    const format = this.getValueFormat(metric, options.metrics);
+                    if (format === 'none') {
+                        return {
+                            pattern: metric.metricId,
+                            type: 'string'
+                        };
+                    } else {
+                        return {
+                            pattern: metric.metricId,
+                            type: 'number',
+                            unit: format,
+                            decimals: 2
+                        };
+                    }
+                }),
+                {
+                    pattern: '/.*/',
+                    type: 'string'
+                }
+            ]
         });
     }
 }
