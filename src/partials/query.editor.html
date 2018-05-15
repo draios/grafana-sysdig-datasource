@@ -53,7 +53,7 @@ limitations under the License.
   </div>
 
   <!-- Segmentation -->
-  <div class="gf-form gf-form-inline">
+  <div class="gf-form gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-10">
         Segment by
@@ -67,7 +67,7 @@ limitations under the License.
   </div>
 
   <!-- Filter -->
-  <div class="gf-form-inline">
+  <div class="gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-10">
         Filter
@@ -89,7 +89,7 @@ limitations under the License.
   </div>
 
   <!-- Display options for segmented data -->
-  <div class="gf-form-inline" ng-if="ctrl.target.segmentBy">
+  <div class="gf-form-inline" ng-if="ctrl.target.segmentBy && (ctrl.panel.type !== 'table' || ctrl.isFirstTarget())">
     <div class="gf-form">
       <label class="gf-form-label width-10">
         Display

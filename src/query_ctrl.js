@@ -27,11 +27,13 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         this.target.segmentBy = this.target.segmentBy || null;
         this.target.sortDirection = this.target.sortDirection || 'desc';
         this.target.pageLimit = this.target.pageLimit || 10;
+
+        // enforce tabular format to be applied when the panel type is a table
+        this.target.isTabularFormat = this.panel.type === 'table';
     }
 
     shouldLoadTimeSeries() {
         return true;
-        // return this.panel.type !== 'table';
     }
 
     isFirstTarget() {
@@ -64,7 +66,8 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             { value: 'timeAvg', text: 'Rate' },
             { value: 'avg', text: 'Average' },
             { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' }
+            { value: 'max', text: 'Max' },
+            { value: 'concat', text: 'Concat' }
         ];
 
         return this.datasource
@@ -86,7 +89,8 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             { value: 'avg', text: 'Average' },
             { value: 'sum', text: 'Sum' },
             { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' }
+            { value: 'max', text: 'Max' },
+            { value: 'concat', text: 'Concat' }
         ];
 
         return this.datasource
