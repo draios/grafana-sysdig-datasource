@@ -61,7 +61,11 @@ export default class MetricsService {
             return ApiService.send(backend, {
                 url: `api/data/metrics/${metric}/segmentationMetrics`
             }).then((result) => {
-                return result.data.segmentationMetrics.sort((a, b) => a.localeCompare(b));
+                if (result.data.segmentationMetrics) {
+                    return result.data.segmentationMetrics.sort((a, b) => a.localeCompare(b));
+                } else {
+                    return [];
+                }
             });
         } else {
             return backend.backendSrv.$q.when([]);
