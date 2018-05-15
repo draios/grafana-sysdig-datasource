@@ -62,7 +62,7 @@ user@host:~$ tar zxf sysdig.tgz -C grafana-data/plugins
 ```
 2. Start the container with the current user, to give read/write permissions to the data directory:
 ```
-ID=$(id -u)
+user@host:~$ ID=$(id -u)
 user@host:~$ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
 ```
 
@@ -73,11 +73,10 @@ user@host:~$ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafa
 
 The plugin can be installed on any host where Grafana is installed. To install the plugin:
 
-1. Open a shell terminal.
-2. Run the relevant series of commands for the operating system:
-
 ##### Linux
 
+1. Open a shell terminal.
+2. Run the series of commands below:
 ```
 user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
 user@host:~$ tar zxf sysdig.tgz
@@ -90,6 +89,9 @@ user@host:~$ sudo service grafana-server restart
 
 ##### Mac
 
+
+1. Open a shell terminal.
+2. Run the series of commands below:
 ```
 user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
 user@host:~$ tar zxf sysdig.tgz
@@ -111,12 +113,15 @@ user@host:~$ brew services restart grafana
 
 ### 2. Add datasource
 
-In Grafana, select **Add Data Sources**:
+To add a datasource to Grafana:
 
-1. **Name**: Any name of your choice
-2. **Type**: Choose _Sysdig_
-3. **Plan**: Pick _Basic/Pro Cloud_ if you use Sysdig SaaS or _Pro Software_ if you use on premises
-4. **API Token**: In your Sysdig UI go to _Settings -> User Profile -> Sysdig Monitor API token_. Copy the token and paste it.
+1. Open Grafana.
+2. On the Datasources tab, click the **Add Data Sources** button.
+3. Define a name for the datasource.
+4. Open the Type dropdown menu, and select _Sysdig_.
+5. Open the Plan dropdown menu, and select either _Basic/Pro Cloud_ for Sysdig SaaS or _Pro Software_ for on-premises installations.
+6. Open the Sysdig UI, and navigate to **Settings -> User Profile -> Sysdig Monitor API token**.
+7. Copy the API token, and paste it into the API Token field in Grafana.
 
 <p align="center">
     <img alt="Add Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788137-d0932188-52dd-11e8-845a-3ba9c5f99842.gif" width="900" />
@@ -125,7 +130,11 @@ In Grafana, select **Add Data Sources**:
 
 ### 3. Import Sysdig dashboards
 
-After creating the datasource you will have the ability to import your Sysdig Monitor dashboards into Grafana. Click **Import** to get all your dashboards from Sysdig. Go to **Dashboards Home page** and pull down your dashboard selection to see all your dashboards here.
+After creating the datasource, Sysdig Monitor dashboards can then be imported into Grafana:
+
+1. On the Datasources tab, select the Sysdig datasource.
+2. Click the **Import** button for dashboards.
+3. Navigate to the **Dashboards** home page, and pull down the dashboard selection to see all the dashboards available.
 
 <p align="center">
     <img alt="Import Sysdig dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="900" />
@@ -134,29 +143,31 @@ After creating the datasource you will have the ability to import your Sysdig Mo
 
 ## Panels
 
-With the Sysdig datasource installed you can add your custom panels. You can use all the panels supported by Grafana, documented on the [Grafana documentation website](http://docs.grafana.org/features/panels/graph/).
+Custom panels can be added once the Sysdig datasource is installed. Any panel supported by Grafana can be used.
+
+> **Note:** For more information, refer to the [Grafana documentation website](http://docs.grafana.org/features/panels/graph/).
 
 
 ### Aggregated panels
 
-In Sysdig, number panels, bar charts and histograms display aggregated data (i.e. a single data point across the entire time window). By default, Grafana loads time series and then apply an additional aggregation to data points to calculate a single value (displayed in the Singlestat panel for instance).
+In Sysdig, number panels, bar charts and histograms display aggregated data (i.e. a single data point across the entire time window). By default, Grafana loads time series and then applies an additional aggregation to data points to calculate a single value (displayed in the Singlestat panel for instance).
 
-In order to maintain the same aggregation mechanism and precision offered by Sysdig API, you can create panels with the "Fetch single data point" flag turned on. This will instruct the datasource to make an aggregated data request to the API.
+> **Note:** To maintain the same aggregation mechanism and precision offered by the Sysdig API, create panels with the "Fetch single data point" flag turned on. This will instruct the datasource to make an aggregated data request to the API.
 
 
 ### Filters
 
-A panel can be configured with an optional filter to fetch data for a subset of the infrastructure or a given label only.
+A panel can be configured with an optional filter to fetch data for a subset of the infrastructure or only for a given label.
 
 The filter is a string, and should follow the Sysdig filtering language syntax:
 
 1. The syntax of an expression is `label_name operator "label_value"` (double-quotes are mandatory)
-2. You can combine more expressions with the usual boolean operators and/or (`expression and expression or expression`)
+2. Expressions can be combined with the boolean operators and/or (`expression and expression or expression`)
 3. The following operators are supported:
-   a. `=` and `!=` (e.g. `name = "value"` or `name != "value"`)
-   b. `contains` and `not ... contains` (e.g. `name contains "value"` or `not name contains "value"`)
-   c. `in` and `not... in` (e.g. `name in ("value-1", "value-2")` or `not name in ("value-1", "value-2")`)
-4. Valid label names are essentially the ones you can use for the segmentation (you can use the *Segment by* dropdown to look for what you need)
+   * `=` and `!=` (e.g. `name = "value"` or `name != "value"`)
+   * `contains` and `not ... contains` (e.g. `name contains "value"` or `not name contains "value"`)
+   * `in` and `not... in` (e.g. `name in ("value-1", "value-2")` or `not name in ("value-1", "value-2")`)
+4. Valid label names are essentially the ones used for the segmentation (use the *Segment by* dropdown to review what is needed).
 
 Some examples:
 
@@ -168,32 +179,35 @@ Some examples:
 
 ## Variables
 
-Variables allow you to create dynamic and interactive dashboards. It is highly suggested to take a look at [Grafana Variables documentation](http://docs.grafana.org/reference/templating/) for use cases, examples, and more.
+The Sysdig datasource plugin supports variables, allowing for dynamic and interactive dashboards to be created.
 
-The Sysdig datasource plugin supports variables. You can use variables to configure 3 properties of a dashboard panel:
+> **Note:** Sysdig recommends reviewing the [Grafana Variables documentation](http://docs.grafana.org/reference/templating/) for use cases, examples, and more.
 
-1. **Metric**: You can use a variable to select the **metric name** to use for the panel
-2. **Segmentation** (*Segment by* field): You can use a variable to select the **label name** to segment data
-3. **Filter**: You can use variables to select either a **label name** or one (or more) **label values**
+Variables can be used to configure three properties of a dashboard panel:
+
+* **Metric**: Select the **metric name** to use for the panel.
+* **Segmentation** (*Segment by* field): Select the **label name** to segment data.
+* **Filter**: Select either a **label name** or one (or more) **label values**.
 
 The following list shows how variables can be configured:
 
-1. *Query*, *custom*, and *constant* variable types are supported
-2. The query for a **metric name** can use the function `metrics(pattern)` that returns a list of metrics matching the specific `pattern` regex
-3. The query for a **label name** can use the function `label_names(pattern)` that returns a list of label names matching the specific `pattern` regex
-4. The query for a **label value** can use the function `label_values(label_name)` that returns a list of label values for the specified label name
-5. **metric name** and **label name** variables cannot have *multi-value* or *include all option* properties enabled
-6. A **label value** can be configured with *multi-value* and/or *include all option* properties enabled **only** with `in` and `not ... in` operators
+* *Query*, *custom*, and *constant* variable types are supported
+* The query for a **metric name** can use the function `metrics(pattern)` that returns a list of metrics matching the specific `pattern` regex
+* The query for a **label name** can use the function `label_names(pattern)` that returns a list of label names matching the specific `pattern` regex
+* The query for a **label value** can use the function `label_values(label_name)` that returns a list of label values for the specified label name
+* **metric name** and **label name** variables cannot have *multi-value* or *include all option* properties enabled
+* A **label value** can be configured with *multi-value* and/or *include all option* properties enabled **only** with `in` and `not ... in` operators
 
 
 ### Metric names
 
-You can create a variable that will identify a metric name, and use it to configure a panel with a dynamic metric.
+Variables can be created to identify a metric name, and then use it to configure a panel with a dynamic metric.
 
 A couple of notes about variables for metric names:
 
-1. You can use a *Query*, *Custom*, or *Constant* variables. Please note that *Multi-value* and *Include All option* must be disabled
-2. *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex
+* *Query*, *Custom*, or *Constant* variables can be used.
+> **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
+* *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex.
 
 <p align="center">
     <img width="900" alt="Metric variable configuration" src="https://user-images.githubusercontent.com/5033993/39940750-26fb6bec-550f-11e8-9cad-97af134d4252.png">
@@ -209,8 +223,9 @@ Label names are used for panel segmentations (*Segment by* field) and filters.
 
 A couple of notes about variables for label names:
 
-1. You can use a *Query*, *Custom*, or *Constant* variables. Please note that *Multi-value* and *Include All option* must be disabled
-2. *Query* variables can use the `label_names(pattern)` function, that returns a list of label names matching the specific `pattern` regex
+* *Query*, *Custom*, or *Constant* variables can be used.
+> **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
+* *Query* variables can use the `label_names(pattern)` function, that returns a list of label names matching the specific `pattern` regex.
 
 <p align="center">
     <img width="900" alt="Segmentation variable configuration" src="https://user-images.githubusercontent.com/5033993/39940754-275b9846-550f-11e8-8ce4-130e3d4f3dac.png">
@@ -222,14 +237,15 @@ A couple of notes about variables for label names:
 
 ### Label values
 
-Label values are used in filters to identify a subset of the infrastructure or data in general. With variables, you can create a row per service or using a single dashboard to analyze all your applications.
+Label values are used in filters to identify a subset of the infrastructure or data in general, allowing users to create a row per service, or use a single dashboard to analyze all available applications.
 
 Some notes about variables for label values:
 
-1. You can use a *Query*, *Custom*, or *Constant* variables
-2. *Query* variables can use the `label_values(label_name)` function, that returns a list of label values for the specified label name
-3. *Multi-value* variables, or variables with *Include All option* enabled can **only** be used with `in` and `not ... in` operators
-4. Variables must not be enclosed by quotes, the final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`)
+* You can use a *Query*, *Custom*, or *Constant* variables.
+* *Query* variables can use the `label_values(label_name)` function, that returns a list of label values for the specified label name.
+* *Multi-value* variables, or variables with the *Include All* option enabled can **only** be used with `in` and `not ... in` operators.
+4. Variables must not be enclosed by quotes.
+> **Note:** The final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`).
 
 <p align="center">
     <img width="900" alt="Filter variable configuration" src="https://user-images.githubusercontent.com/5033993/39940752-27214a42-550f-11e8-854b-f696c321c383.png">
@@ -239,7 +255,7 @@ Some notes about variables for label values:
 </p>
 
 
-And here is the final result, with dynamic rows and panels:
+The complete example below contains dynamic rows and panels:
 
 <p align="center">
     <img width="1200" alt="Final dashboard with variables" src="https://user-images.githubusercontent.com/5033993/39940746-26706f88-550f-11e8-81c2-51cc9233c18c.png">
@@ -250,14 +266,14 @@ And here is the final result, with dynamic rows and panels:
 
 ## Current limitations
 
-The Sysdig datasource is in beta version. We'll iterate quickly to make it more complete and robust, in the meanwhile you might encounter some issues. Here is a list of known limitations:
+The Sysdig datasource is currently in Beta. Sysdig will continue to release iterations to make the datasource more complete and robust; however, some issues may be encountered. A list of known limitations is provided below:
 
-1. The datasource has been tested with Grafana 4.6 and the latest release (5.1). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
-3. We'll leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet
-4. Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are quite different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not create table panels. This might not be true forever...
-5. Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels
-6. With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655)
-7. Grafana doesn't support exponential y-axis scale (the import from Sysdig will fallback to linear scale)
+* The datasource has only been tested with Grafana 4.6 and the latest release (5.1). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
+* We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
+* Grafana supports [tables](http://docs.grafana.org/features/panels/table_panel/), but they are quite different from [Sysdig tables](https://support.sysdig.com/hc/en-us/articles/204259479-Customize-Panels). For this reason, importing Sysdig dashboards will not currently create table panels.
+* Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels.
+* With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).
+* Grafana doesn't support exponential y-axis scale (the import from Sysdig will fallback to linear scale).
 
 
 ## Support / Community
