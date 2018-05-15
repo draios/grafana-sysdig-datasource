@@ -5,8 +5,6 @@ _Note: Public readme is available at https://gist.github.com/davideschiera/9bcb0
 
 This README discusses the installation and configuration instructions for the Sysdig datasource plugin for Grafana.
 
-> **Note:** The Sysdig datasource plugin is currently not included in the [official & community built plugin page](https://grafana.com/plugins), and needs to be installed manually.
-
 <p align="center">
     <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="1200" />
 </p>
@@ -16,7 +14,9 @@ This README discusses the installation and configuration instructions for the Sy
 
 ### Installation
 
-There are several installation approaches available for the Sysdig datasource plugin:
+There are several installation approaches available for the Sysdig datasource plugin.
+
+> **Note:** The Sysdig datasource plugin is currently not included in the [official & community built plugin page](https://grafana.com/plugins), and needs to be installed manually.
 
 #### Using a Grafana Docker Container
 
@@ -161,13 +161,13 @@ A panel can be configured with an optional filter to fetch data for a subset of 
 
 The filter is a string, and should follow the Sysdig filtering language syntax:
 
-1. The syntax of an expression is `label_name operator "label_value"` (double-quotes are mandatory)
-2. Expressions can be combined with the boolean operators and/or (`expression and expression or expression`)
-3. The following operators are supported:
+* The syntax of an expression is `label_name operator "label_value"` (double-quotes are mandatory)
+* Expressions can be combined with the boolean operators and/or (`expression and expression or expression`)
+* The following operators are supported:
    * `=` and `!=` (e.g. `name = "value"` or `name != "value"`)
    * `contains` and `not ... contains` (e.g. `name contains "value"` or `not name contains "value"`)
    * `in` and `not... in` (e.g. `name in ("value-1", "value-2")` or `not name in ("value-1", "value-2")`)
-4. Valid label names are essentially the ones used for the segmentation (use the *Segment by* dropdown to review what is needed).
+* Valid label names are essentially the ones used for the segmentation (use the *Segment by* dropdown to review what is needed).
 
 Some examples:
 
@@ -206,7 +206,7 @@ Variables can be created to identify a metric name, and then use it to configure
 A couple of notes about variables for metric names:
 
 * *Query*, *Custom*, or *Constant* variables can be used.
-> **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
+  > **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
 * *Query* variables can use the `metrics(pattern)` function, that returns a list of metrics matching the specific `pattern` regex.
 
 <p align="center">
@@ -224,7 +224,7 @@ Label names are used for panel segmentations (*Segment by* field) and filters.
 A couple of notes about variables for label names:
 
 * *Query*, *Custom*, or *Constant* variables can be used.
-> **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
+  > **Note:** Please note that the *Multi-value* and *Include All* options must be disabled.
 * *Query* variables can use the `label_names(pattern)` function, that returns a list of label names matching the specific `pattern` regex.
 
 <p align="center">
@@ -244,8 +244,8 @@ Some notes about variables for label values:
 * You can use a *Query*, *Custom*, or *Constant* variables.
 * *Query* variables can use the `label_values(label_name)` function, that returns a list of label values for the specified label name.
 * *Multi-value* variables, or variables with the *Include All* option enabled can **only** be used with `in` and `not ... in` operators.
-4. Variables must not be enclosed by quotes.
-> **Note:** The final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`).
+* Variables must not be enclosed by quotes.
+  > **Note:** The final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`).
 
 <p align="center">
     <img width="900" alt="Filter variable configuration" src="https://user-images.githubusercontent.com/5033993/39940752-27214a42-550f-11e8-854b-f696c321c383.png">
