@@ -1,6 +1,3 @@
-_Note: Public readme is available at https://gist.github.com/davideschiera/9bcb026e5d45b9dc4def48c525dd8cdb_
-
-
 ## Sysdig Datasource Plugin for Grafana (Beta)
 
 This README discusses the installation and configuration instructions for the Sysdig datasource plugin for Grafana.
