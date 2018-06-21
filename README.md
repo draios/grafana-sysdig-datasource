@@ -32,7 +32,7 @@ user@host:grafana-sysdig$ echo "ARG GRAFANA_VERSION=\"latest\"
 
 FROM grafana/grafana:\${GRAFANA_VERSION}
 
-ADD grafana-sysdig /var/lib/grafana/plugins/sysdig
+ADD sysdig /var/lib/grafana/plugins/sysdig
 " > Dockerfile
 ```
 3. Build the image:
