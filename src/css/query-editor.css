@@ -18,3 +18,7 @@ limitations under the License.
 .sysdig-query-editor-dropdown--grow {
     flex: 1;
 }
+
+.sysdig-query-editor-form--aggregation {
+    min-width: 90px; /* set to accomodate longest aggreation label */
+}

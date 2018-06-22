@@ -285,10 +285,17 @@ function getRequest(target, requestTime) {
     function getSort() {
         const sortDirection = target.sortDirection || 'desc';
 
-        const sort = [{ v0: sortDirection }, { k0: sortDirection }];
+        let sort;
 
-        if (target.segmentBy) {
-            sort.push({ k1: sortDirection });
+        if (target.isTabularFormat === false) {
+            sort = [{ v0: sortDirection }, { k0: sortDirection }];
+
+            if (target.segmentBy) {
+                sort.push({ k1: sortDirection });
+            }
+        } else {
+            // sort table by first label, let Grafana to sort the final table then
+            sort = [{ k0: sortDirection }];
         }
 
         return sort;
@@ -332,6 +339,8 @@ function getRequest(target, requestTime) {
 }
 
 function parseResponses(options, response) {
+    const isTabularFormat = options.targets[0].isTabularFormat;
+    const isSingleTarget = options.targets.length === 1;
     const data = options.targets.map((target, i) => {
         const isSingleDataPoint = target.isSingleDataPoint;
 
@@ -342,7 +351,7 @@ function parseResponses(options, response) {
                 const segmentPropName = isSingleDataPoint ? 'k0' : 'k1';
                 if (target.segmentBy) {
                     t =
-                        options.targets.length === 1
+                        isSingleTarget || isTabularFormat
                             ? FormatterService.formatLabelValue(d[segmentPropName])
                             : `${FormatterService.formatLabelValue(target.target)} (${
                                   d[segmentPropName]
@@ -390,7 +399,35 @@ function parseResponses(options, response) {
         }
     });
 
-    return {
-        data: Array.concat(...data)
-    };
+    if (isTabularFormat && data.length > 0) {
+        const targetsDataset = data[0];
+        const tabularDataset = Object.assign({}, data[0], {
+            type: 'table',
+            columns: [
+                { text: options.targets[0].segmentBy },
+                ...options.targets.map((target) => ({ text: target.target }))
+            ],
+            rows: targetsDataset.map((targetDataset, i) => {
+                return [
+                    targetDataset.target,
+                    ...data.map((dataset) => {
+                        if (dataset.length > i) {
+                            return dataset[i].datapoints[0][0];
+                        } else {
+                            // there are cases where datasets don't have the same length (and specifically some are empty, some others not)
+                            return null;
+                        }
+                    })
+                ];
+            })
+        });
+
+        return {
+            data: [Object.assign({}, data[0], tabularDataset)]
+        };
+    } else {
+        return {
+            data: _.flatten(data)
+        };
+    }
 }

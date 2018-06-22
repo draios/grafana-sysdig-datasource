@@ -78,7 +78,7 @@ export class SysdigDatasource {
             return target.target !== 'select metric';
         });
 
-        const targets = _.map(options.targets, (target) => {
+        const targets = _.map(options.targets, (target, i, targets) => {
             if (target.target === undefined) {
                 // here's the query control panel sending the first request with empty configuration
                 return Object.assign({}, target, {
@@ -89,7 +89,20 @@ export class SysdigDatasource {
                     pageLimit: 10
                 });
             } else {
-                return Object.assign({}, target, {
+                const isTabularFormat = targets[0].isTabularFormat;
+                const targetOptions = {
+                    segmentBy: isTabularFormat === false ? target.segmentBy : targets[0].segmentBy,
+                    filter: isTabularFormat === false ? target.filter : targets[0].filter,
+
+                    // pagination configuration is set for first target only
+                    pageLimit: targets[0].pageLimit,
+                    sortDirection: targets[0].sortDirection,
+
+                    // "single data point" configuration is set for first target only
+                    isSingleDataPoint: isTabularFormat || targets[0].isSingleDataPoint
+                };
+
+                return Object.assign({}, target, targetOptions, {
                     target: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
                         target.target,
@@ -97,15 +110,16 @@ export class SysdigDatasource {
                     ),
                     segmentBy: TemplatingService.replaceSingleMatch(
                         this.templateSrv,
-                        target.segmentBy,
+                        targetOptions.segmentBy,
                         options.scopedVars
                     ),
                     filter: TemplatingService.replace(
                         this.templateSrv,
-                        target.filter,
+                        targetOptions.filter,
                         options.scopedVars
                     ),
-                    pageLimit: Number.parseInt(target.pageLimit) || 10
+
+                    pageLimit: Number.parseInt(targetOptions.pageLimit) || 10
                 });
             }
         });
@@ -116,22 +130,35 @@ export class SysdigDatasource {
     }
 
     metricFindQuery(query, options) {
+        const normOptions = Object.assign(
+            { areLabelsIncluded: false, range: null, variable: null },
+            options
+        );
+
         if (query) {
             return MetricsService.queryMetrics(
                 this.getBackendConfiguration(),
                 this.templateSrv,
                 query,
-                { userTime: convertRangeToUserTime(options.range) }
+                { userTime: convertRangeToUserTime(normOptions.range) }
             ).then((result) =>
-                result.sort(this.getLabelValuesSorter(options.variable.sort)).map((labelValue) => ({
-                    text: FormatterService.formatLabelValue(labelValue)
-                }))
+                result
+                    .sort(this.getLabelValuesSorter(normOptions.variable.sort))
+                    .map((labelValue) => ({
+                        text: FormatterService.formatLabelValue(labelValue)
+                    }))
             );
         } else {
             return (
                 MetricsService.findMetrics(this.getBackendConfiguration())
                     // filter out all tags/labels/other string metrics
-                    .then((result) => result.filter((metric) => metric.isNumeric))
+                    .then((result) => {
+                        if (normOptions.areLabelsIncluded) {
+                            return result;
+                        } else {
+                            return result.filter((metric) => metric.isNumeric);
+                        }
+                    })
             );
         }
     }

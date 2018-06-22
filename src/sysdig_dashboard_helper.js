@@ -96,6 +96,9 @@ export default class SysdigDashboardHelper {
             case 'summary':
                 return NumberBuilder;
 
+            case 'table':
+                return TableBuilder;
+
             default:
                 console.warn(`${panel.showAs} panels cannot be exported to Grafana`);
                 return DefaultBuilder;
@@ -116,6 +119,18 @@ const GRAFANA_COLUMN_COUNT = 24;
 const SYSDIG_COLUMN_COUNT = 12;
 
 class BaseBuilder {
+    static getPanelType() {
+        return null;
+    }
+
+    static isSingleDataPoint() {
+        return false;
+    }
+
+    static isTabularFormat() {
+        return false;
+    }
+
     static getTargetGridLayout(sysdigDashboard, sysdigPanel) {
         const index = sysdigDashboard.items.indexOf(sysdigPanel);
         const layout = sysdigDashboard.layout[index];
@@ -133,9 +148,9 @@ class BaseBuilder {
         return sysdigPanel.scope || sysdigDashboard.filterExpression;
     }
 
-    static getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index, panelType) {
+    static getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index) {
         return {
-            type: panelType,
+            type: this.getPanelType(),
             datasource: options.datasourceName,
             id: index,
             title: sysdigPanel.name,
@@ -190,10 +205,14 @@ class BaseBuilder {
 }
 
 class TimeSeriesBuilder extends BaseBuilder {
+    static getPanelType() {
+        return 'graph';
+    }
+
     static build(sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign(
             {},
-            this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index, 'graph'),
+            this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
             {
                 targets: this.buildTargets(sysdigDashboard, sysdigPanel),
                 legend: {
@@ -230,10 +249,6 @@ class TimeSeriesBuilder extends BaseBuilder {
         return keys;
     }
 
-    static isSingleDataPoint() {
-        return false;
-    }
-
     static buildTargets(sysdigDashboard, sysdigPanel) {
         const values = this.getValues(sysdigDashboard, sysdigPanel);
         const keys = this.getKeys(sysdigDashboard, sysdigPanel);
@@ -242,6 +257,7 @@ class TimeSeriesBuilder extends BaseBuilder {
             return {
                 refId: i.toString(),
                 isSingleDataPoint: this.isSingleDataPoint(),
+                isTabularFormat: this.isTabularFormat(),
                 target: value.metricId,
                 timeAggregation: value.aggregation,
                 groupAggregation: value.groupAggregation,
@@ -343,6 +359,15 @@ class TimeSeriesAreaBuilder extends TimeSeriesBuilder {
 }
 
 class HistogramBuilder extends TimeSeriesBuilder {
+    static isSingleDataPoint() {
+        return true;
+    }
+
+    static getValueFormat() {
+        // the axis will count items in each bucket
+        return 'short';
+    }
+
     static build(sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
             bars: true,
@@ -352,15 +377,6 @@ class HistogramBuilder extends TimeSeriesBuilder {
                 mode: 'histogram'
             }
         });
-    }
-
-    static isSingleDataPoint() {
-        return true;
-    }
-
-    static getValueFormat() {
-        // the axis will count items in each bucket
-        return 'short';
     }
 
     static getTargetPageLimit(sysdigPanel) {
@@ -373,6 +389,10 @@ class HistogramBuilder extends TimeSeriesBuilder {
 }
 
 class BarChartBuilder extends TimeSeriesBuilder {
+    static isSingleDataPoint() {
+        return true;
+    }
+
     static build(sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
             bars: true,
@@ -383,13 +403,17 @@ class BarChartBuilder extends TimeSeriesBuilder {
             }
         });
     }
+}
+
+class NumberBuilder extends BaseBuilder {
+    static getPanelType() {
+        return 'singlestat';
+    }
 
     static isSingleDataPoint() {
         return true;
     }
-}
 
-class NumberBuilder extends BaseBuilder {
     static build(sysdigDashboard, options, sysdigPanel, index) {
         const value = this.getValue(sysdigDashboard, sysdigPanel);
 
@@ -399,13 +423,7 @@ class NumberBuilder extends BaseBuilder {
 
             return Object.assign(
                 {},
-                this.getBasePanelConfiguration(
-                    sysdigDashboard,
-                    options,
-                    sysdigPanel,
-                    index,
-                    'singlestat'
-                ),
+                this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
                 {
                     targets: this.buildTargets(sysdigDashboard, sysdigPanel),
                     format
@@ -442,7 +460,8 @@ class NumberBuilder extends BaseBuilder {
         return [
             {
                 refId: '0',
-                isSingleDataPoint: true,
+                isSingleDataPoint: this.isSingleDataPoint(),
+                isTabularFormat: this.isTabularFormat(),
                 segmentBy: null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                 target: value.metricId,
@@ -453,16 +472,97 @@ class NumberBuilder extends BaseBuilder {
     }
 }
 
+class TableBuilder extends TimeSeriesBuilder {
+    static getPanelType() {
+        return 'table';
+    }
+
+    static isSingleDataPoint() {
+        return true;
+    }
+
+    static isTabularFormat() {
+        return true;
+    }
+
+    static build(sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
+            transform: 'timeseries_aggregations',
+            sort: {
+                col: 1,
+                desc: true
+            },
+            styles: [
+                ...sysdigPanel.metrics.map((metric) => {
+                    const format = this.getValueFormat(metric, options.metrics);
+                    if (format === 'none') {
+                        return {
+                            pattern: metric.metricId,
+                            type: 'string'
+                        };
+                    } else {
+                        return {
+                            pattern: metric.metricId,
+                            type: 'number',
+                            unit: format,
+                            decimals: 2
+                        };
+                    }
+                }),
+                {
+                    pattern: '/.*/',
+                    type: 'string'
+                }
+            ]
+        });
+    }
+
+    static buildTargets(sysdigDashboard, sysdigPanel) {
+        const keys = this.getKeys(sysdigDashboard, sysdigPanel);
+        const filterMetrics = (metric) => metric.metricId !== keys[0].metricId;
+
+        return sysdigPanel.metrics
+            .map(parseSysdigPanelValue)
+            .filter(filterMetrics)
+            .map((value, i) => {
+                return {
+                    refId: i.toString(),
+                    isSingleDataPoint: this.isSingleDataPoint(),
+                    isTabularFormat: this.isTabularFormat(),
+                    target: value.metricId,
+                    timeAggregation: value.aggregation || 'concat',
+                    groupAggregation: value.groupAggregation || 'concat',
+                    segmentBy: keys.length >= 1 ? keys[0].metricId : null,
+                    filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
+                    sortDirection: this.getTargetSortDirection(sysdigPanel),
+                    pageLimit: this.getTargetPageLimit(sysdigPanel)
+                };
+            });
+    }
+
+    static getKeys(sysdigDashboard, sysdigPanel) {
+        return sysdigPanel.metrics
+            .filter((metric) => {
+                return metric.aggregation === undefined;
+            })
+            .map(parseSysdigPanelKey);
+    }
+}
+
 class DefaultBuilder extends BaseBuilder {
     static build(sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign(
             {},
-            this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index, 'text'),
+            this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
             {
                 mode: 'html',
                 content: this.getContent(sysdigPanel)
             }
         );
+    }
+
+    static getPanelType() {
+        return 'text';
     }
 
     static getContent(sysdigPanel) {
