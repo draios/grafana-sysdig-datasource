@@ -143,8 +143,6 @@ export class SysdigDatasource {
                 { userTime: convertRangeToUserTime(normOptions.range) }
             ).then((result) =>
                 result
-                    // NOTE: The backend doesn't support multi-value scope expressions with null (see https://sysdig.atlassian.net/browse/SMBACK-1745)
-                    .filter((v) => v !== null)
                     .sort(this.getLabelValuesSorter(normOptions.variable.sort))
                     .map((labelValue) => ({
                         text: FormatterService.formatLabelValue(labelValue)
