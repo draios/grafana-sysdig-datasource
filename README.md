@@ -240,6 +240,9 @@ Some notes about variables for label values:
 
 * You can use a *Query*, *Custom*, or *Constant* variables.
 * *Query* variables can use the `label_values(label_name)` function, that returns a list of label values for the specified label name.
+* The query accepts the following optional parameters:
+  1. `filter` to limit the list of values according to the specified filter. Example: `label_values(kubernetes.namespace.name, filter='kubernetes.deployment.name = "foo"')` to return a list of Kubernetes namespaces within the Kubernetes deployment named `foo`. You can also refer to other variables in the filter for an additional level of customization in dashboards
+  2. `from`, `to`, `limit` to control the subset of values to show in the menu in the dashboard (by default, `from=0, to=99` to return the first 100 entries)
 * *Multi-value* variables, or variables with the *Include All* option enabled can **only** be used with `in` and `not ... in` operators.
 * Variables must not be enclosed by quotes.
   > **Note:** The final string will contain quotes when needed (e.g. `$name = $value` will be resolved to `metric = "foo"`).

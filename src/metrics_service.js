@@ -111,8 +111,11 @@ export default class MetricsService {
                                 to: requestTime.to * 1000000
                             },
                             metrics: [queryOptions.labelName],
-                            filter: null,
-                            paging: { from: 0, to: 99 }
+                            filter: TemplatingService.resolveQueryVariables(
+                                queryOptions.filter,
+                                templateSrv
+                            ),
+                            paging: { from: queryOptions.from, to: queryOptions.to }
                         }
                     });
                 })
