@@ -99,6 +99,9 @@ export default class SysdigDashboardHelper {
             case 'table':
                 return TableBuilder;
 
+            case 'text':
+                return TextBuilder;
+
             default:
                 console.warn(`${panel.showAs} panels cannot be exported to Grafana`);
                 return DefaultBuilder;
@@ -546,6 +549,27 @@ class TableBuilder extends TimeSeriesBuilder {
                 return metric.aggregation === undefined;
             })
             .map(parseSysdigPanelKey);
+    }
+}
+
+class TextBuilder extends BaseBuilder {
+    static getPanelType() {
+        return 'text';
+    }
+
+    static build(sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign(
+            {},
+            this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
+            {
+                mode: 'markdown',
+                content: this.getContent(sysdigPanel)
+            }
+        );
+    }
+
+    static getContent(sysdigPanel) {
+        return sysdigPanel.markdownSource;
     }
 }
 
