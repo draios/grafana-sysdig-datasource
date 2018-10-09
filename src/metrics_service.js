@@ -78,18 +78,45 @@ export default class MetricsService {
             //
             // return list of label values
             //
-            return TimeService.validateTimeWindow(backend, options.userTime).then((requestTime) => {
-                return ApiService.send(backend, {
-                    method: 'POST',
-                    url: 'api/data/entity/metadata',
-                    data: {
-                        time: { from: requestTime.from * 1000000, to: requestTime.to * 1000000 },
-                        metrics: [queryOptions.labelName],
-                        filter: null,
-                        paging: { from: 0, to: 99 }
+            let evaluateUserTime;
+            if (options.userTime === null) {
+                evaluateUserTime = TimeService.queryTimelines(backend).then(({ timelines }) => {
+                    if (
+                        timelines.agents.filter((t) => t.from !== null && t.to !== null).length > 0
+                    ) {
+                        return {
+                            from: (timelines.agents[0].to - timelines.agents[0].sampling) / 1000000,
+                            to: timelines.agents[0].to / 1000000,
+                            sampling: timelines.agents[0].sampling / 1000000
+                        };
+                    } else {
+                        return backend.backendSrv.$q.reject(
+                            'Unable to query metrics (data not available)'
+                        );
                     }
-                }).then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
-            });
+                });
+            } else {
+                evaluateUserTime = backend.backendSrv.$q.resolve(options.userTime);
+            }
+
+            return evaluateUserTime
+                .then((userTime) => TimeService.validateTimeWindow(backend, userTime))
+                .then((requestTime) => {
+                    return ApiService.send(backend, {
+                        method: 'POST',
+                        url: 'api/data/entity/metadata',
+                        data: {
+                            time: {
+                                from: requestTime.from * 1000000,
+                                to: requestTime.to * 1000000
+                            },
+                            metrics: [queryOptions.labelName],
+                            filter: null,
+                            paging: { from: 0, to: 99 }
+                        }
+                    });
+                })
+                .then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
         } else if ((queryOptions = TemplatingService.validateLabelNamesQuery(query)) !== null) {
             //
             // return list of label names
