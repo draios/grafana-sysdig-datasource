@@ -32,7 +32,8 @@ export default class DashboardsService {
                 const metrics = results[1];
                 const convertedDashboards = results[0].data.dashboards
                     .filter(filterDashboardBySetId.bind(null, dashboardSetId))
-                    .map(convertDashboard.bind(null, datasourceName, metrics));
+                    .map(convertDashboard.bind(null, datasourceName, metrics))
+                    .filter((dashboard) => dashboard !== null);
 
                 const options = {
                     overwrite: true
@@ -61,7 +62,19 @@ export default class DashboardsService {
         }
 
         function convertDashboard(datasourceName, metrics, dashboard) {
-            return SysdigDashboardHelper.convertToGrafana(dashboard, { datasourceName, metrics });
+            try {
+                return SysdigDashboardHelper.convertToGrafana(dashboard, {
+                    datasourceName,
+                    metrics
+                });
+            } catch (error) {
+                console.error(
+                    'An error occurred during the dashboard conversion',
+                    error,
+                    arguments
+                );
+                return null;
+            }
         }
 
         function saveDashboards(backendSrv, dashboards, options) {
