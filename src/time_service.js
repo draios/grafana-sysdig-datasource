@@ -29,12 +29,43 @@ export default class DataService {
                 })
             ])
             .then((responses) => {
-                return getRequestTime(responses[0].data, responses[1].data, userTime);
+                const requestTime = getRequestTime(responses[0].data, responses[1].data, userTime);
+
+                if (requestTime) {
+                    return requestTime;
+                } else {
+                    return q.reject('Unable to validate request time');
+                }
+            });
+    }
+
+    static queryTimelines(backend) {
+        const q = backend.backendSrv.$q;
+
+        return q
+            .all([
+                ApiService.send(backend, {
+                    url: `api/history/timelines`
+                }),
+                ApiService.send(backend, {
+                    url: `api/v2/history/timelines/alignments`
+                })
+            ])
+            .then((responses) => {
+                return {
+                    timelines: responses[0].data,
+                    alignments: responses[1].data
+                };
             });
     }
 }
 
 function getRequestTime(timelines, alignments, userTime) {
+    console.assert(userTime && userTime.from && userTime.to, 'Argument userTime is missing');
+    if (!(userTime && userTime.from && userTime.to)) {
+        return null;
+    }
+
     const fromUs = userTime.from * 1000000;
     const toUs = userTime.to * 1000000;
     const timespan = toUs - fromUs;
@@ -78,8 +109,8 @@ function getRequestTime(timelines, alignments, userTime) {
     // Align time window with required alignment
     //
     const alignTo = validAlignments[0].alignTo * 1000000;
-    const alignedFrom = Math.trunc(Math.trunc(fromUs / alignTo) * alignTo / 1000000);
-    const alignedTo = Math.trunc(Math.trunc(toUs / alignTo) * alignTo / 1000000);
+    const alignedFrom = Math.trunc((Math.trunc(fromUs / alignTo) * alignTo) / 1000000);
+    const alignedTo = Math.trunc((Math.trunc(toUs / alignTo) * alignTo) / 1000000);
 
     //
     // Adjust time window according to timeline (might miss first or last portion)
