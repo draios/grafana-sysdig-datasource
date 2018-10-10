@@ -268,7 +268,7 @@ The complete example below contains dynamic rows and panels:
 
 The Sysdig datasource is currently in Beta. Sysdig will continue to release iterations to make the datasource more complete and robust; however, some issues may be encountered. A list of known limitations is provided below:
 
-* The datasource has only been tested with Grafana 4.6 and the latest release (5.1). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
+* The datasource has only been tested with Grafana 4.6 and the latest release (5.3). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
 * We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
 * Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels.
 * With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).
