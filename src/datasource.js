@@ -252,7 +252,7 @@ function convertRangeToUserTime(range, intervalMs) {
         };
 
         if (intervalMs) {
-            userTime.sampling = Math.trunc(intervalMs / 1000);
+            userTime.sampling = Math.max(Math.trunc(intervalMs / 1000), 1);
         }
 
         return userTime;
