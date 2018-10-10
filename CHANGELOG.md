@@ -1,5 +1,18 @@
 # Changelog
 
+### v0.3
+(9/10/2018)
+
+**What's new**
+* Support for text panels ([#28](https://github.com/draios/grafana-sysdig-datasource/pull/28))
+* Support for variable options (filter, paging) ([#37](https://github.com/draios/grafana-sysdig-datasource/pull/37))
+
+**What's improved or fixed**
+* Unable to fetch data with small time ranges ([#40](https://github.com/draios/grafana-sysdig-datasource/pull/40))
+* Handle dashboard import failure ([#38](https://github.com/draios/grafana-sysdig-datasource/pull/38))
+* Fix variables preview when the dashboard doesn't have data yet ([#35](https://github.com/draios/grafana-sysdig-datasource/pull/35))
+
+
 ### v0.2
 (5/15/2018)
 

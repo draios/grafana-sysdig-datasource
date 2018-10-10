@@ -21,7 +21,7 @@ An easy and flexible way to add the Sysdig datasource plugin to a Grafana contai
 
 1. Download the plugin to the _grafana-sysdig_ directory:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
 user@host:~$ mkdir grafana-sysdig
 user@host:~$ tar zxf sysdig.tgz -C grafana-sysdig
 user@host:~$ cd grafana-sysdig
@@ -54,7 +54,7 @@ Alternatively, the default Grafana container image can be used as is, and the pl
 ```
 user@host:~$ mkdir grafana-data
 user@host:~$ mkdir grafana-data/plugins
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
 user@host:~$ tar zxf sysdig.tgz -C grafana-data/plugins
 ```
 2. Start the container with the current user, to give read/write permissions to the data directory:
@@ -75,7 +75,7 @@ The plugin can be installed on any host where Grafana is installed. To install t
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
 user@host:~$ tar zxf sysdig.tgz
 user@host:~$ sudo cp -R sysdig /var/lib/grafana/plugins
 user@host:~$ sudo service grafana-server restart
@@ -90,7 +90,7 @@ user@host:~$ sudo service grafana-server restart
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.tgz -o sysdig.tgz
+user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
 user@host:~$ tar zxf sysdig.tgz
 user@host:~$ cp -R sysdig /usr/local/var/lib/grafana/plugins
 user@host:~$ brew services restart grafana
@@ -101,7 +101,7 @@ user@host:~$ brew services restart grafana
 
 ##### Windows
 
-1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.2.zip
+1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.zip
 2. Install the plugin in the Grafana plugins folder.
 3. Restart Grafana.
 
