@@ -563,7 +563,8 @@ class TextBuilder extends BaseBuilder {
             this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
             {
                 mode: 'markdown',
-                content: this.getContent(sysdigPanel)
+                content: this.getContent(sysdigPanel),
+                transparent: sysdigPanel.hasTransparentBackground === true
             }
         );
     }
