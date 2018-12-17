@@ -21,27 +21,24 @@ An easy and flexible way to add the Sysdig datasource plugin to a Grafana contai
 
 1. Download the plugin to the _grafana-sysdig_ directory:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
-user@host:~$ mkdir grafana-sysdig
-user@host:~$ tar zxf sysdig.tgz -C grafana-sysdig
-user@host:~$ cd grafana-sysdig
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+mkdir grafana-sysdig
+tar zxf sysdig.tgz -C grafana-sysdig
+cd grafana-sysdig
 ```
 2. Create a container image Dockerfile:
 ```
-user@host:grafana-sysdig$ echo "ARG GRAFANA_VERSION=\"latest\"
+echo "ARG GRAFANA_VERSION=\"latest\"
 
 FROM grafana/grafana:\${GRAFANA_VERSION}
 
 ADD sysdig /var/lib/grafana/plugins/sysdig
 " > Dockerfile
 ```
-3. Build the image:
+3. Build and run the image:
 ```
-user@host:grafana-sysdig$ docker build -t grafana-sysdig .
-```
-4. Run the image:
-```
-user@host:grafana-sysdig$ docker run -d -p 3000:3000 --name grafana grafana-sysdig
+docker build -t grafana-sysdig .
+docker run -d -p 3000:3000 --name grafana grafana-sysdig
 ```
 
 > **Note:** For more information, refer to the [Grafana installation using Docker](http://docs.grafana.org/installation/docker/) page.
@@ -52,15 +49,15 @@ Alternatively, the default Grafana container image can be used as is, and the pl
 
 1. Prepare the Grafana data directory and download the plugin:
 ```
-user@host:~$ mkdir grafana-data
-user@host:~$ mkdir grafana-data/plugins
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
-user@host:~$ tar zxf sysdig.tgz -C grafana-data/plugins
+mkdir grafana-data
+mkdir grafana-data/plugins
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+tar zxf sysdig.tgz -C grafana-data/plugins
 ```
 2. Start the container with the current user, to give read/write permissions to the data directory:
 ```
-user@host:~$ ID=$(id -u)
-user@host:~$ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
+ID=$(id -u)
+docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
 ```
 
 > **Note:** For more information, refer to the [Grafana installation documentation](http://docs.grafana.org/installation/docker/#grafana-container-using-bind-mounts) and the [Docker documentation](https://docs.docker.com/storage/bind-mounts/).
@@ -75,10 +72,10 @@ The plugin can be installed on any host where Grafana is installed. To install t
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
-user@host:~$ tar zxf sysdig.tgz
-user@host:~$ sudo cp -R sysdig /var/lib/grafana/plugins
-user@host:~$ sudo service grafana-server restart
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+tar zxf sysdig.tgz
+sudo cp -R sysdig /var/lib/grafana/plugins
+sudo service grafana-server restart
 ```
 
 > **Note**: Grafana plugins are installed in `/usr/share/grafana/plugins`. However, the Sysdig plugin must be installed in `/var/lib/grafana/plugins` instead.
@@ -90,10 +87,10 @@ user@host:~$ sudo service grafana-server restart
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-user@host:~$ curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
-user@host:~$ tar zxf sysdig.tgz
-user@host:~$ cp -R sysdig /usr/local/var/lib/grafana/plugins
-user@host:~$ brew services restart grafana
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+tar zxf sysdig.tgz
+cp -R sysdig /usr/local/var/lib/grafana/plugins
+brew services restart grafana
 ```
 
 > **Note:** For more information, refer to the [Grafana installation on Mac](http://docs.grafana.org/installation/mac/) documentation.
