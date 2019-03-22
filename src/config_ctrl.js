@@ -95,6 +95,10 @@ export class SysdigConfigCtrl {
                 dashboardSet.importMessage = error;
             });
     }
+
+    deleteDashboards() {
+        DashboardsService.delete(this.backendSrv);
+    }
 }
 
 SysdigConfigCtrl.templateUrl = 'partials/config.html';

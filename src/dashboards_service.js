@@ -195,4 +195,33 @@ export default class DashboardsService {
             }
         }
     }
+
+    static delete(backendSrv) {
+        backendSrv
+            .search({
+                type: 'dash-db',
+                tag: 'sysdig'
+            })
+            .then((dashboards) => {
+                removeDashboards(backendSrv, dashboards);
+            });
+    }
+}
+
+function removeDashboards(backendSrv, dashboards) {
+    if (dashboards.length > 0) {
+        return removeNextDashboard(backendSrv, dashboards[0], dashboards.slice(1));
+    } else {
+        return backendSrv.$q.resolve();
+    }
+}
+
+function removeNextDashboard(backendSrv, dashboard, nextDashboards) {
+    return backendSrv
+        .deleteDashboard(dashboard.uid)
+        .then(() => removeDashboards(backendSrv, nextDashboards))
+        .catch((error) => {
+            console.error('Error deleting dashboard', dashboard.uid, error);
+            removeDashboards(backendSrv, nextDashboards);
+        });
 }
