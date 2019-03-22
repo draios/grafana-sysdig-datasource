@@ -21,36 +21,139 @@ export default class DashboardsService {
     static importFromSysdig(backend, datasourceName, dashboardSetId) {
         console.info('Sysdig dashboards import: Starting...');
 
-        return backend.backendSrv.$q
-            .all([
-                ApiService.send(backend, {
-                    url: 'ui/dashboards'
-                }),
-                MetricsService.findMetrics(backend)
-            ])
-            .then((results) => {
-                const metrics = results[1];
-                const convertedDashboards = results[0].data.dashboards
-                    .filter(filterDashboardBySetId.bind(null, dashboardSetId))
-                    .map(convertDashboard.bind(null, datasourceName, metrics))
-                    .filter((dashboard) => dashboard !== null);
+        if (dashboardSetId === 'DEFAULT') {
+            const tags = ['sysdig', 'default dashboard'];
+            return backend.backendSrv.$q
+                .all([
+                    ApiService.send(backend, {
+                        url: 'api/defaultDashboards'
+                    }),
+                    MetricsService.findMetrics(backend),
+                    ApiService.send(backend, {
+                        url: 'data/drilldownViewsCategories.json'
+                    })
+                ])
+                .then((results) => {
+                    const metrics = results[1];
+                    const categories = results[2];
 
-                const options = {
-                    overwrite: true
-                };
+                    const metricMap = metrics.reduce((acc, metric) => {
+                        acc[metric.metricId] = metric;
+                        return acc;
+                    }, {});
+                    const applicableDashboards = results[0].data.defaultDashboards.filter(
+                        (dashboard) => {
+                            if (
+                                Array.isArray(dashboard.requiredMetrics) &&
+                                dashboard.requiredMetrics.length > 0
+                            ) {
+                                if (
+                                    dashboard.requiredMetrics.find(
+                                        (metricId) => metricMap[metricId] === undefined
+                                    )
+                                ) {
+                                    return false;
+                                } else {
+                                    return true;
+                                }
+                            } else {
+                                return true;
+                            }
+                        }
+                    );
 
-                return saveDashboards(backend.backendSrv, convertedDashboards, options);
-            })
-            .then((result) => {
-                console.info('Sysdig dashboards import: Completed');
+                    const usedCategories = categories.data.drilldownViewsCategories.filter(
+                        (category) => {
+                            return (
+                                applicableDashboards.find(
+                                    (dashboard) => dashboard.category === category.id
+                                ) !== undefined
+                            );
+                        }
+                    );
 
-                return result;
-            })
-            .catch((error) => {
-                console.info('Sysdig dashboards import: Failed', error);
+                    return {
+                        metrics,
+                        categories: usedCategories,
+                        dashboards: applicableDashboards
+                    };
+                })
+                .then((results) => {
+                    const convertedDashboards = results.dashboards
+                        .map(
+                            convertDashboard.bind(
+                                null,
+                                datasourceName,
+                                results.metrics,
+                                results.categories,
+                                tags
+                            )
+                        )
+                        .filter((dashboard) => dashboard !== null);
 
-                return backend.backendSrv.$q.reject(error);
-            });
+                    const options = {
+                        overwrite: true
+                    };
+
+                    return saveDashboards(backend.backendSrv, convertedDashboards, options);
+                })
+                .then((result) => {
+                    console.info('Sysdig dashboards import: Completed');
+
+                    return result;
+                })
+                .catch((error) => {
+                    console.info('Sysdig dashboards import: Failed', error);
+
+                    return backend.backendSrv.$q.reject(error);
+                });
+        } else {
+            let tags;
+            switch (dashboardSetId) {
+                case 'PRIVATE':
+                    tags = ['sysdig', 'my dashboard'];
+                    break;
+                case 'SHARED':
+                    tags = ['sysdig', 'shared dashboard'];
+                    break;
+                default:
+                    throw {
+                        name: 'Invalid argument',
+                        message: `Invalid dashboard set ID ('${dashboardSetId}')`
+                    };
+            }
+
+            return backend.backendSrv.$q
+                .all([
+                    ApiService.send(backend, {
+                        url: 'ui/dashboards'
+                    }),
+                    MetricsService.findMetrics(backend)
+                ])
+                .then((results) => {
+                    const metrics = results[1];
+                    const convertedDashboards = results[0].data.dashboards
+                        .filter(filterDashboardBySetId.bind(null, dashboardSetId))
+                        .map(convertDashboard.bind(null, datasourceName, metrics, [], tags))
+                        .filter((dashboard) => dashboard !== null);
+
+                    const options = {
+                        overwrite: true
+                    };
+
+                    return saveDashboards(backend.backendSrv, convertedDashboards, options);
+                })
+                .then((result) => {
+                    console.info('Sysdig dashboards import: Completed');
+
+                    return result;
+                })
+                .catch((error) => {
+                    console.info('Sysdig dashboards import: Failed', error);
+
+                    return backend.backendSrv.$q.reject(error);
+                });
+        }
 
         function filterDashboardBySetId(setId, dashboard) {
             switch (dashboardSetId) {
@@ -61,11 +164,13 @@ export default class DashboardsService {
             }
         }
 
-        function convertDashboard(datasourceName, metrics, dashboard) {
+        function convertDashboard(datasourceName, metrics, categories, tags, dashboard) {
             try {
                 return SysdigDashboardHelper.convertToGrafana(dashboard, {
                     datasourceName,
-                    metrics
+                    metrics,
+                    categories,
+                    tags
                 });
             } catch (error) {
                 console.error(

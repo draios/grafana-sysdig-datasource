@@ -160,7 +160,7 @@ limitations under the License.
 <!--                   -->
 <!-- Import dashboards -->
 <!--                   -->
-<h3 class="page-heading">Sysdig Monitor Dashboards</h3>
+<h3 class="page-heading">Sysdig Dashboards</h3>
 
 <p class="sysdig-config-editor-info">
   Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
@@ -185,7 +185,7 @@ limitations under the License.
             <span>{{dashboardSet.title}}</span>
           </td>
           <td>
-            <button class="btn btn-secondary btn-small" ng-disabled="ctrl.isDashboardsImportDisabled()" ng-click="ctrl.importDashboards(dashboardSet.id)">
+            <button class="btn btn-secondary btn-small" ng-disabled="ctrl.isDashboardsImportDisabled()" ng-click="ctrl.importDashboards(dashboardSet.id); $event.stopPropagation();">
               Import
             </button>
             <div style="display: inline-block; margin: 0 10px; min-width: 13px;">
@@ -199,3 +199,7 @@ limitations under the License.
     </table>
   </div>
 </div>
+
+<p class="sysdig-config-editor-info" ng-if="ctrl.isDashboardsImportDisabled() === false">
+  <strong>Note</strong>: Imported dashboards will have the <code>sysdig</code> tag, and this tag will be used to delete all dashboards imported from Sysdig.
+</p>

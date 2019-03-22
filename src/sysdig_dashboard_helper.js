@@ -17,7 +17,7 @@
 
 export default class SysdigDashboardHelper {
     static convertToGrafana(sysdigDashboard, options) {
-        const panels = sysdigDashboard.items
+        const panels = (sysdigDashboard.items || sysdigDashboard.widgets)
             .map((panel, index) => {
                 const builder = this.getPanelBuilder(panel);
                 return builder.build(sysdigDashboard, options, panel, index);
@@ -61,12 +61,39 @@ export default class SysdigDashboardHelper {
             dashboardPanelsConfiguration = { panels };
         }
 
+        let categoryTags;
+        if (sysdigDashboard.category) {
+            categoryTags = sysdigDashboard.category
+                .split('.')
+                .reduce((acc, part) => {
+                    if (acc === null) {
+                        return [part];
+                    } else {
+                        return [...acc, `${acc[acc.length - 1]}.${part}`];
+                    }
+                }, null)
+                .map((categoryId) => {
+                    const category = options.categories.find(
+                        (category) => category.id === categoryId
+                    );
+
+                    if (category) {
+                        return category.name;
+                    } else {
+                        return null;
+                    }
+                })
+                .filter((category) => category !== null);
+        } else {
+            categoryTags = [];
+        }
+
         return Object.assign(
             {
                 schemaVersion: 6,
                 version: 0,
                 title: sysdigDashboard.name,
-                tags: ['sysdig'],
+                tags: [...(options.tags || []), ...categoryTags],
                 timezone: 'browser',
                 time: {
                     // default Sysdig: last 1 hour
@@ -135,15 +162,20 @@ class BaseBuilder {
     }
 
     static getTargetGridLayout(sysdigDashboard, sysdigPanel) {
-        const index = sysdigDashboard.items.indexOf(sysdigPanel);
-        const layout = sysdigDashboard.layout[index];
+        let layout;
+        if (sysdigDashboard.items) {
+            const index = (sysdigDashboard.items || sysdigDashboard.widgets).indexOf(sysdigPanel);
+            layout = sysdigDashboard.layout[index];
+        } else {
+            layout = sysdigPanel.gridConfiguration;
+        }
 
         // keep w/h ratio similar to Sysdig by reducing height by 80%
         return {
-            h: Math.ceil(layout.size_y / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT * 0.8),
-            w: layout.size_x / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
-            x: (layout.col - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT,
-            y: Math.floor((layout.row - 1) / SYSDIG_COLUMN_COUNT * GRAFANA_COLUMN_COUNT * 0.8)
+            h: Math.ceil((layout.size_y / SYSDIG_COLUMN_COUNT) * GRAFANA_COLUMN_COUNT * 0.8),
+            w: (layout.size_x / SYSDIG_COLUMN_COUNT) * GRAFANA_COLUMN_COUNT,
+            x: ((layout.col - 1) / SYSDIG_COLUMN_COUNT) * GRAFANA_COLUMN_COUNT,
+            y: Math.floor(((layout.row - 1) / SYSDIG_COLUMN_COUNT) * GRAFANA_COLUMN_COUNT * 0.8)
         };
     }
 
@@ -227,11 +259,9 @@ class TimeSeriesBuilder extends BaseBuilder {
     }
 
     static getValues(sysdigDashboard, sysdigPanel) {
-        const values = sysdigPanel.metrics
-            .filter((metric) => {
-                return metric.metricId !== 'timestamp' && metric.aggregation !== undefined;
-            })
-            .map(parseSysdigPanelValue);
+        const values = sysdigPanel.metrics.map(parseSysdigPanelValue).filter((metric) => {
+            return metric.metricId !== 'timestamp' && metric.timeAggregation !== undefined;
+        });
         if (values.length === 0) {
             console.warn('Expected at least one value metric');
         }
@@ -240,11 +270,9 @@ class TimeSeriesBuilder extends BaseBuilder {
     }
 
     static getKeys(sysdigDashboard, sysdigPanel) {
-        const keys = sysdigPanel.metrics
-            .filter((metric) => {
-                return metric.metricId !== 'timestamp' && metric.aggregation === undefined;
-            })
-            .map(parseSysdigPanelKey);
+        const keys = sysdigPanel.metrics.map(parseSysdigPanelKey).filter((metric) => {
+            return metric.metricId !== 'timestamp' && metric.timeAggregation === undefined;
+        });
         if (keys.length > 1) {
             console.warn('Expected at most one key metric');
         }
@@ -262,7 +290,7 @@ class TimeSeriesBuilder extends BaseBuilder {
                 isSingleDataPoint: this.isSingleDataPoint(),
                 isTabularFormat: this.isTabularFormat(),
                 target: value.metricId,
-                timeAggregation: value.aggregation,
+                timeAggregation: value.timeAggregation,
                 groupAggregation: value.groupAggregation,
                 segmentBy: keys.length === 1 ? keys[0].metricId : null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
@@ -299,14 +327,15 @@ class TimeSeriesBuilder extends BaseBuilder {
     }
 
     static buildPanelYAxes(sysdigDashboard, sysdigPanel, options) {
-        const normalizedDisplayOptions = sysdigPanel.customDisplayOptions
-            ? sysdigPanel.customDisplayOptions
-            : {
-                  yAxisLeftDomain: {
-                      from: null,
-                      to: null
-                  }
-              };
+        const normalizedDisplayOptions = Object.assign(
+            {
+                yAxisLeftDomain: {
+                    from: null,
+                    to: null
+                }
+            },
+            sysdigPanel.customDisplayOptions
+        );
 
         let yAxisLogBase;
         switch (normalizedDisplayOptions.yAxisScale) {
@@ -376,7 +405,9 @@ class HistogramBuilder extends TimeSeriesBuilder {
             bars: true,
             lines: false,
             xaxis: {
-                buckets: sysdigPanel.customDisplayOptions.histogram.numberOfBuckets,
+                buckets: sysdigPanel.customDisplayOptions
+                    ? sysdigPanel.customDisplayOptions.histogram.numberOfBuckets
+                    : 10,
                 mode: 'histogram'
             }
         });
@@ -447,7 +478,7 @@ class NumberBuilder extends BaseBuilder {
     static getValue(sysdigDashboard, sysdigPanel) {
         const values = sysdigPanel.metrics
             .filter((metric) => {
-                return metric.metricId !== 'timestamp' && metric.aggregation !== undefined;
+                return metric.metricId !== 'timestamp' && metric.timeAggregation !== undefined;
             })
             .map(parseSysdigPanelValue);
         if (values.length !== 1) {
@@ -468,7 +499,7 @@ class NumberBuilder extends BaseBuilder {
                 segmentBy: null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                 target: value.metricId,
-                timeAggregation: value.aggregation,
+                timeAggregation: value.timeAggregation,
                 groupAggregation: value.groupAggregation
             }
         ];
@@ -533,7 +564,7 @@ class TableBuilder extends TimeSeriesBuilder {
                     isSingleDataPoint: this.isSingleDataPoint(),
                     isTabularFormat: this.isTabularFormat(),
                     target: value.metricId,
-                    timeAggregation: value.aggregation || 'concat',
+                    timeAggregation: value.timeAggregation || 'concat',
                     groupAggregation: value.groupAggregation || 'concat',
                     segmentBy: keys.length >= 1 ? keys[0].metricId : null,
                     filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
@@ -544,11 +575,9 @@ class TableBuilder extends TimeSeriesBuilder {
     }
 
     static getKeys(sysdigDashboard, sysdigPanel) {
-        return sysdigPanel.metrics
-            .filter((metric) => {
-                return metric.aggregation === undefined;
-            })
-            .map(parseSysdigPanelKey);
+        return sysdigPanel.metrics.map(parseSysdigPanelKey).filter((metric) => {
+            return metric.timeAggregation === undefined;
+        });
     }
 }
 
@@ -622,7 +651,8 @@ class DefaultBuilder extends BaseBuilder {
 
 function parseSysdigPanelValue(metric) {
     return Object.assign({}, metric, {
-        metricId: metric.metricId.replace(/%25/g, '.')
+        metricId: metric.metricId.replace(/%25/g, '.'),
+        timeAggregation: metric.timeAggregation || metric.aggregation
     });
 }
 
