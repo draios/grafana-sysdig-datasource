@@ -16,15 +16,38 @@
 /* global grafanaBootData */
 
 export default class SysdigDashboardHelper {
+    static convertToGrafana(version, sysdigDashboard, options) {
+        return SysdigDashboardHelper.getHelper(version).convertToGrafana(sysdigDashboard, options);
+    }
+
+    static filterDashboardBySetId(version, setId, dashboard) {
+        return SysdigDashboardHelper.getHelper(version).filterDashboardBySetId(setId, dashboard);
+    }
+
+    static getHelper(version) {
+        if (version === '1') {
+            return SysdigDashboardHelperV1;
+        } else if (version === '2') {
+            return SysdigDashboardHelperV2;
+        } else {
+            throw {
+                name: 'Invalid parameter',
+                message: `Invalid dashboard version ${version}`
+            };
+        }
+    }
+}
+
+class SysdigDashboardHelperV1 {
     static convertToGrafana(sysdigDashboard, options) {
         const panels = (sysdigDashboard.items || sysdigDashboard.widgets)
             .map((panel, index) => {
                 const builder = this.getPanelBuilder(panel);
-                return builder.build(sysdigDashboard, options, panel, index);
+                return builder.build(this.getParsers(), sysdigDashboard, options, panel, index);
             })
             .filter((r) => r !== null);
 
-        const isRowMandatory = this.getGrafanaVersion().indexOf('4.') === 0;
+        const isRowMandatory = getGrafanaVersion().indexOf('4.') === 0;
         let dashboardPanelsConfiguration;
         if (isRowMandatory) {
             // convert grid layout to row spans
@@ -135,14 +158,54 @@ export default class SysdigDashboardHelper {
         }
     }
 
-    static getGrafanaVersion() {
-        return grafanaBootData &&
-            grafanaBootData.settings &&
-            grafanaBootData.settings.buildInfo &&
-            grafanaBootData.settings.buildInfo.version
-            ? grafanaBootData.settings.buildInfo.version
-            : 'n.a.';
+    static filterDashboardBySetId(setId, dashboard) {
+        switch (setId) {
+            case 'PRIVATE':
+                return dashboard.isShared === false;
+            case 'SHARED':
+                return dashboard.isShared === true;
+        }
     }
+
+    static getParsers() {
+        return {
+            parseMetric: this.parseMetric
+        };
+    }
+
+    static parseMetric(metric) {
+        return Object.assign({}, metric, {
+            id: metric.metricId.replace(/%25/g, '.'),
+            timeAggregation: metric.timeAggregation || metric.aggregation
+        });
+    }
+}
+
+class SysdigDashboardHelperV2 extends SysdigDashboardHelperV1 {
+    static filterDashboardBySetId(setId, dashboard) {
+        switch (setId) {
+            case 'PRIVATE':
+                return dashboard.shared === false;
+            case 'SHARED':
+                return dashboard.shared === true;
+        }
+    }
+
+    static parseMetric(metric) {
+        return Object.assign({}, metric, {
+            id: metric.id.replace(/%25/g, '.'),
+            timeAggregation: metric.timeAggregation || metric.aggregation
+        });
+    }
+}
+
+function getGrafanaVersion() {
+    return grafanaBootData &&
+        grafanaBootData.settings &&
+        grafanaBootData.settings.buildInfo &&
+        grafanaBootData.settings.buildInfo.version
+        ? grafanaBootData.settings.buildInfo.version
+        : 'n.a.';
 }
 
 const GRAFANA_COLUMN_COUNT = 24;
@@ -193,15 +256,15 @@ class BaseBuilder {
         };
     }
 
-    static getValueFormat(value, metrics) {
-        const metricConfiguration = _.find(metrics, (m) => m.id === value.metricId);
+    static getValueFormat(valueMetric, metrics) {
+        const metricConfiguration = _.find(metrics, (m) => m.id === valueMetric.id);
 
         if (metricConfiguration === undefined) {
             // metric not found, return default format
             return 'short';
         } else {
             // NOTE: For unit mapping, refer to public/app/core/utils/kbn.ts
-            const isRate = value.aggregation === 'timeAvg';
+            const isRate = valueMetric.aggregation === 'timeAvg';
             switch (metricConfiguration.type) {
                 case 'string':
                 case 'providerServiceEnum':
@@ -244,23 +307,23 @@ class TimeSeriesBuilder extends BaseBuilder {
         return 'graph';
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign(
             {},
             this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
             {
-                targets: this.buildTargets(sysdigDashboard, sysdigPanel),
+                targets: this.buildTargets(parsers, sysdigDashboard, sysdigPanel),
                 legend: {
                     show: false // retain Sysdig layout
                 },
-                yaxes: this.buildPanelYAxes(sysdigDashboard, sysdigPanel, options)
+                yaxes: this.buildPanelYAxes(parsers, sysdigDashboard, sysdigPanel, options)
             }
         );
     }
 
-    static getValues(sysdigDashboard, sysdigPanel) {
-        const values = sysdigPanel.metrics.map(parseSysdigPanelValue).filter((metric) => {
-            return metric.metricId !== 'timestamp' && metric.timeAggregation !== undefined;
+    static getValues(parsers, sysdigDashboard, sysdigPanel) {
+        const values = sysdigPanel.metrics.map(parsers.parseMetric).filter((metric) => {
+            return metric.id !== 'timestamp' && metric.timeAggregation !== undefined;
         });
         if (values.length === 0) {
             console.warn('Expected at least one value metric');
@@ -269,9 +332,9 @@ class TimeSeriesBuilder extends BaseBuilder {
         return values;
     }
 
-    static getKeys(sysdigDashboard, sysdigPanel) {
-        const keys = sysdigPanel.metrics.map(parseSysdigPanelKey).filter((metric) => {
-            return metric.metricId !== 'timestamp' && metric.timeAggregation === undefined;
+    static getKeys(parsers, sysdigDashboard, sysdigPanel) {
+        const keys = sysdigPanel.metrics.map(parsers.parseMetric).filter((metric) => {
+            return metric.id !== 'timestamp' && metric.timeAggregation === undefined;
         });
         if (keys.length > 1) {
             console.warn('Expected at most one key metric');
@@ -280,19 +343,19 @@ class TimeSeriesBuilder extends BaseBuilder {
         return keys;
     }
 
-    static buildTargets(sysdigDashboard, sysdigPanel) {
-        const values = this.getValues(sysdigDashboard, sysdigPanel);
-        const keys = this.getKeys(sysdigDashboard, sysdigPanel);
+    static buildTargets(parsers, sysdigDashboard, sysdigPanel) {
+        const values = this.getValues(parsers, sysdigDashboard, sysdigPanel);
+        const keys = this.getKeys(parsers, sysdigDashboard, sysdigPanel);
 
         return values.map((value, i) => {
             return {
                 refId: i.toString(),
                 isSingleDataPoint: this.isSingleDataPoint(),
                 isTabularFormat: this.isTabularFormat(),
-                target: value.metricId,
+                target: value.id,
                 timeAggregation: value.timeAggregation,
                 groupAggregation: value.groupAggregation,
-                segmentBy: keys.length === 1 ? keys[0].metricId : null,
+                segmentBy: keys.length === 1 ? keys[0].id : null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                 sortDirection: this.getTargetSortDirection(sysdigPanel),
                 pageLimit: this.getTargetPageLimit(sysdigPanel)
@@ -326,7 +389,7 @@ class TimeSeriesBuilder extends BaseBuilder {
         return this.parseValueLimitCount(sysdigPanel);
     }
 
-    static buildPanelYAxes(sysdigDashboard, sysdigPanel, options) {
+    static buildPanelYAxes(parsers, sysdigDashboard, sysdigPanel, options) {
         const normalizedDisplayOptions = Object.assign(
             {
                 yAxisLeftDomain: {
@@ -364,7 +427,7 @@ class TimeSeriesBuilder extends BaseBuilder {
             show: false
         };
 
-        const values = this.getValues(sysdigDashboard, sysdigPanel);
+        const values = this.getValues(parsers, sysdigDashboard, sysdigPanel);
 
         return [
             // left axis
@@ -400,17 +463,21 @@ class HistogramBuilder extends TimeSeriesBuilder {
         return 'short';
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
-        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
-            bars: true,
-            lines: false,
-            xaxis: {
-                buckets: sysdigPanel.customDisplayOptions
-                    ? sysdigPanel.customDisplayOptions.histogram.numberOfBuckets
-                    : 10,
-                mode: 'histogram'
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign(
+            {},
+            super.build(parsers, sysdigDashboard, options, sysdigPanel, index),
+            {
+                bars: true,
+                lines: false,
+                xaxis: {
+                    buckets: sysdigPanel.customDisplayOptions
+                        ? sysdigPanel.customDisplayOptions.histogram.numberOfBuckets
+                        : 10,
+                    mode: 'histogram'
+                }
             }
-        });
+        );
     }
 
     static getTargetPageLimit(sysdigPanel) {
@@ -427,15 +494,19 @@ class BarChartBuilder extends TimeSeriesBuilder {
         return true;
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
-        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
-            bars: true,
-            lines: false,
-            xaxis: {
-                mode: 'series',
-                values: ['total']
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign(
+            {},
+            super.build(parsers, sysdigDashboard, options, sysdigPanel, index),
+            {
+                bars: true,
+                lines: false,
+                xaxis: {
+                    mode: 'series',
+                    values: ['total']
+                }
             }
-        });
+        );
     }
 }
 
@@ -448,8 +519,8 @@ class NumberBuilder extends BaseBuilder {
         return true;
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
-        const value = this.getValue(sysdigDashboard, sysdigPanel);
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
+        const value = this.getValue(parsers, sysdigDashboard, sysdigPanel);
 
         if (value) {
             // TODO set proper format
@@ -459,7 +530,7 @@ class NumberBuilder extends BaseBuilder {
                 {},
                 this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
                 {
-                    targets: this.buildTargets(sysdigDashboard, sysdigPanel),
+                    targets: this.buildTargets(parsers, sysdigDashboard, sysdigPanel),
                     format
                 }
             );
@@ -475,12 +546,13 @@ class NumberBuilder extends BaseBuilder {
         }
     }
 
-    static getValue(sysdigDashboard, sysdigPanel) {
+    static getValue(parsers, sysdigDashboard, sysdigPanel) {
         const values = sysdigPanel.metrics
+            .map(parsers.parseMetric)
             .filter((metric) => {
-                return metric.metricId !== 'timestamp' && metric.timeAggregation !== undefined;
+                return metric.id !== 'timestamp' && metric.timeAggregation !== undefined;
             })
-            .map(parseSysdigPanelValue);
+            .map(parsers.parseMetric);
         if (values.length !== 1) {
             console.warn('Expected exactly one value metric');
         }
@@ -488,8 +560,8 @@ class NumberBuilder extends BaseBuilder {
         return values[0];
     }
 
-    static buildTargets(sysdigDashboard, sysdigPanel) {
-        const value = this.getValue(sysdigDashboard, sysdigPanel);
+    static buildTargets(parsers, sysdigDashboard, sysdigPanel) {
+        const value = this.getValue(parsers, sysdigDashboard, sysdigPanel);
 
         return [
             {
@@ -498,7 +570,7 @@ class NumberBuilder extends BaseBuilder {
                 isTabularFormat: this.isTabularFormat(),
                 segmentBy: null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
-                target: value.metricId,
+                target: value.id,
                 timeAggregation: value.timeAggregation,
                 groupAggregation: value.groupAggregation
             }
@@ -519,54 +591,58 @@ class TableBuilder extends TimeSeriesBuilder {
         return true;
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
-        return Object.assign({}, super.build(sysdigDashboard, options, sysdigPanel, index), {
-            transform: 'timeseries_aggregations',
-            sort: {
-                col: 1,
-                desc: true
-            },
-            styles: [
-                ...sysdigPanel.metrics.map((metric) => {
-                    const format = this.getValueFormat(metric, options.metrics);
-                    if (format === 'none') {
-                        return {
-                            pattern: metric.metricId,
-                            type: 'string'
-                        };
-                    } else {
-                        return {
-                            pattern: metric.metricId,
-                            type: 'number',
-                            unit: format,
-                            decimals: 2
-                        };
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
+        return Object.assign(
+            {},
+            super.build(parsers, sysdigDashboard, options, sysdigPanel, index),
+            {
+                transform: 'timeseries_aggregations',
+                sort: {
+                    col: 1,
+                    desc: true
+                },
+                styles: [
+                    ...sysdigPanel.metrics.map(parsers.parseMetric).map((metric) => {
+                        const format = this.getValueFormat(metric, options.metrics);
+                        if (format === 'none') {
+                            return {
+                                pattern: metric.id,
+                                type: 'string'
+                            };
+                        } else {
+                            return {
+                                pattern: metric.id,
+                                type: 'number',
+                                unit: format,
+                                decimals: 2
+                            };
+                        }
+                    }),
+                    {
+                        pattern: '/.*/',
+                        type: 'string'
                     }
-                }),
-                {
-                    pattern: '/.*/',
-                    type: 'string'
-                }
-            ]
-        });
+                ]
+            }
+        );
     }
 
-    static buildTargets(sysdigDashboard, sysdigPanel) {
-        const keys = this.getKeys(sysdigDashboard, sysdigPanel);
-        const filterMetrics = (metric) => metric.metricId !== keys[0].metricId;
+    static buildTargets(parsers, sysdigDashboard, sysdigPanel) {
+        const keys = this.getKeys(parsers, sysdigDashboard, sysdigPanel);
+        const filterMetrics = (metric) => metric.id !== keys[0].id;
 
         return sysdigPanel.metrics
-            .map(parseSysdigPanelValue)
+            .map(parsers.parseMetric)
             .filter(filterMetrics)
             .map((value, i) => {
                 return {
                     refId: i.toString(),
                     isSingleDataPoint: this.isSingleDataPoint(),
                     isTabularFormat: this.isTabularFormat(),
-                    target: value.metricId,
+                    target: value.id,
                     timeAggregation: value.timeAggregation || 'concat',
                     groupAggregation: value.groupAggregation || 'concat',
-                    segmentBy: keys.length >= 1 ? keys[0].metricId : null,
+                    segmentBy: keys.length >= 1 ? keys[0].id : null,
                     filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                     sortDirection: this.getTargetSortDirection(sysdigPanel),
                     pageLimit: this.getTargetPageLimit(sysdigPanel)
@@ -574,8 +650,8 @@ class TableBuilder extends TimeSeriesBuilder {
             });
     }
 
-    static getKeys(sysdigDashboard, sysdigPanel) {
-        return sysdigPanel.metrics.map(parseSysdigPanelKey).filter((metric) => {
+    static getKeys(parsers, sysdigDashboard, sysdigPanel) {
+        return sysdigPanel.metrics.map(parsers.parseMetric).filter((metric) => {
             return metric.timeAggregation === undefined;
         });
     }
@@ -586,7 +662,7 @@ class TextBuilder extends BaseBuilder {
         return 'text';
     }
 
-    static build(sysdigDashboard, options, sysdigPanel, index) {
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign(
             {},
             this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
@@ -604,7 +680,7 @@ class TextBuilder extends BaseBuilder {
 }
 
 class DefaultBuilder extends BaseBuilder {
-    static build(sysdigDashboard, options, sysdigPanel, index) {
+    static build(parsers, sysdigDashboard, options, sysdigPanel, index) {
         return Object.assign(
             {},
             this.getBasePanelConfiguration(sysdigDashboard, options, sysdigPanel, index),
@@ -647,15 +723,4 @@ class DefaultBuilder extends BaseBuilder {
 
         return `<div class="text-center muted"><strong>${panelType}</strong> cannot be exported from Sysdig Monitor to Grafana.</div>`;
     }
-}
-
-function parseSysdigPanelValue(metric) {
-    return Object.assign({}, metric, {
-        metricId: metric.metricId.replace(/%25/g, '.'),
-        timeAggregation: metric.timeAggregation || metric.aggregation
-    });
-}
-
-function parseSysdigPanelKey(metric) {
-    return parseSysdigPanelValue(metric);
 }

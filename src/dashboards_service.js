@@ -84,6 +84,7 @@ export default class DashboardsService {
                             convertDashboard.bind(
                                 null,
                                 datasourceName,
+                                '1',
                                 results.metrics,
                                 results.categories,
                                 tags
@@ -124,17 +125,27 @@ export default class DashboardsService {
             }
 
             return backend.backendSrv.$q
-                .all([
-                    ApiService.send(backend, {
-                        url: 'ui/dashboards'
-                    }),
-                    MetricsService.findMetrics(backend)
-                ])
+                .all([fetchDashboards(backend), MetricsService.findMetrics(backend)])
                 .then((results) => {
                     const metrics = results[1];
-                    const convertedDashboards = results[0].data.dashboards
-                        .filter(filterDashboardBySetId.bind(null, dashboardSetId))
-                        .map(convertDashboard.bind(null, datasourceName, metrics, [], tags))
+                    const convertedDashboards = results[0].dashboards
+                        .filter(
+                            SysdigDashboardHelper.filterDashboardBySetId.bind(
+                                null,
+                                results[0].version,
+                                dashboardSetId
+                            )
+                        )
+                        .map(
+                            convertDashboard.bind(
+                                null,
+                                datasourceName,
+                                results[0].version,
+                                metrics,
+                                [],
+                                tags
+                            )
+                        )
                         .filter((dashboard) => dashboard !== null);
 
                     const options = {
@@ -155,18 +166,40 @@ export default class DashboardsService {
                 });
         }
 
-        function filterDashboardBySetId(setId, dashboard) {
-            switch (dashboardSetId) {
-                case 'PRIVATE':
-                    return dashboard.isShared === false;
-                case 'SHARED':
-                    return dashboard.isShared === true;
-            }
+        function fetchDashboards(backend) {
+            return (
+                // First try latest endpoint version
+                ApiService.send(backend, {
+                    url: 'api/v2/dashboards'
+                })
+                    // Return v2 dashboards
+                    .then((result) => {
+                        return {
+                            dashboards: result.data.dashboards,
+                            version: '2'
+                        };
+                    })
+                    .catch(() => {
+                        return (
+                            // Then try older endpoint version
+                            ApiService.send(backend, {
+                                url: 'ui/dashboards'
+                            })
+                                // Return v1 dashboards
+                                .then((result) => {
+                                    return {
+                                        dashboards: result.data.dashboards,
+                                        version: '1'
+                                    };
+                                })
+                        );
+                    })
+            );
         }
 
-        function convertDashboard(datasourceName, metrics, categories, tags, dashboard) {
+        function convertDashboard(datasourceName, version, metrics, categories, tags, dashboard) {
             try {
-                return SysdigDashboardHelper.convertToGrafana(dashboard, {
+                return SysdigDashboardHelper.convertToGrafana(version, dashboard, {
                     datasourceName,
                     metrics,
                     categories,
