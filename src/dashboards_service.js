@@ -111,7 +111,7 @@ export default class DashboardsService {
             let tags;
             switch (dashboardSetId) {
                 case 'PRIVATE':
-                    tags = ['sysdig', 'my dashboard'];
+                    tags = ['sysdig', 'private dashboard'];
                     break;
                 case 'SHARED':
                     tags = ['sysdig', 'shared dashboard'];
