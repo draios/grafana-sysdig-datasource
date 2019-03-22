@@ -66,7 +66,7 @@ export class SysdigConfigCtrl {
     }
 
     isDashboardsImportDisabled() {
-        return this.current.id === undefined;
+        return this.current.id === undefined || this.current.jsonData.apiToken === undefined;
     }
 
     importDashboards(dashboardSetId) {
