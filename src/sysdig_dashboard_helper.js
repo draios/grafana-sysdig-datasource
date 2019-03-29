@@ -390,25 +390,29 @@ class TimeSeriesBuilder extends BaseBuilder {
     }
 
     static buildPanelYAxes(parsers, sysdigDashboard, sysdigPanel, options) {
-        const normalizedDisplayOptions = sysdigPanel.customDisplayOptions;
+        const normalizedDisplayOptions = Object.assign({}, sysdigPanel.customDisplayOptions);
 
         let yAxisLogBase;
-        switch (normalizedDisplayOptions.yAxisScale) {
-            case 'logarithmic2':
-                yAxisLogBase = 2;
-                break;
-            case 'logarithmic10':
-                yAxisLogBase = 10;
-                break;
-            case 'logarithmic32':
-                yAxisLogBase = 32;
-                break;
-            case 'logarithmic1024':
-                yAxisLogBase = 1024;
-                break;
-            default:
-                yAxisLogBase = 1;
-                break;
+        if (normalizedDisplayOptions.yAxisScale) {
+            switch (normalizedDisplayOptions.yAxisScale) {
+                case 'logarithmic2':
+                    yAxisLogBase = 2;
+                    break;
+                case 'logarithmic10':
+                    yAxisLogBase = 10;
+                    break;
+                case 'logarithmic32':
+                    yAxisLogBase = 32;
+                    break;
+                case 'logarithmic1024':
+                    yAxisLogBase = 1024;
+                    break;
+                default:
+                    yAxisLogBase = 1;
+                    break;
+            }
+        } else {
+            yAxisLogBase = 1;
         }
 
         const baseAxisConfig = {
