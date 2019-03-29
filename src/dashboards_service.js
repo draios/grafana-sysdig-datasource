@@ -178,7 +178,7 @@ export default class DashboardsService {
         backendSrv
             .search({
                 type: 'dash-db',
-                tags: ['sysdig', 'Sysdig']
+                tags: ['Sysdig', 'sysdig']
             })
             .then((dashboards) => {
                 console.log(`Sysdig dashboards: Delete ${dashboards.length} dashboards...`);
