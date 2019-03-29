@@ -164,6 +164,7 @@ export default class DashboardsService {
             })
             .then((dashboards) => {
                 console.log(`Sysdig dashboards: Delete ${dashboards.length} dashboards...`);
+
                 removeDashboards(backendSrv, dashboards);
             });
     }
