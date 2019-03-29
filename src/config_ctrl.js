@@ -28,6 +28,12 @@ export class SysdigConfigCtrl {
         ];
 
         this.dashboardSets = [
+            {
+                id: 'DEFAULT',
+                title: 'Default dashboards',
+                importStatus: 'none',
+                importMessage: null
+            },
             { id: 'PRIVATE', title: 'My dashboards', importStatus: 'none', importMessage: null },
             { id: 'SHARED', title: 'Shared dashboards', importStatus: 'none', importMessage: null }
         ];
@@ -66,7 +72,7 @@ export class SysdigConfigCtrl {
     }
 
     isDashboardsImportDisabled() {
-        return this.current.id === undefined;
+        return this.current.id === undefined || this.current.jsonData.apiToken === undefined;
     }
 
     importDashboards(dashboardSetId) {
@@ -88,6 +94,10 @@ export class SysdigConfigCtrl {
                 dashboardSet.importStatus = 'error';
                 dashboardSet.importMessage = error;
             });
+    }
+
+    deleteDashboards() {
+        DashboardsService.delete(this.backendSrv);
     }
 }
 
