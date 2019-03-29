@@ -25,9 +25,9 @@ export default class SysdigDashboardHelper {
     }
 
     static getHelper(version) {
-        if (version === '1') {
+        if (version === 'v1') {
             return SysdigDashboardHelperV1;
-        } else if (version === '2') {
+        } else if (version === 'v2') {
             return SysdigDashboardHelperV2;
         } else {
             throw {
@@ -390,15 +390,7 @@ class TimeSeriesBuilder extends BaseBuilder {
     }
 
     static buildPanelYAxes(parsers, sysdigDashboard, sysdigPanel, options) {
-        const normalizedDisplayOptions = Object.assign(
-            {
-                yAxisLeftDomain: {
-                    from: null,
-                    to: null
-                }
-            },
-            sysdigPanel.customDisplayOptions
-        );
+        const normalizedDisplayOptions = sysdigPanel.customDisplayOptions;
 
         let yAxisLogBase;
         switch (normalizedDisplayOptions.yAxisScale) {
@@ -434,8 +426,12 @@ class TimeSeriesBuilder extends BaseBuilder {
             _.assign({}, baseAxisConfig, {
                 format: this.getValueFormat(values[0], options.metrics),
                 show: true,
-                min: normalizedDisplayOptions.yAxisLeftDomain.from,
-                max: normalizedDisplayOptions.yAxisLeftDomain.to,
+                min: normalizedDisplayOptions.yAxisLeftDomain
+                    ? normalizedDisplayOptions.yAxisLeftDomain.from
+                    : null,
+                max: normalizedDisplayOptions.yAxisLeftDomain
+                    ? normalizedDisplayOptions.yAxisLeftDomain.to
+                    : null,
                 logBase: yAxisLogBase
             }),
             // right axis
