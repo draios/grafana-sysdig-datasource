@@ -26,18 +26,14 @@ export default class DashboardsService {
             return backend.backendSrv.$q
                 .all([
                     fetchDefaultDashboards(backend),
-                    MetricsService.findMetrics(backend),
                     ApiService.send(backend, {
                         url: 'data/drilldownViewsCategories.json'
                     })
                 ])
                 .then((results) => {
-                    const metrics = results[1];
-                    const categories = results[2];
-
                     const applicableDashboards = results[0].defaultDashboards;
 
-                    const usedCategories = categories.data.drilldownViewsCategories.filter(
+                    const usedCategories = results[1].data.drilldownViewsCategories.filter(
                         (category) => {
                             return (
                                 applicableDashboards.find(
@@ -48,7 +44,6 @@ export default class DashboardsService {
                     );
 
                     return {
-                        metrics,
                         categories: usedCategories,
                         defaultDashboards: applicableDashboards,
                         version: results[0].version
@@ -61,7 +56,6 @@ export default class DashboardsService {
                                 null,
                                 datasourceName,
                                 results.version,
-                                results.metrics,
                                 results.categories,
                                 tags
                             )
@@ -100,28 +94,17 @@ export default class DashboardsService {
                     };
             }
 
-            return backend.backendSrv.$q
-                .all([fetchDashboards(backend), MetricsService.findMetrics(backend)])
-                .then((results) => {
-                    const metrics = results[1];
-                    const convertedDashboards = results[0].dashboards
+            return fetchDashboards(backend)
+                .then((result) => {
+                    const convertedDashboards = result.dashboards
                         .filter(
                             SysdigDashboardHelper.filterDashboardBySetId.bind(
                                 null,
-                                results[0].version,
+                                result.version,
                                 dashboardSetId
                             )
                         )
-                        .map(
-                            convertDashboard.bind(
-                                null,
-                                datasourceName,
-                                results[0].version,
-                                metrics,
-                                [],
-                                tags
-                            )
-                        )
+                        .map(convertDashboard.bind(null, datasourceName, result.version, [], tags))
                         .filter((dashboard) => dashboard !== null);
 
                     const options = {
@@ -142,11 +125,10 @@ export default class DashboardsService {
                 });
         }
 
-        function convertDashboard(datasourceName, version, metrics, categories, tags, dashboard) {
+        function convertDashboard(datasourceName, version, categories, tags, dashboard) {
             try {
                 return SysdigDashboardHelper.convertToGrafana(version, dashboard, {
                     datasourceName,
-                    metrics,
                     categories,
                     tags
                 });
