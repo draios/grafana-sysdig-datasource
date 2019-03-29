@@ -22,7 +22,7 @@ export default class DashboardsService {
         console.info('Sysdig dashboards import: Starting...');
 
         if (dashboardSetId === 'DEFAULT') {
-            const tags = ['sysdig', 'default dashboard'];
+            const tags = ['Sysdig', 'Default dashboard'];
             return backend.backendSrv.$q
                 .all([
                     ApiService.send(backend, {
@@ -111,10 +111,10 @@ export default class DashboardsService {
             let tags;
             switch (dashboardSetId) {
                 case 'PRIVATE':
-                    tags = ['sysdig', 'private dashboard'];
+                    tags = ['Sysdig', 'Private dashboard'];
                     break;
                 case 'SHARED':
-                    tags = ['sysdig', 'shared dashboard'];
+                    tags = ['Sysdig', 'Shared dashboard'];
                     break;
                 default:
                     throw {
@@ -200,7 +200,7 @@ export default class DashboardsService {
         backendSrv
             .search({
                 type: 'dash-db',
-                tag: 'sysdig'
+                tags: ['Sysdig', 'sysdig']
             })
             .then((dashboards) => {
                 removeDashboards(backendSrv, dashboards);
