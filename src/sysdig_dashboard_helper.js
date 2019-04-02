@@ -553,7 +553,7 @@ class TableBuilder extends TimeSeriesBuilder {
 
     static buildTargets(sysdigDashboard, sysdigPanel) {
         const keys = this.getKeys(sysdigDashboard, sysdigPanel);
-        const filterMetrics = (metric) => metric.metricId !== keys[0].metricId;
+        const filterMetrics = (metric) => metric.timeAggregation !== undefined;
 
         return sysdigPanel.metrics
             .map(parseSysdigPanelValue)
@@ -566,7 +566,7 @@ class TableBuilder extends TimeSeriesBuilder {
                     target: value.metricId,
                     timeAggregation: value.timeAggregation || 'concat',
                     groupAggregation: value.groupAggregation || 'concat',
-                    segmentBy: keys.length >= 1 ? keys[0].metricId : null,
+                    segmentBy: keys.map((key) => key.metricId),
                     filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                     sortDirection: this.getTargetSortDirection(sysdigPanel),
                     pageLimit: this.getTargetPageLimit(sysdigPanel)

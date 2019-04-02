@@ -381,7 +381,13 @@ function parseResponses(options, response) {
                     };
                 }
 
-                if (isSingleDataPoint) {
+                if (isTabularFormat) {
+                    acc[t].datapoints.push([
+                        ...keys.map((key) => d[key]),
+                        d.v0,
+                        response[i].time.from
+                    ]);
+                } else if (isSingleDataPoint) {
                     acc[t].datapoints.push([d.v0, response[i].time.from]);
                 } else {
                     acc[t].datapoints.push([d.v0, d.k0 / 1000]);
@@ -414,21 +420,32 @@ function parseResponses(options, response) {
     });
 
     if (isTabularFormat && data.length > 0) {
+        const failures = data.filter((d) => d.error);
+        if (failures.length > 0) {
+            return { data: failures };
+        }
+
         const targetsDataset = data[0];
-        const tabularDataset = Object.assign({}, data[0], {
+        const segments = options.targets[0].segmentBy;
+        const metrics = options.targets.map((target) => target.target);
+
+        const tabularDataset = Object.assign({}, targetsDataset, {
             type: 'table',
             columns: [
-                { text: options.targets[0].segmentBy },
-                ...options.targets.map((target) => ({ text: target.target }))
+                ...segments.map((segmentBy) => ({ text: segmentBy })),
+                ...metrics.map((metric) => ({ text: metric }))
             ],
-            rows: targetsDataset.map((targetDataset, i) => {
+            rows: targetsDataset.map((referenceRow, i) => {
+                const referenceData = referenceRow.datapoints[0];
+
                 return [
-                    targetDataset.target,
-                    ...data.map((dataset) => {
-                        if (dataset.length > i) {
-                            return dataset[i].datapoints[0][0];
+                    ...referenceData.slice(0, segments.length),
+                    referenceData[segments.length],
+                    ...data.slice(1).map((d) => {
+                        if (d[i].target === referenceRow.target) {
+                            return d[i].datapoints[0][segments.length];
                         } else {
-                            // there are cases where datasets don't have the same length (and specifically some are empty, some others not)
+                            // datasets could have different sets of segments; currently, no merge is performed
                             return null;
                         }
                     })
