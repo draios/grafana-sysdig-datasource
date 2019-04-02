@@ -264,7 +264,9 @@ function getRequest(target, requestTime) {
             };
 
             if (target.segmentBy) {
-                metrics.k0 = target.segmentBy;
+                target.segmentBy.forEach((segmentBy, i) => {
+                    metrics[`k${i}`] = segmentBy;
+                });
             }
 
             return metrics;
@@ -275,7 +277,9 @@ function getRequest(target, requestTime) {
             };
 
             if (target.segmentBy) {
-                metrics.k1 = target.segmentBy;
+                target.segmentBy.forEach((segmentBy, i) => {
+                    metrics[`k${i + 1}`] = segmentBy;
+                });
             }
 
             return metrics;
@@ -313,8 +317,10 @@ function getRequest(target, requestTime) {
             const groupBy = [];
 
             if (target.segmentBy) {
-                groupBy.push({
-                    metric: 'k0'
+                target.segmentBy.forEach((segmentBy, i) => {
+                    groupBy.push({
+                        metric: `k${i}`
+                    });
                 });
             }
 
@@ -328,8 +334,10 @@ function getRequest(target, requestTime) {
             ];
 
             if (target.segmentBy) {
-                groupBy.push({
-                    metric: 'k1'
+                target.segmentBy.forEach((segmentBy, i) => {
+                    groupBy.push({
+                        metric: `k${i + 1}`
+                    });
                 });
             }
 
@@ -346,16 +354,22 @@ function parseResponses(options, response) {
 
         if (response[i].data) {
             const map = response[i].data.reduce((acc, d) => {
-                let t;
+                const keys = response[i].group.by
+                    .map((group) => group['metric'])
+                    // assume timestamp is always the first one, ie. k0
+                    .slice(isSingleDataPoint ? 0 : 1);
 
-                const segmentPropName = isSingleDataPoint ? 'k0' : 'k1';
+                let t;
                 if (target.segmentBy) {
-                    t =
-                        isSingleTarget || isTabularFormat
-                            ? FormatterService.formatLabelValue(d[segmentPropName])
-                            : `${FormatterService.formatLabelValue(target.target)} (${
-                                  d[segmentPropName]
-                              })`;
+                    const segmentNames = keys
+                        .map((segment) => FormatterService.formatLabelValue(d[segment]))
+                        .join(' - ');
+
+                    if (isTabularFormat || isSingleTarget) {
+                        t = segmentNames;
+                    } else {
+                        t = `${FormatterService.formatLabelValue(target.target)} (${segmentNames})`;
+                    }
                 } else {
                     t = FormatterService.formatLabelValue(target.target);
                 }
