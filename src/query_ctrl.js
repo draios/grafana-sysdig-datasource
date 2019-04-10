@@ -24,12 +24,22 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         this.target.target = this.target.target || 'net.bytes.total';
         this.target.timeAggregation = this.target.timeAggregation || 'timeAvg';
         this.target.groupAggregation = this.target.groupAggregation || 'avg';
-        this.target.segmentBy = this.target.segmentBy || null;
+
+        if (this.target.segmentBy) {
+            if (Array.isArray(this.target.segmentBy) === false) {
+                this.target.segmentBy = [this.target.segmentBy];
+            }
+        } else {
+            this.target.segmentBy = [];
+        }
+
         this.target.sortDirection = this.target.sortDirection || 'desc';
         this.target.pageLimit = this.target.pageLimit || 10;
 
         // enforce tabular format to be applied when the panel type is a table
         this.target.isTabularFormat = this.panel.type === 'table';
+
+        this.segmentByItems = this.calculateSegmentByItems();
     }
 
     isFirstTarget() {
@@ -123,8 +133,69 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         });
     }
 
+    removeSegmentBy(item) {
+        const index = this.segmentByItems.indexOf(item);
+
+        // remove segmentation from list
+        this.target.segmentBy = [
+            ...this.target.segmentBy.slice(0, index),
+            ...this.target.segmentBy.slice(index + 1)
+        ];
+
+        // update UI list
+        this.segmentByItems = this.calculateSegmentByItems();
+
+        // update data
+        this.panelCtrl.refresh();
+    }
+
+    addSegmentBy(item) {
+        const index = this.segmentByItems.indexOf(item);
+
+        // add new item after the one where + has been clicked
+        this.segmentByItems = [
+            ...this.segmentByItems.slice(0, index + 1),
+            {
+                isFirst: false,
+                canAdd: true,
+                segmentBy: null
+            },
+            ...this.segmentByItems.slice(index + 1)
+        ];
+
+        // don't update the UI: the change is temporary until the user picks a segmentation
+    }
+
     onChangeParameter() {
         this.panelCtrl.refresh();
+
+        this.target.segmentBy = this.segmentByItems
+            .filter((item) => item.segmentBy !== null)
+            .map((item) => item.segmentBy);
+
+        this.segmentByItems = this.calculateSegmentByItems();
+    }
+
+    calculateSegmentByItems() {
+        if (this.panel.type !== 'table' || this.isFirstTarget()) {
+            if (this.target.segmentBy.length === 0) {
+                return [
+                    {
+                        isFirst: true,
+                        canAdd: false,
+                        segmentBy: null
+                    }
+                ];
+            } else {
+                return this.target.segmentBy.map((segmentBy, i) => ({
+                    isFirst: i === 0,
+                    canAdd: i === this.target.segmentBy.length - 1,
+                    segmentBy
+                }));
+            }
+        } else {
+            return [];
+        }
     }
 
     toggleEditorMode() {

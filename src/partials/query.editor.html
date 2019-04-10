@@ -53,17 +53,28 @@ limitations under the License.
   </div>
 
   <!-- Segmentation -->
-  <div class="gf-form gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
+  <div class="gf-form gf-form-inline" ng-repeat="item in ctrl.segmentByItems">
     <div class="gf-form gf-form--grow">
-      <label class="gf-form-label width-11">
+      <label class="gf-form-label width-11" ng-if="item.isFirst === true">
         Segment by
       </label>
+      <label class="gf-form-label width-11" ng-if="item.isFirst === false"></label>
+      
       <div class="gf-form gf-form--grow">
-        <gf-form-dropdown model="ctrl.target.segmentBy" class="gf-form-dropdown sysdig-query-editor-dropdown--grow" allow-custom="true"
-          lookup-text="true" placeholder="no segmentation" get-options="ctrl.getSegmentByOptions($query)" on-change="ctrl.onChangeParameter()">
+        <gf-form-dropdown model="item.segmentBy" class="gf-form-dropdown sysdig-query-editor-dropdown--grow" allow-custom="true"
+        lookup-text="true" placeholder="no segmentation" get-options="ctrl.getSegmentByOptions(item, $query)" on-change="ctrl.onChangeParameter()">
         </gf-form-dropdown>
       </div>
-    </div>
+
+      <div style="min-width: 80px;">
+        <button class="btn btn-inverse" ng-click="ctrl.removeSegmentBy(item)">
+          <i class="fa fa-trash" />
+        </button>
+        <button class="btn btn-inverse" ng-click="ctrl.addSegmentBy(item)">
+          <i class="fa fa-plus" />
+        </button>
+      </div>
+     </div>
   </div>
 
   <!-- Filter -->
@@ -79,7 +90,7 @@ limitations under the License.
   </div>
 
   <!-- Time series vs data point -->
-  <div class="gf-form gf-form-inline" ng-if="ctrl.panel.type !== 'table' && ctrl.isFirstTarget()">
+  <div class="gf-form gf-form-inline" ng-if="ctrl.target.isTabularFormat === false && ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <div class="gf-form gf-form--grow">
         <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-11" checked="ctrl.target.isSingleDataPoint"
