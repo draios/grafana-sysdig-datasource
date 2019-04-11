@@ -292,7 +292,7 @@ class TimeSeriesBuilder extends BaseBuilder {
                 target: value.metricId,
                 timeAggregation: value.timeAggregation,
                 groupAggregation: value.groupAggregation,
-                segmentBy: keys.length === 1 ? keys[0].metricId : null,
+                segmentBy: keys.length > 0 ? keys.map((key) => key.metricId) : null,
                 filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                 sortDirection: this.getTargetSortDirection(sysdigPanel),
                 pageLimit: this.getTargetPageLimit(sysdigPanel)
@@ -566,7 +566,7 @@ class TableBuilder extends TimeSeriesBuilder {
                     target: value.metricId,
                     timeAggregation: value.timeAggregation || 'concat',
                     groupAggregation: value.groupAggregation || 'concat',
-                    segmentBy: keys.map((key) => key.metricId),
+                    segmentBy: keys.length > 0 ? keys.map((key) => key.metricId) : null,
                     filter: this.getTargetFilter(sysdigDashboard, sysdigPanel),
                     sortDirection: this.getTargetSortDirection(sysdigPanel),
                     pageLimit: this.getTargetPageLimit(sysdigPanel)

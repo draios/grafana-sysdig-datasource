@@ -102,7 +102,7 @@ export class SysdigDatasource {
                     isSingleDataPoint: isTabularFormat || targets[0].isSingleDataPoint
                 };
 
-                if (Array.isArray(targetOptions.segmentBy) === false) {
+                if (targetOptions.segmentBy && Array.isArray(targetOptions.segmentBy) === false) {
                     // backwards compatibility: up to v0.3 one segmentation was supported only
                     targetOptions.segmentBy = [targetOptions.segmentBy];
                 }
@@ -113,13 +113,15 @@ export class SysdigDatasource {
                         target.target,
                         options.scopedVars
                     ),
-                    segmentBy: targetOptions.segmentBy.map((segmentBy) =>
-                        TemplatingService.replaceSingleMatch(
-                            this.templateSrv,
-                            segmentBy,
-                            options.scopedVars
-                        )
-                    ),
+                    segmentBy: targetOptions.segmentBy
+                        ? targetOptions.segmentBy.map((segmentBy) =>
+                              TemplatingService.replaceSingleMatch(
+                                  this.templateSrv,
+                                  segmentBy,
+                                  options.scopedVars
+                              )
+                          )
+                        : null,
                     filter: TemplatingService.replace(
                         this.templateSrv,
                         targetOptions.filter,
