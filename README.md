@@ -21,7 +21,7 @@ An easy and flexible way to add the Sysdig datasource plugin to a Grafana contai
 
 1. Download the plugin to the _grafana-sysdig_ directory:
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.4.tgz -o sysdig.tgz
 mkdir grafana-sysdig
 tar zxf sysdig.tgz -C grafana-sysdig
 cd grafana-sysdig
@@ -51,7 +51,7 @@ Alternatively, the default Grafana container image can be used as is, and the pl
 ```
 mkdir grafana-data
 mkdir grafana-data/plugins
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.4.tgz -o sysdig.tgz
 tar zxf sysdig.tgz -C grafana-data/plugins
 ```
 2. Start the container with the current user, to give read/write permissions to the data directory:
@@ -72,7 +72,7 @@ The plugin can be installed on any host where Grafana is installed. To install t
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.4.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 sudo cp -R sysdig /var/lib/grafana/plugins
 sudo service grafana-server restart
@@ -87,7 +87,7 @@ sudo service grafana-server restart
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.4.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 cp -R sysdig /usr/local/var/lib/grafana/plugins
 brew services restart grafana
@@ -98,7 +98,7 @@ brew services restart grafana
 
 ##### Windows
 
-1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.3.zip
+1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.4.zip
 2. Install the plugin in the Grafana plugins folder.
 3. Restart Grafana.
 
@@ -265,7 +265,7 @@ The complete example below contains dynamic rows and panels:
 
 The Sysdig datasource is currently in Beta. Sysdig will continue to release iterations to make the datasource more complete and robust; however, some issues may be encountered. A list of known limitations is provided below:
 
-* The datasource has only been tested with Grafana 4.6 and the latest release (5.3). If you're using other versions of Grafana, we'll be happy to add it to the testing suite!
+* The datasource is being tested with latest version of Grafana. If you're using older versions of Grafana and you find any issues, please report the issue and we'll make sure to support your version of Grafana!
 * We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
 * Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels.
 * With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).

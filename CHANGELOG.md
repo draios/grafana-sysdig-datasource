@@ -1,5 +1,16 @@
 # Changelog
 
+### v0.4
+(4/11/2019)
+
+**What's new**
+* Import default dashboards ([#45](https://github.com/draios/grafana-sysdig-datasource/pull/45))
+* Support multiple segmentations ([#47](https://github.com/draios/grafana-sysdig-datasource/pull/47))
+
+**What's improved or fixed**
+* Make instruction command lines easier to copy&paste
+
+
 ### v0.3
 (9/10/2018)
 
