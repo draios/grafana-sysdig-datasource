@@ -1,5 +1,12 @@
 # Changelog
 
+### v0.5
+(4/14/2019)
+
+**What's new**
+* Dashboards API v2 ([#46](https://github.com/draios/grafana-sysdig-datasource/pull/46))
+
+
 ### v0.4
 (4/11/2019)
 
