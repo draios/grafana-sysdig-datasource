@@ -162,11 +162,22 @@ export default class DashboardsService {
                 type: 'dash-db',
                 tags: ['Sysdig', 'sysdig']
             })
+            .then(filterSysdigDashboards)
             .then((dashboards) => {
                 console.log(`Sysdig dashboards: Delete ${dashboards.length} dashboards...`);
 
                 removeDashboards(backendSrv, dashboards);
             });
+
+        function filterSysdigDashboards(dashboards) {
+            // NOTE: Up to Grafana v6.1, search over 2 tags doesn't work, the list will include dashboards without tags as well
+            // Current workaround is to filter based on tags returned by each dashboard configuration
+            return dashboards.filter(
+                (dashboard) =>
+                    dashboard.tags &&
+                    (dashboard.tags.indexOf('sysdig') >= 0 || dashboard.tags.indexOf('Sysdig') >= 0)
+            );
+        }
     }
 }
 
