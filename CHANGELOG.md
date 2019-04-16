@@ -1,5 +1,12 @@
 # Changelog
 
+### v0.5.1
+(4/16/2019)
+
+**What's improved or fixed**
+* Fix "Delete Sysdig dashboards" button to delete Sysdig dashboards only ([#49](https://github.com/draios/grafana-sysdig-datasource/pull/49))
+
+
 ### v0.5
 (4/14/2019)
 
