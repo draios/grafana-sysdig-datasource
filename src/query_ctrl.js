@@ -46,6 +46,13 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         return this.panel.targets.indexOf(this.target) === 0;
     }
 
+    getVariableItems() {
+        return this.datasource.templateSrv.variables.map((variable) => {
+            const text = `\${${variable.name}}`;
+            return { text, value: text };
+        });
+    }
+
     getMetricOptions(query) {
         let parseMetric;
         let options = {
@@ -66,7 +73,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         }
 
         return this.datasource.metricFindQuery(null, options).then((data) => {
-            return data.map(parseMetric);
+            return [...this.getVariableItems(), ...data.map(parseMetric)];
         });
     }
 
@@ -130,6 +137,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
             .then((data) => {
                 return [
                     { text: 'no segmentation', value: null },
+                    ...this.getVariableItems(),
                     ...data.map((m) => ({ text: m.id, value: m.id }))
                 ];
             });
