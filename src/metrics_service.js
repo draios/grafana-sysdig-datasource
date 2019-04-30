@@ -17,59 +17,94 @@ import _ from 'lodash';
 import ApiService from './api_service';
 import TimeService from './time_service';
 import TemplatingService from './templating_service';
+import Cache from './cache';
 
 export default class MetricsService {
-    static findMetrics(backend) {
-        if (metricsCache.isValid()) {
-            return backend.backendSrv.$q.when(metricsCache.data);
-        } else if (metricsCache.isLoading()) {
-            return metricsCache.promise;
-        } else {
-            return metricsCache.load(
-                ApiService.send(backend, {
-                    url: 'api/data/metrics?light=true'
-                })
-                    .then((result) => {
-                        const plottableMetricTypes = [
-                            '%',
-                            'byte',
-                            'date',
-                            'int',
-                            'number',
-                            'relativeTime'
-                        ];
+    static async findMetrics(backend, options) {
+        const normOptions = Object.assign({ areLabelsIncluded: false, match: null }, options);
 
-                        return Object.values(result.data)
-                            .map((metric) =>
-                                _.assign(metric, {
-                                    isNumeric: plottableMetricTypes.indexOf(metric.type) >= 0
-                                })
-                            )
-                            .sort((a, b) => a.id.localeCompare(b.id));
-                    })
-                    .then((data) => {
-                        metricsCache.setData(data);
-
-                        return data;
-                    })
-            );
+        if (normOptions.match && normOptions.match.trim() === '') {
+            normOptions.match = null;
         }
+
+        return getMetricsCache(backend).values.get(normOptions, async () => {
+            const plottableMetricTypes = ['%', 'byte', 'int', 'double', 'number', 'relativeTime'];
+            const typesFilter = normOptions.areLabelsIncluded ? [] : plottableMetricTypes;
+            const metricTypes = normOptions.areLabelsIncluded
+                ? []
+                : ['counter', 'gauge', 'histogram'];
+
+            const response = await ApiService.send(backend, {
+                url: `api/v2/metrics/descriptors?offset=0&limit=100&filter=${normOptions.match ||
+                    ''}&types=${encodeURIComponent(
+                    typesFilter.join(',')
+                )}&metricTypes=${encodeURIComponent(metricTypes.join(','))}`
+            });
+
+            return response.data.metricDescriptors
+                .map((metric) =>
+                    _.assign(metric, {
+                        isNumeric: plottableMetricTypes.indexOf(metric.type) >= 0
+                    })
+                )
+                .sort((a, b) => a.id.localeCompare(b.id));
+        });
     }
 
-    static findSegmentations(backend, metric) {
-        if (metric) {
-            return ApiService.send(backend, {
-                url: `api/data/metrics/${metric}/segmentationMetrics`
-            }).then((result) => {
-                if (result.data.segmentationMetrics) {
-                    return result.data.segmentationMetrics.sort((a, b) => a.localeCompare(b));
+    static findSegmentations(backend, options) {
+        const normOptions = Object.assign({ metric: false, match: null }, options);
+
+        if (normOptions.match && normOptions.match.trim() === '') {
+            normOptions.match = null;
+        }
+
+        return getMetricsCache(backend).labels.get(normOptions, async () => {
+            const result = await ApiService.send(backend, {
+                url: `api/v2/labels/descriptors?offset=0&limit=100&filter=${normOptions.match ||
+                    ''}&pids=${normOptions.metric || ''}&scope=`
+            });
+
+            return result.data.labelDescriptors.sort((a, b) => a.id.localeCompare(b.id));
+        });
+    }
+
+    static findSegmentValues(backend, filter, queryOptions, userTime) {
+        let evaluateUserTime;
+        if (userTime === null) {
+            evaluateUserTime = TimeService.queryTimelines(backend).then(({ timelines }) => {
+                if (timelines.agents.filter((t) => t.from !== null && t.to !== null).length > 0) {
+                    return {
+                        from: (timelines.agents[0].to - timelines.agents[0].sampling) / 1000000,
+                        to: timelines.agents[0].to / 1000000,
+                        sampling: timelines.agents[0].sampling / 1000000
+                    };
                 } else {
-                    return [];
+                    return backend.backendSrv.$q.reject(
+                        'Unable to query metrics (data not available)'
+                    );
                 }
             });
         } else {
-            return backend.backendSrv.$q.when([]);
+            evaluateUserTime = backend.backendSrv.$q.resolve(userTime);
         }
+
+        return evaluateUserTime
+            .then((userTime) => TimeService.validateTimeWindow(backend, userTime))
+            .then((requestTime) => {
+                return ApiService.send(backend, {
+                    method: 'POST',
+                    url: 'api/data/entity/metadata',
+                    data: {
+                        time: {
+                            from: requestTime.from * 1000000,
+                            to: requestTime.to * 1000000
+                        },
+                        metrics: [queryOptions.labelName],
+                        filter,
+                        paging: { from: queryOptions.from, to: queryOptions.to }
+                    }
+                });
+            });
     }
 
     static queryMetrics(backend, templateSrv, query, options) {
@@ -78,93 +113,65 @@ export default class MetricsService {
             //
             // return list of label values
             //
-            let evaluateUserTime;
-            if (options.userTime === null) {
-                evaluateUserTime = TimeService.queryTimelines(backend).then(({ timelines }) => {
-                    if (
-                        timelines.agents.filter((t) => t.from !== null && t.to !== null).length > 0
-                    ) {
-                        return {
-                            from: (timelines.agents[0].to - timelines.agents[0].sampling) / 1000000,
-                            to: timelines.agents[0].to / 1000000,
-                            sampling: timelines.agents[0].sampling / 1000000
-                        };
-                    } else {
-                        return backend.backendSrv.$q.reject(
-                            'Unable to query metrics (data not available)'
-                        );
-                    }
-                });
-            } else {
-                evaluateUserTime = backend.backendSrv.$q.resolve(options.userTime);
-            }
-
-            return evaluateUserTime
-                .then((userTime) => TimeService.validateTimeWindow(backend, userTime))
-                .then((requestTime) => {
-                    return ApiService.send(backend, {
-                        method: 'POST',
-                        url: 'api/data/entity/metadata',
-                        data: {
-                            time: {
-                                from: requestTime.from * 1000000,
-                                to: requestTime.to * 1000000
-                            },
-                            metrics: [queryOptions.labelName],
-                            filter: TemplatingService.resolveQueryVariables(
-                                queryOptions.filter,
-                                templateSrv
-                            ),
-                            paging: { from: queryOptions.from, to: queryOptions.to }
-                        }
-                    });
-                })
-                .then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
+            return this.findSegmentValues(
+                backend,
+                TemplatingService.resolveQueryVariables(queryOptions.filter, templateSrv),
+                queryOptions,
+                options.userTime
+            ).then((result) => result.data.data.map((d) => d[queryOptions.labelName]));
         } else if ((queryOptions = TemplatingService.validateLabelNamesQuery(query)) !== null) {
             //
             // return list of label names
             //
-            return this.findMetrics(backend).then((result) =>
-                result
-                    // filter out all tags/labels/other string metrics
-                    .filter(
-                        (metric) => metric.isNumeric === false && queryOptions.regex.test(metric.id)
-                    )
-                    .map((metric) => metric.id)
+            return this.findSegmentations(backend, { match: queryOptions.pattern }).then((result) =>
+                result.map((metric) => metric.id)
             );
         } else if ((queryOptions = TemplatingService.validateMetricsQuery(query)) !== null) {
             //
             // return list of metric names
             //
-            return this.findMetrics(backend).then((result) =>
-                result
-                    // filter out all non tags/labels/other string metrics
-                    .filter((metric) => metric.isNumeric && queryOptions.regex.test(metric.id))
-                    .map((metric) => metric.id)
+            return this.findMetrics(backend, { match: queryOptions.pattern }).then((result) =>
+                result.map((metric) => metric.id)
             );
         } else {
             return backend.backendSrv.$q.when([]);
         }
     }
+
+    static reset() {
+        resetMetricsCache();
+    }
 }
 
-const metricsCache = {
-    timestamp: null,
-    data: null,
-    promise: null,
-    load(promise) {
-        this.promise = promise;
-        return promise;
-    },
-    setData(data) {
-        this.timestamp = Date.now();
-        this.data = data;
-        this.promise = null;
-    },
-    isLoading() {
-        return this.isValid() === false && this.promise !== null;
-    },
-    isValid() {
-        return this.timestamp !== null && this.timestamp >= Date.now() - 60000;
+class MetricsCache extends Cache {
+    constructor($q) {
+        super($q, 10, 60000);
     }
-};
+
+    getItemId(id) {
+        return Object.keys(id)
+            .map((k) => id[k])
+            .join(',');
+    }
+}
+
+let metricsCaches;
+
+function getMetricsCache(backend) {
+    if (metricsCaches === undefined) {
+        metricsCaches = {};
+    }
+
+    if (metricsCaches[backend.url] === undefined) {
+        metricsCaches[backend.url] = {
+            values: new MetricsCache(backend.backendSrv.$q),
+            labels: new MetricsCache(backend.backendSrv.$q)
+        };
+    }
+
+    return metricsCaches[backend.url];
+}
+
+function resetMetricsCache() {
+    metricsCaches = undefined;
+}

@@ -46,10 +46,11 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         return this.panel.targets.indexOf(this.target) === 0;
     }
 
-    getMetricOptions() {
+    getMetricOptions(query) {
         let parseMetric;
         let options = {
-            areLabelsIncluded: this.panel.type === 'table'
+            areLabelsIncluded: this.panel.type === 'table',
+            match: query
         };
 
         if (this.panel.type !== 'table') {
@@ -70,12 +71,8 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     getAggregationOptions() {
-        let options = {
-            areLabelsIncluded: this.panel.type === 'table'
-        };
-
-        return this.datasource.metricFindQuery(null, options).then((data) => {
-            return data.filter((m) => m.id === this.target.target)[0];
+        return this.datasource.metricFindQuery(null, { match: this.target.target }).then((data) => {
+            return data.length > 0 ? data[0] : null;
         });
     }
 
@@ -93,7 +90,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
 
         return this.getAggregationOptions().then((m) => {
             if (m) {
-                return options.filter((d) => m.aggregations.indexOf(d.value) >= 0);
+                return options.filter((d) => m.timeAggregations.indexOf(d.value) >= 0);
             } else {
                 return [];
             }
@@ -124,13 +121,18 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         return [{ value: 'desc', text: 'Top' }, { value: 'asc', text: 'Bottom' }];
     }
 
-    getSegmentByOptions() {
-        return this.datasource.findSegmentBy(this.target.target).then((data) => {
-            return [
-                { text: 'no segmentation', value: null },
-                ...data.map((k) => ({ text: k, value: k }))
-            ];
-        });
+    getSegmentByOptions(item, query) {
+        return this.datasource
+            .findSegmentBy(
+                this.target.target,
+                query !== 'select metric' && query !== '' ? query : null
+            )
+            .then((data) => {
+                return [
+                    { text: 'no segmentation', value: null },
+                    ...data.map((m) => ({ text: m.id, value: m.id }))
+                ];
+            });
     }
 
     removeSegmentBy(item) {

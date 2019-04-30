@@ -140,11 +140,14 @@ export class SysdigDatasource {
 
     metricFindQuery(query, options) {
         const normOptions = Object.assign(
-            { areLabelsIncluded: false, range: null, variable: null },
+            { areLabelsIncluded: false, range: null, variable: null, match: '' },
             options
         );
 
         if (query) {
+            //
+            // variable query
+            //
             return MetricsService.queryMetrics(
                 this.getBackendConfiguration(),
                 this.templateSrv,
@@ -158,8 +161,14 @@ export class SysdigDatasource {
                     }))
             );
         } else {
+            //
+            // panel configuration query
+            //
             return (
-                MetricsService.findMetrics(this.getBackendConfiguration())
+                MetricsService.findMetrics(this.getBackendConfiguration(), {
+                    areLabelsIncluded: normOptions.areLabelsIncluded,
+                    match: normOptions.match
+                })
                     // filter out all tags/labels/other string metrics
                     .then((result) => {
                         if (normOptions.areLabelsIncluded) {
@@ -172,14 +181,14 @@ export class SysdigDatasource {
         }
     }
 
-    findSegmentBy(target) {
-        if (target === undefined || target === 'select metric') {
-            return MetricsService.findSegmentations(this.getBackendConfiguration(), null);
+    findSegmentBy(metric, query) {
+        if (metric) {
+            return MetricsService.findSegmentations(this.getBackendConfiguration(), {
+                metric,
+                match: TemplatingService.replaceSingleMatch(this.templateSrv, query)
+            });
         } else {
-            return MetricsService.findSegmentations(
-                this.getBackendConfiguration(),
-                TemplatingService.replaceSingleMatch(this.templateSrv, target)
-            );
+            return this.getBackendConfiguration().backendSrv.$q.when([]);
         }
     }
 
