@@ -1,20 +1,18 @@
-import { Datasource } from '../module';
+import { SysdigDatasource } from '../datasource';
 import Q from 'q';
 
-describe('SysdigDatasource', function() {
+describe('SysdigDatasource', () => {
     var ctx = {};
 
-    beforeEach(function() {
+    beforeEach(() => {
         ctx.$q = Q;
         ctx.backendSrv = {};
         ctx.templateSrv = {};
-        ctx.ds = new Datasource({}, ctx.$q, ctx.backendSrv, ctx.templateSrv);
+        ctx.ds = new SysdigDatasource({}, ctx.$q, ctx.backendSrv, ctx.templateSrv);
     });
 
-    it('should return an empty array when no targets are set', function(done) {
-        ctx.ds.query({ targets: [] }).then(function(result) {
-            expect(result.data).to.have.length(0);
-            done();
-        });
+    it('should return an empty array when no targets are set', async () => {
+        const result = await ctx.ds.query({ targets: [] });
+        expect(result.data).to.have.length(0);
     });
 });
