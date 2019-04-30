@@ -82,7 +82,7 @@ export class SysdigDatasource {
             if (target.target === undefined) {
                 // here's the query control panel sending the first request with empty configuration
                 return Object.assign({}, target, {
-                    target: 'net.bytes.total',
+                    target: 'cpu.used.percent',
                     timeAggregation: 'timeAvg',
                     groupAggregation: 'avg',
                     filter: undefined,
