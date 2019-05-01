@@ -20,6 +20,8 @@ import MetricsService from './metrics_service';
 import TemplatingService from './templating_service';
 import FormatterService from './formatter_service';
 
+export const DEFAULT_PAGE_LIMIT = 20;
+
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.name = instanceSettings.name;
@@ -96,7 +98,7 @@ export class SysdigDatasource {
                     timeAggregation: 'timeAvg',
                     groupAggregation: 'avg',
                     filter: undefined,
-                    pageLimit: 10
+                    pageLimit: DEFAULT_PAGE_LIMIT
                 });
             } else {
                 const isTabularFormat = targets[0].isTabularFormat;
@@ -138,7 +140,7 @@ export class SysdigDatasource {
                         options.scopedVars
                     ),
 
-                    pageLimit: Number.parseInt(targetOptions.pageLimit) || 10
+                    pageLimit: Number.parseInt(targetOptions.pageLimit) || DEFAULT_PAGE_LIMIT
                 });
             }
         });
