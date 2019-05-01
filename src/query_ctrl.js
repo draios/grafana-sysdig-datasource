@@ -16,6 +16,35 @@
 import { QueryCtrl } from 'app/plugins/sdk';
 import './css/query-editor.css!';
 
+const DEFAULT_TIME_AGGREGATIONS = [
+    { value: 'avg', text: 'Average' },
+    { value: 'timeAvg', text: 'Rate' },
+    { value: 'sum', text: 'Sum' },
+    { value: 'min', text: 'Min' },
+    { value: 'max', text: 'Max' },
+    { value: 'count', text: 'Count' },
+    { value: 'concat', text: 'Concat' },
+    { value: 'distinct', text: 'Distinct' }
+];
+const DEFAULT_TIME_AGGREGATIONS_MAP = DEFAULT_TIME_AGGREGATIONS.reduce((acc, d) => {
+    acc[d.value] = d;
+    return acc;
+}, {});
+
+const DEFAULT_GROUP_AGGREGATIONS = [
+    { value: 'avg', text: 'Average' },
+    { value: 'sum', text: 'Sum' },
+    { value: 'min', text: 'Min' },
+    { value: 'max', text: 'Max' },
+    { value: 'count', text: 'Count' },
+    { value: 'concat', text: 'Concat' },
+    { value: 'distinct', text: 'Distinct' }
+];
+const DEFAULT_GROUP_AGGREGATIONS_MAP = DEFAULT_GROUP_AGGREGATIONS.reduce((acc, d) => {
+    acc[d.value] = d;
+    return acc;
+}, {});
+
 export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     constructor($scope, $injector) {
         super($scope, $injector);
@@ -84,20 +113,13 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     getTimeAggregationOptions() {
-        const options = [
-            { value: 'avg', text: 'Average' },
-            { value: 'timeAvg', text: 'Rate' },
-            { value: 'sum', text: 'Sum' },
-            { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' },
-            { value: 'count', text: 'Count' },
-            { value: 'concat', text: 'Concat' },
-            { value: 'distinct', text: 'Distinct' }
-        ];
-
         return this.getAggregationOptions().then((m) => {
             if (m) {
-                return options.filter((d) => m.timeAggregations.indexOf(d.value) >= 0);
+                return getAggregationList(
+                    m.timeAggregations,
+                    DEFAULT_TIME_AGGREGATIONS,
+                    DEFAULT_TIME_AGGREGATIONS_MAP
+                );
             } else {
                 return [];
             }
@@ -105,19 +127,13 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     getGroupAggregationOptions() {
-        const options = [
-            { value: 'avg', text: 'Average' },
-            { value: 'sum', text: 'Sum' },
-            { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' },
-            { value: 'count', text: 'Count' },
-            { value: 'concat', text: 'Concat' },
-            { value: 'distinct', text: 'Distinct' }
-        ];
-
         return this.getAggregationOptions().then((m) => {
             if (m) {
-                return options.filter((d) => m.groupAggregations.indexOf(d.value) >= 0);
+                return getAggregationList(
+                    m.groupAggregations,
+                    DEFAULT_GROUP_AGGREGATIONS,
+                    DEFAULT_GROUP_AGGREGATIONS_MAP
+                );
             } else {
                 return [];
             }
@@ -214,3 +230,22 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
 }
 
 SysdigDatasourceQueryCtrl.templateUrl = 'partials/query.editor.html';
+
+function getAggregationList(aggregations, knownList, knownMap) {
+    return aggregations
+        .map((d) => {
+            const descr = knownMap[d];
+
+            return descr || { text: d, value: d };
+        })
+        .sort((a, b) => {
+            const indexA = knownList.indexOf(a);
+            const indexB = knownList.indexOf(b);
+
+            if (indexA !== indexB) {
+                return indexA - indexB;
+            } else {
+                return a.text.localeCompare(b.text);
+            }
+        });
+}
