@@ -20,7 +20,7 @@ import TemplatingService from './templating_service';
 import Cache from './cache';
 
 export default class MetricsService {
-    static async findMetrics(backend, options) {
+    static findMetrics(backend, options) {
         const normOptions = Object.assign({ areLabelsIncluded: false, match: null }, options);
 
         if (normOptions.match && normOptions.match.trim() === '') {
