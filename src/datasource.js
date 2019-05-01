@@ -23,7 +23,7 @@ import FormatterService from './formatter_service';
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.name = instanceSettings.name;
-        this.q = $q;
+        this.$q = $q;
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
         this.url = instanceSettings.url;
@@ -48,13 +48,21 @@ export class SysdigDatasource {
     }
 
     testDatasource() {
-        return ApiService.send(this.getBackendConfiguration(), {
-            url: 'api/login'
-        }).then((response) => {
-            if (response.status === 200) {
-                return { status: 'success', message: 'Data source is working', title: 'Success' };
-            }
-        });
+        return this.$q
+            .when(
+                ApiService.send(this.getBackendConfiguration(), {
+                    url: 'api/login'
+                })
+            )
+            .then((response) => {
+                if (response.status === 200) {
+                    return {
+                        status: 'success',
+                        message: 'Data source is working',
+                        title: 'Success'
+                    };
+                }
+            });
     }
 
     query(options) {
@@ -62,13 +70,15 @@ export class SysdigDatasource {
         query.targets = query.targets.filter((t) => !t.hide);
 
         if (query.targets.length <= 0) {
-            return this.q.when({ data: [] });
+            return this.$q.when({ data: [] });
         }
 
-        return DataService.fetch(
-            this.getBackendConfiguration(),
-            query,
-            convertRangeToUserTime(options.range, query.intervalMs)
+        return this.$q.when(
+            DataService.fetch(
+                this.getBackendConfiguration(),
+                query,
+                convertRangeToUserTime(options.range, query.intervalMs)
+            )
         );
     }
 
@@ -148,27 +158,34 @@ export class SysdigDatasource {
             //
             // variable query
             //
-            return MetricsService.queryMetrics(
-                this.getBackendConfiguration(),
-                this.templateSrv,
-                query,
-                { userTime: convertRangeToUserTime(normOptions.range) }
-            ).then((result) =>
-                result
-                    .sort(this.getLabelValuesSorter(normOptions.variable.sort))
-                    .map((labelValue) => ({
-                        text: FormatterService.formatLabelValue(labelValue)
-                    }))
-            );
+            return this.$q
+                .when(
+                    MetricsService.queryMetrics(
+                        this.getBackendConfiguration(),
+                        this.templateSrv,
+                        query,
+                        { userTime: convertRangeToUserTime(normOptions.range) }
+                    )
+                )
+                .then((result) =>
+                    result
+                        .sort(this.getLabelValuesSorter(normOptions.variable.sort))
+                        .map((labelValue) => ({
+                            text: FormatterService.formatLabelValue(labelValue)
+                        }))
+                );
         } else {
             //
             // panel configuration query
             //
             return (
-                MetricsService.findMetrics(this.getBackendConfiguration(), {
-                    areLabelsIncluded: normOptions.areLabelsIncluded,
-                    match: normOptions.match
-                })
+                this.$q
+                    .when(
+                        MetricsService.findMetrics(this.getBackendConfiguration(), {
+                            areLabelsIncluded: normOptions.areLabelsIncluded,
+                            match: normOptions.match
+                        })
+                    )
                     // filter out all tags/labels/other string metrics
                     .then((result) => {
                         if (normOptions.areLabelsIncluded) {
@@ -183,12 +200,14 @@ export class SysdigDatasource {
 
     findSegmentBy(metric, query) {
         if (metric) {
-            return MetricsService.findSegmentations(this.getBackendConfiguration(), {
-                metric,
-                match: TemplatingService.replaceSingleMatch(this.templateSrv, query)
-            });
+            return this.$q.when(
+                MetricsService.findSegmentations(this.getBackendConfiguration(), {
+                    metric,
+                    match: TemplatingService.replaceSingleMatch(this.templateSrv, query)
+                })
+            );
         } else {
-            return this.getBackendConfiguration().backendSrv.$q.when([]);
+            return this.$q.when([]);
         }
     }
 
@@ -254,11 +273,7 @@ export class SysdigDatasource {
         // };
 
         // TODO Not supported yet
-        return this.q.when([]);
-    }
-
-    doRequest(options) {
-        return ApiService.send(this.getBackendConfiguration(), options);
+        return this.$q.when([]);
     }
 }
 
