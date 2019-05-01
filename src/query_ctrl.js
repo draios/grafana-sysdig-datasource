@@ -15,6 +15,7 @@
 //
 import { QueryCtrl } from 'app/plugins/sdk';
 import './css/query-editor.css!';
+import { DEFAULT_PAGE_LIMIT } from './datasource';
 
 export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     constructor($scope, $injector) {
@@ -34,7 +35,6 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         }
 
         this.target.sortDirection = this.target.sortDirection || 'desc';
-        this.target.pageLimit = this.target.pageLimit || 10;
 
         // enforce tabular format to be applied when the panel type is a table
         this.target.isTabularFormat = this.panel.type === 'table';
@@ -44,6 +44,10 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
 
     isFirstTarget() {
         return this.panel.targets.indexOf(this.target) === 0;
+    }
+
+    getLimitPlaceholder() {
+        return `${DEFAULT_PAGE_LIMIT} (element count)`;
     }
 
     getMetricOptions() {

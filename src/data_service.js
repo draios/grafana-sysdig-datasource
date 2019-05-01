@@ -308,7 +308,7 @@ function getRequest(target, requestTime) {
     function getPaging() {
         return {
             from: 0,
-            to: (target.pageLimit || 10) - 1
+            to: target.pageLimit - 1
         };
     }
 
