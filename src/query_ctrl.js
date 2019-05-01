@@ -50,7 +50,7 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         super($scope, $injector);
 
         this.scope = $scope;
-        this.target.target = this.target.target || 'net.bytes.total';
+        this.target.target = this.target.target || 'cpu.used.percent';
         this.target.timeAggregation = this.target.timeAggregation || 'timeAvg';
         this.target.groupAggregation = this.target.groupAggregation || 'avg';
 
