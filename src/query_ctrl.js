@@ -16,6 +16,35 @@
 import { QueryCtrl } from 'app/plugins/sdk';
 import './css/query-editor.css!';
 
+const DEFAULT_TIME_AGGREGATIONS = [
+    { value: 'avg', text: 'Average' },
+    { value: 'timeAvg', text: 'Rate' },
+    { value: 'sum', text: 'Sum' },
+    { value: 'min', text: 'Min' },
+    { value: 'max', text: 'Max' },
+    { value: 'count', text: 'Count' },
+    { value: 'concat', text: 'Concat' },
+    { value: 'distinct', text: 'Distinct' }
+];
+const DEFAULT_TIME_AGGREGATIONS_MAP = DEFAULT_TIME_AGGREGATIONS.reduce((acc, d) => {
+    acc[d.value] = d;
+    return acc;
+}, {});
+
+const DEFAULT_GROUP_AGGREGATIONS = [
+    { value: 'avg', text: 'Average' },
+    { value: 'sum', text: 'Sum' },
+    { value: 'min', text: 'Min' },
+    { value: 'max', text: 'Max' },
+    { value: 'count', text: 'Count' },
+    { value: 'concat', text: 'Concat' },
+    { value: 'distinct', text: 'Distinct' }
+];
+const DEFAULT_GROUP_AGGREGATIONS_MAP = DEFAULT_GROUP_AGGREGATIONS.reduce((acc, d) => {
+    acc[d.value] = d;
+    return acc;
+}, {});
+
 export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     constructor($scope, $injector) {
         super($scope, $injector);
@@ -46,10 +75,18 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         return this.panel.targets.indexOf(this.target) === 0;
     }
 
-    getMetricOptions() {
+    getVariableItems() {
+        return this.datasource.templateSrv.variables.map((variable) => {
+            const text = `\${${variable.name}}`;
+            return { text, value: text };
+        });
+    }
+
+    getMetricOptions(query) {
         let parseMetric;
         let options = {
-            areLabelsIncluded: this.panel.type === 'table'
+            areLabelsIncluded: this.panel.type === 'table',
+            match: query
         };
 
         if (this.panel.type !== 'table') {
@@ -65,35 +102,24 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         }
 
         return this.datasource.metricFindQuery(null, options).then((data) => {
-            return data.map(parseMetric);
+            return [...this.getVariableItems(), ...data.map(parseMetric)];
         });
     }
 
     getAggregationOptions() {
-        let options = {
-            areLabelsIncluded: this.panel.type === 'table'
-        };
-
-        return this.datasource.metricFindQuery(null, options).then((data) => {
-            return data.filter((m) => m.id === this.target.target)[0];
+        return this.datasource.metricFindQuery(null, { match: this.target.target }).then((data) => {
+            return data.length > 0 ? data[0] : null;
         });
     }
 
     getTimeAggregationOptions() {
-        const options = [
-            { value: 'avg', text: 'Average' },
-            { value: 'timeAvg', text: 'Rate' },
-            { value: 'sum', text: 'Sum' },
-            { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' },
-            { value: 'count', text: 'Count' },
-            { value: 'concat', text: 'Concat' },
-            { value: 'distinct', text: 'Distinct' }
-        ];
-
         return this.getAggregationOptions().then((m) => {
             if (m) {
-                return options.filter((d) => m.aggregations.indexOf(d.value) >= 0);
+                return getAggregationList(
+                    m.timeAggregations,
+                    DEFAULT_TIME_AGGREGATIONS,
+                    DEFAULT_TIME_AGGREGATIONS_MAP
+                );
             } else {
                 return [];
             }
@@ -101,19 +127,13 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     getGroupAggregationOptions() {
-        const options = [
-            { value: 'avg', text: 'Average' },
-            { value: 'sum', text: 'Sum' },
-            { value: 'min', text: 'Min' },
-            { value: 'max', text: 'Max' },
-            { value: 'count', text: 'Count' },
-            { value: 'concat', text: 'Concat' },
-            { value: 'distinct', text: 'Distinct' }
-        ];
-
         return this.getAggregationOptions().then((m) => {
             if (m) {
-                return options.filter((d) => m.groupAggregations.indexOf(d.value) >= 0);
+                return getAggregationList(
+                    m.groupAggregations,
+                    DEFAULT_GROUP_AGGREGATIONS,
+                    DEFAULT_GROUP_AGGREGATIONS_MAP
+                );
             } else {
                 return [];
             }
@@ -124,13 +144,19 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         return [{ value: 'desc', text: 'Top' }, { value: 'asc', text: 'Bottom' }];
     }
 
-    getSegmentByOptions() {
-        return this.datasource.findSegmentBy(this.target.target).then((data) => {
-            return [
-                { text: 'no segmentation', value: null },
-                ...data.map((k) => ({ text: k, value: k }))
-            ];
-        });
+    getSegmentByOptions(item, query) {
+        return this.datasource
+            .findSegmentBy(
+                this.target.target,
+                query !== 'select metric' && query !== '' ? query : null
+            )
+            .then((data) => {
+                return [
+                    { text: 'no segmentation', value: null },
+                    ...this.getVariableItems(),
+                    ...data.map((m) => ({ text: m.id, value: m.id }))
+                ];
+            });
     }
 
     removeSegmentBy(item) {
@@ -204,3 +230,22 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
 }
 
 SysdigDatasourceQueryCtrl.templateUrl = 'partials/query.editor.html';
+
+function getAggregationList(aggregations, knownList, knownMap) {
+    return aggregations
+        .map((d) => {
+            const descr = knownMap[d];
+
+            return descr || { text: d, value: d };
+        })
+        .sort((a, b) => {
+            const indexA = knownList.indexOf(a);
+            const indexB = knownList.indexOf(b);
+
+            if (indexA !== indexB) {
+                return indexA - indexB;
+            } else {
+                return a.text.localeCompare(b.text);
+            }
+        });
+}
