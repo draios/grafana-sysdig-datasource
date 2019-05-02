@@ -22,6 +22,13 @@ import FormatterService from './formatter_service';
 
 export const DEFAULT_PAGE_LIMIT = 20;
 
+const SORT_OPTIONS = {
+    asc: 'asc',
+    bottom: 'asc',
+    desc: 'desc',
+    top: 'desc'
+};
+
 export class SysdigDatasource {
     constructor(instanceSettings, $q, backendSrv, templateSrv) {
         this.name = instanceSettings.name;
@@ -120,27 +127,29 @@ export class SysdigDatasource {
                 }
 
                 return Object.assign({}, target, targetOptions, {
-                    target: TemplatingService.replaceSingleMatch(
-                        this.templateSrv,
-                        target.target,
-                        options.scopedVars
-                    ),
                     segmentBy: targetOptions.segmentBy
                         ? targetOptions.segmentBy.map((segmentBy) =>
-                              TemplatingService.replaceSingleMatch(
-                                  this.templateSrv,
-                                  segmentBy,
-                                  options.scopedVars
-                              )
+                              this.resolveTemplate(segmentBy, true, options)
                           )
                         : null,
-                    filter: TemplatingService.replace(
-                        this.templateSrv,
-                        targetOptions.filter,
-                        options.scopedVars
+                    filter: this.resolveTemplate(targetOptions.filter, true, options),
+
+                    pageLimit: this.resolveTemplate(
+                        targetOptions.pageLimit,
+                        true,
+                        options,
+                        (d) => Number.parseInt(d) || DEFAULT_PAGE_LIMIT
+                    ),
+                    sortDirection: this.resolveTemplate(
+                        targetOptions.sortDirection,
+                        true,
+                        options,
+                        (d) => SORT_OPTIONS[d.toLowerCase()] || SORT_OPTIONS['top']
                     ),
 
-                    pageLimit: Number.parseInt(targetOptions.pageLimit) || DEFAULT_PAGE_LIMIT
+                    target: this.resolveTemplate(target.target, true, options),
+                    timeAggregation: this.resolveTemplate(target.timeAggregation, true, options),
+                    groupAggregation: this.resolveTemplate(target.groupAggregation, true, options)
                 });
             }
         });
@@ -148,6 +157,22 @@ export class SysdigDatasource {
         options.targets = targets;
 
         return options;
+    }
+
+    resolveTemplate(input, isSingleMatch, options, parser) {
+        const normParser = parser || ((d) => d);
+
+        if (typeof input === 'string') {
+            const fn = isSingleMatch
+                ? TemplatingService.replaceSingleMatch
+                : TemplatingService.replace;
+
+            return normParser(
+                fn.call(TemplatingService, this.templateSrv, input, (options || {}).scopedVars)
+            );
+        } else {
+            return normParser(input);
+        }
     }
 
     metricFindQuery(query, options) {
@@ -205,7 +230,7 @@ export class SysdigDatasource {
             return this.$q.when(
                 MetricsService.findSegmentations(this.getBackendConfiguration(), {
                     metric,
-                    match: TemplatingService.replaceSingleMatch(this.templateSrv, query)
+                    match: this.resolveTemplate(query, true)
                 })
             );
         } else {
