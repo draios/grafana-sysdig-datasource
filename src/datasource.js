@@ -149,7 +149,9 @@ export class SysdigDatasource {
 
                     target: this.resolveTemplate(target.target, true, options),
                     timeAggregation: this.resolveTemplate(target.timeAggregation, true, options),
-                    groupAggregation: this.resolveTemplate(target.groupAggregation, true, options)
+                    groupAggregation: this.resolveTemplate(target.groupAggregation, true, options),
+
+                    alias: this.resolveTemplate(target.alias, true, options)
                 });
             }
         });

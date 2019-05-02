@@ -170,6 +170,30 @@ Some examples:
 * `kubernetes.namespace.name = "java-app" and kubernetes.deployment.name in ("cassandra", "redis")`
 
 
+### Aliases
+
+The Sysdig datasource tries to name panel graphical element (eg. graph line, or table column) so that the legend can clearly identify what eacy element refers to (eg. which process, or host, or container).
+
+In some cases, the default configuration is not enough.
+
+You can use the _alias_ field to configure how elements of a query should be named in the panel. Here's what you can do:
+
+* Any literal text will be used as is (eg. `host:`)
+* The following patterns are available
+  * `{{metric}}` will be replaced with the metric name (eg. `cpu.used.percent`)
+  * `{{segment_name}}` will be replaced with the segment label name (eg. `proc.name`)
+  * `{{segment_value}}` will be replaced with the segment value name (eg. `cassandra`)
+* Each pattern can also use the following modifiers:
+  * `{{pattern:X:Y}}` where `X` is the number of characters to be used at the beginning, and `Y` is the number of characters to be used from the end. Example: `{{segment_value:4:6}}` for `sysdig-34e2a10cc` would be replaced with `sysd..2a10cc`
+  * `{{pattern /regular expression/}}` will be replaced with the result of the regular expression, where only capturing groups will be used. Example: `{{segment_value /(\w+)$/}}` for `sysdig-34e2a10cc` would be replaced with `34e2a10cc`. Please refer to [Regular Expressions guide on MDN](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions) for additional information about regular expressions
+
+Here's an example:
+
+<p align="center">
+    <img alt="Aliases" src="https://user-images.githubusercontent.com/5033993/57106345-f7106900-6ce1-11e9-998d-908373bcf72d.png" width="900" />
+</p>
+
+
 
 ## Variables
 
