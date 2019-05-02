@@ -177,11 +177,14 @@ The Sysdig datasource plugin supports variables, allowing for dynamic and intera
 
 > **Note:** Sysdig recommends reviewing the [Grafana Variables documentation](http://docs.grafana.org/reference/templating/) for use cases, examples, and more.
 
-Variables can be used to configure three properties of a dashboard panel:
+Variables can be used to configure any property of a dashboard panel:
 
-* **Metric**: Select the **metric name** to use for the panel.
-* **Segmentation** (*Segment by* field): Select the **label name** to segment data.
-* **Filter**: Select either a **label name** or one (or more) **label values**.
+* **Metric**: Select the **metric name** to use for the panel query
+* **Time and group aggregations**: Select the aggregation (basic aggregations are `timeAvg` for rate, `avg`, `sum`, `min`, `max`)
+* **Segmentation** (*Segment by* fields): Select the **label name** to segment data
+* **Filter**: Use either **label names** or **label values** to define a data filter
+* **Display direction**: Select to show top or bottom values (valid values are `desc` and `top` for "top values", or `asc` and `bottom` for "bottom values")
+* **Display paging**: Select how many elements to show
 
 The following list shows how variables can be configured:
 
@@ -189,8 +192,9 @@ The following list shows how variables can be configured:
 * The query for a **metric name** can use the function `metrics(pattern)` that returns a list of metrics matching the specific `pattern` regex
 * The query for a **label name** can use the function `label_names(pattern)` that returns a list of label names matching the specific `pattern` regex
 * The query for a **label value** can use the function `label_values(label_name)` that returns a list of label values for the specified label name
-* **metric name** and **label name** variables cannot have *multi-value* or *include all option* properties enabled
 * A **label value** can be configured with *multi-value* and/or *include all option* properties enabled **only** with `in` and `not ... in` operators
+
+Please note that **metric name** and **label name** variables cannot have *multi-value* or *include all option* properties enabled
 
 
 ### Metric names
