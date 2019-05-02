@@ -19,12 +19,11 @@ export default class FormatterService {
             }
         }
 
-        const pattern = /\{\{((?:metric|segment_name|segment_value))(?::(\d*))?(?::(\d*))?\}\}/g;
+        const pattern = /\{\{((?:metric|segment_name|segment_value))(?::(\d*))?(?::(\d*))?(?:\s\/([^/]+)\/)?\}\}/g;
 
-        return alias.replace(pattern, (match, token, startTrim, endTrim) => {
+        return alias.replace(pattern, (match, token, startTrim, endTrim, regexpString) => {
             const startTrimIndex = Number.parseInt(startTrim);
             const endTrimIndex = Number.parseInt(endTrim);
-            console.log('replace', token, startTrimIndex, endTrimIndex);
 
             let output;
             const trimmedGroup = token.trim();
@@ -61,6 +60,29 @@ export default class FormatterService {
                 }
             } else if (endTrimIndex) {
                 output = '..' + output.substring(output.length - endTrimIndex);
+            }
+
+            if (regexpString) {
+                try {
+                    //
+                    // First, compile regular expression. Failures will invalidate the pattern entirely
+                    //
+                    const regexp = new RegExp(regexpString);
+
+                    //
+                    // Then, execute pattern against the current name
+                    //
+                    const matches = regexp.exec(output);
+
+                    if (matches && matches.length > 1) {
+                        //
+                        // And finally, joins all captured groups
+                        //
+                        output = matches.slice(1).join('');
+                    }
+                } catch (ex) {
+                    // noop
+                }
             }
 
             return output;

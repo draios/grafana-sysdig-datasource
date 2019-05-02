@@ -155,4 +155,58 @@ describe('FormatterService', () => {
             )
         ).to.be.equal('va..ue');
     });
+
+    it('should get series name with invalid regular expression', () => {
+        expect(
+            FormatterService.getSeriesName(
+                { k: 'value-123' },
+                {
+                    alias: '{{segment_value /(\\d+$/}}',
+                    target: 'metric',
+                    segmentBy: ['segment']
+                },
+                false,
+                ['k']
+            )
+        ).to.be.equal('value-123');
+        expect(
+            FormatterService.getSeriesName(
+                { k: 'value-123' },
+                {
+                    alias: '{{segment_value /\\d+/}}',
+                    target: 'metric',
+                    segmentBy: ['segment']
+                },
+                false,
+                ['k']
+            )
+        ).to.be.equal('value-123');
+    });
+
+    it('should get series name with invalid syntax', () => {
+        expect(
+            FormatterService.getSeriesName(
+                { k: 'value-123' },
+                {
+                    alias: '{{segment_value //}}',
+                    target: 'metric',
+                    segmentBy: ['segment']
+                },
+                false,
+                ['k']
+            )
+        ).to.be.equal('{{segment_value //}}');
+        expect(
+            FormatterService.getSeriesName(
+                { k: 'value-123' },
+                {
+                    alias: '{{segment_value /}}',
+                    target: 'metric',
+                    segmentBy: ['segment']
+                },
+                false,
+                ['k']
+            )
+        ).to.be.equal('{{segment_value /}}');
+    });
 });
