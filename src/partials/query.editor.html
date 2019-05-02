@@ -88,32 +88,43 @@ limitations under the License.
       </div>
     </div>
   </div>
-
-  <!-- Time series vs data point -->
-  <div class="gf-form gf-form-inline" ng-if="ctrl.target.isTabularFormat === false && ctrl.isFirstTarget()">
-    <div class="gf-form gf-form--grow">
-      <div class="gf-form gf-form--grow">
-        <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-12" checked="ctrl.target.isSingleDataPoint"
-          on-change="ctrl.refresh()">
-      </div>
-    </div>
-  </div>
-
+  
   <!-- Display options for segmented data -->
   <div class="gf-form-inline" ng-if="ctrl.target.segmentBy && ctrl.isFirstTarget()">
-    <div class="gf-form">
+    <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-12">
         Display
       </label>
       <div class="gf-form width-10">
         <gf-form-dropdown model="ctrl.target.sortDirection" class="gf-form-dropdown sysdig-query-editor-dropdown--grow" allow-custom="true"
-          lookup-text="true" placeholder="top" get-options="ctrl.getSortDirectionOptions()" on-change="ctrl.onChangeParameter()">
-        </gf-form-dropdown>
-      </div>
-      <div class="gf-form width-12">
-        <input class="gf-form-input" ng-model="ctrl.target.pageLimit" spellcheck="false" placeholder="{{ctrl.getLimitPlaceholder()}}"
-          ng-blur="ctrl.onChangeParameter()">
+        lookup-text="true" placeholder="top" get-options="ctrl.getSortDirectionOptions()" on-change="ctrl.onChangeParameter()">
+      </gf-form-dropdown>
+    </div>
+    <div class="gf-form width-12">
+      <input class="gf-form-input" ng-model="ctrl.target.pageLimit" spellcheck="false" placeholder="{{ctrl.getLimitPlaceholder()}}"
+      ng-blur="ctrl.onChangeParameter()">
+    </div>
+    <div class="gf-form gf-form--grow"></div>
+    <div class="gf-form">
+      <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-12" checked="ctrl.target.isSingleDataPoint"
+        on-change="ctrl.refresh()">
+    </div>
+  </div>
+</div>
+
+  <!-- Alias -->
+  <div class="gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
+    <div class="gf-form gf-form--grow">
+      <label class="gf-form-label width-12">
+        Alias
+      </label>
+      <div class="gf-form gf-form--grow">
+        <input class="gf-form-input" ng-model="ctrl.target.alias" spellcheck="false" placeholder="optional alias" ng-blur="ctrl.onChangeParameter()">
       </div>
     </div>
+  </div>
+
+  <!-- Time series vs data point -->
+  <div class="gf-form gf-form-inline" ng-if="ctrl.target.isTabularFormat === false && ctrl.isFirstTarget()">
   </div>
 </query-editor-row>

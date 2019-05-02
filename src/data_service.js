@@ -376,7 +376,7 @@ function parseResponses(options, response) {
 
                 if (acc[t] === undefined) {
                     acc[t] = {
-                        target: t,
+                        target: FormatterService.getSeriesName(d, target, isTabularFormat, keys),
                         datapoints: []
                     };
                 }
