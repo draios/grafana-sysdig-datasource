@@ -263,11 +263,9 @@ function getRequest(target, requestTime) {
                 v0: target.target
             };
 
-            if (target.segmentBy) {
-                target.segmentBy.forEach((segmentBy, i) => {
-                    metrics[`k${i}`] = segmentBy;
-                });
-            }
+            target.segmentBy.forEach((segmentBy, i) => {
+                metrics[`k${i}`] = segmentBy;
+            });
 
             return metrics;
         } else {
@@ -276,11 +274,9 @@ function getRequest(target, requestTime) {
                 v0: target.target
             };
 
-            if (target.segmentBy) {
-                target.segmentBy.forEach((segmentBy, i) => {
-                    metrics[`k${i + 1}`] = segmentBy;
-                });
-            }
+            target.segmentBy.forEach((segmentBy, i) => {
+                metrics[`k${i + 1}`] = segmentBy;
+            });
 
             return metrics;
         }
@@ -294,7 +290,7 @@ function getRequest(target, requestTime) {
         if (target.isTabularFormat === false) {
             sort = [{ v0: sortDirection }, { k0: sortDirection }];
 
-            if (target.segmentBy) {
+            if (target.segmentBy.length > 0) {
                 sort.push({ k1: sortDirection });
             }
         } else {
@@ -316,13 +312,11 @@ function getRequest(target, requestTime) {
         if (target.isSingleDataPoint) {
             const groupBy = [];
 
-            if (target.segmentBy) {
-                target.segmentBy.forEach((segmentBy, i) => {
-                    groupBy.push({
-                        metric: `k${i}`
-                    });
+            target.segmentBy.forEach((segmentBy, i) => {
+                groupBy.push({
+                    metric: `k${i}`
                 });
-            }
+            });
 
             return groupBy;
         } else {
@@ -333,13 +327,11 @@ function getRequest(target, requestTime) {
                 }
             ];
 
-            if (target.segmentBy) {
-                target.segmentBy.forEach((segmentBy, i) => {
-                    groupBy.push({
-                        metric: `k${i + 1}`
-                    });
+            target.segmentBy.forEach((segmentBy, i) => {
+                groupBy.push({
+                    metric: `k${i + 1}`
                 });
-            }
+            });
 
             return groupBy;
         }
@@ -360,7 +352,7 @@ function parseResponses(options, response) {
                     .slice(isSingleDataPoint ? 0 : 1);
 
                 let t;
-                if (target.segmentBy) {
+                if (target.segmentBy.length > 0) {
                     const segmentNames = keys
                         .map((segment) => FormatterService.formatLabelValue(d[segment]))
                         .join(' - ');
