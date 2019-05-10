@@ -131,7 +131,7 @@ export class SysdigDatasource {
                         ? targetOptions.segmentBy.map((segmentBy) =>
                               this.resolveTemplate(segmentBy, true, options)
                           )
-                        : null,
+                        : [],
                     filter: this.resolveTemplate(targetOptions.filter, true, options),
 
                     pageLimit: this.resolveTemplate(
