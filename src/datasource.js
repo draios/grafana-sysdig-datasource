@@ -144,7 +144,7 @@ export class SysdigDatasource {
                         targetOptions.sortDirection,
                         true,
                         options,
-                        (d) => SORT_OPTIONS[d.toLowerCase()] || SORT_OPTIONS['top']
+                        (d) => SORT_OPTIONS[(d || 'top').toLowerCase()] || SORT_OPTIONS['top']
                     ),
 
                     target: this.resolveTemplate(target.target, true, options),
