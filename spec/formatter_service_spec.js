@@ -12,15 +12,28 @@ describe('FormatterService', () => {
 
     it('should get series name for non-segmented query', () => {
         expect(
-            FormatterService.getSeriesName({}, { target: 'metric', segmentBy: [] }, false, [])
+            FormatterService.getSeriesName({}, { target: 'metric', segmentBy: [] }, false, true, [])
         ).to.be.equal('metric');
     });
 
-    it('should get series name for segmented query', () => {
+    it('should get series name for segmented query (single-target)', () => {
         expect(
             FormatterService.getSeriesName(
                 { k: 'value' },
                 { target: 'metric', segmentBy: ['segment'] },
+                false,
+                true,
+                ['k']
+            )
+        ).to.be.equal('value');
+    });
+
+    it('should get series name for segmented query (multi-target)', () => {
+        expect(
+            FormatterService.getSeriesName(
+                { k: 'value' },
+                { target: 'metric', segmentBy: ['segment'] },
+                false,
                 false,
                 ['k']
             )
@@ -29,7 +42,7 @@ describe('FormatterService', () => {
 
     it('should get series name for non-segmented table query', () => {
         expect(
-            FormatterService.getSeriesName({}, { target: 'metric', segmentBy: [] }, true, [])
+            FormatterService.getSeriesName({}, { target: 'metric', segmentBy: [] }, true, true, [])
         ).to.be.equal('metric');
     });
 
@@ -38,6 +51,7 @@ describe('FormatterService', () => {
             FormatterService.getSeriesName(
                 { k: 'value' },
                 { target: 'metric', segmentBy: ['segment'] },
+                true,
                 true,
                 ['k']
             )
@@ -50,6 +64,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{metric}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('metric');
@@ -58,6 +73,7 @@ describe('FormatterService', () => {
                 {},
                 { alias: '{{metric}}', target: 'metric', segmentBy: [] },
                 false,
+                true,
                 []
             )
         ).to.be.equal('metric');
@@ -65,6 +81,7 @@ describe('FormatterService', () => {
             FormatterService.getSeriesName(
                 { k: 'value' },
                 { alias: '{{metric}}', target: 'metric', segmentBy: ['segment'] },
+                true,
                 true,
                 ['k']
             )
@@ -77,6 +94,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{segment_name}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('segment');
@@ -84,6 +102,7 @@ describe('FormatterService', () => {
             FormatterService.getSeriesName(
                 { k: 'value' },
                 { alias: '{{segment_name}}', target: 'metric', segmentBy: ['segment'] },
+                true,
                 true,
                 ['k']
             )
@@ -95,6 +114,7 @@ describe('FormatterService', () => {
                 {},
                 { alias: '{{segment_name}}', target: 'metric', segmentBy: [] },
                 false,
+                true,
                 []
             )
         ).to.be.equal('[all]');
@@ -106,6 +126,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{segment_value}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('value');
@@ -113,6 +134,7 @@ describe('FormatterService', () => {
             FormatterService.getSeriesName(
                 { k: 'value' },
                 { alias: '{{segment_value}}', target: 'metric', segmentBy: ['segment'] },
+                true,
                 true,
                 ['k']
             )
@@ -124,6 +146,7 @@ describe('FormatterService', () => {
                 {},
                 { alias: '{{segment_value}}', target: 'metric', segmentBy: [] },
                 false,
+                true,
                 []
             )
         ).to.be.equal('[all]');
@@ -135,6 +158,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{segment_value:2}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('va..');
@@ -143,6 +167,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{segment_value::2}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('..ue');
@@ -151,6 +176,7 @@ describe('FormatterService', () => {
                 { k: 'value' },
                 { alias: '{{segment_value:2:2}}', target: 'metric', segmentBy: ['segment'] },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('va..ue');
@@ -166,6 +192,7 @@ describe('FormatterService', () => {
                     segmentBy: ['segment']
                 },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('value-123');
@@ -178,6 +205,7 @@ describe('FormatterService', () => {
                     segmentBy: ['segment']
                 },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('value-123');
@@ -193,6 +221,7 @@ describe('FormatterService', () => {
                     segmentBy: ['segment']
                 },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('{{segment_value //}}');
@@ -205,6 +234,7 @@ describe('FormatterService', () => {
                     segmentBy: ['segment']
                 },
                 false,
+                true,
                 ['k']
             )
         ).to.be.equal('{{segment_value /}}');

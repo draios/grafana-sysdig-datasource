@@ -3,7 +3,7 @@ export default class FormatterService {
         return labelValue || FormatterService.NULL_TEXT;
     }
 
-    static getSeriesName(dataPoint, target, isTabularFormat, keys) {
+    static getSeriesName(dataPoint, target, isTabularFormat, isSingleTarget, keys) {
         let alias;
         if (target.alias) {
             alias = target.alias;
@@ -11,11 +11,12 @@ export default class FormatterService {
             if (target.segmentBy.length === 0) {
                 // single entity
                 alias = '{{metric}}';
-            } else if (isTabularFormat === false) {
-                // non-segmented and non-table
-                alias = '{{metric}} ({{segment_value}})';
-            } else {
+            } else if (isTabularFormat === true) {
                 alias = '{{segment_name}}';
+            } else if (isSingleTarget === true) {
+                alias = '{{segment_value}}';
+            } else {
+                alias = '{{metric}} ({{segment_value}})';
             }
         }
 
