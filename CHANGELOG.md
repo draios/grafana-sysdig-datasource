@@ -1,5 +1,18 @@
 # Changelog
 
+### v0.6
+(5/24/2019)
+
+**What's new**
+* Support variables for every panel editor input ([#52](https://github.com/draios/grafana-sysdig-datasource/pull/52))
+* Query alias ([#53](https://github.com/draios/grafana-sysdig-datasource/pull/53))
+
+
+**What's improved or fixed**
+* Improve metrics suggestion menus and aggregations ([#50](https://github.com/draios/grafana-sysdig-datasource/pull/50))
+* Improve default data paging configuration (now 20 by default) ([#51](https://github.com/draios/grafana-sysdig-datasource/pull/51))
+
+
 ### v0.5.1
 (4/16/2019)
 
