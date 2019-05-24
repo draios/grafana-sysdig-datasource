@@ -14,7 +14,6 @@
 //  limitations under the License.
 //
 import ApiService from './api_service';
-import MetricsService from './metrics_service';
 import SysdigDashboardHelper from './sysdig_dashboard_helper';
 
 export default class DashboardsService {
@@ -25,7 +24,7 @@ export default class DashboardsService {
             const tags = ['Sysdig', 'Default dashboard'];
             return backend.backendSrv.$q
                 .all([
-                    fetchDefaultDashboards(backend),
+                    ApiService.fetchDefaultDashboards(backend),
                     ApiService.send(backend, {
                         url: 'data/drilldownViewsCategories.json'
                     })
@@ -94,7 +93,8 @@ export default class DashboardsService {
                     };
             }
 
-            return fetchDashboards(backend)
+            return backend.backendSrv.$q
+                .when(ApiService.fetchDashboards(backend))
                 .then((result) => {
                     const convertedDashboards = result.dashboards
                         .filter(
@@ -179,86 +179,6 @@ export default class DashboardsService {
             );
         }
     }
-}
-
-function fetchDefaultDashboards(backend) {
-    return (
-        // First try latest endpoint version
-        ApiService.send(backend, {
-            url: 'api/v2/defaultDashboards?excludeMissing=true'
-        })
-            // Return v2 dashboards
-            .then((result) => {
-                if (result.data.defaultDashboards) {
-                    return {
-                        defaultDashboards: result.data.defaultDashboards,
-                        version: 'v2'
-                    };
-                } else {
-                    //
-                    // dev version of v2 detected, fallback to v1
-                    // (api/v2/defaultDashboards returns an array and not and object with defaultDashboards array)
-                    // NOTE: This is useful until onprem version X and SaaS version Y need to be supported
-                    //
-                    return backend.backendSrv.$q.reject('Dashboards API v2 not available');
-                }
-            })
-            .catch(() => {
-                return (
-                    // Then try older endpoint version
-                    ApiService.send(backend, {
-                        url: 'api/defaultDashboards?excludeMissing=true'
-                    })
-                        // Return v1 dashboards
-                        .then((result) => {
-                            return {
-                                defaultDashboards: result.data.defaultDashboards,
-                                version: 'v1'
-                            };
-                        })
-                );
-            })
-    );
-}
-
-function fetchDashboards(backend) {
-    return (
-        // First try latest endpoint version
-        ApiService.send(backend, {
-            url: 'api/v2/dashboards'
-        })
-            // Return v2 dashboards
-            .then((result) => {
-                if (Array.isArray(result.data.dashboards) && result.data.dashboards.length > 0) {
-                    return {
-                        dashboards: result.data.dashboards,
-                        version: 'v2'
-                    };
-                } else {
-                    //
-                    // probable dev version of v2 detected, fallback to v1
-                    // (api/v2/dashboards was not documented or used, it's supposed to be empty -- NOTE: could lead to false positive in case there are no dashboards to import)
-                    // NOTE: This is useful until onprem version X and SaaS version Y need to be supported
-                    //
-                    return backend.backendSrv.$q.reject('Dashboards API v2 not available');
-                }
-            })
-            .catch(() => {
-                return (
-                    // Then try older endpoint version
-                    ApiService.send(backend, {
-                        url: 'ui/dashboards'
-                    })
-                        // Return v1 dashboards
-                        .then((result) => {
-                            return {
-                                dashboards: result.data.dashboards,
-                                version: 'v1'
-                            };
-                        })
-                );
-            })
-    );
 }
 
 function removeDashboards(backendSrv, dashboards) {

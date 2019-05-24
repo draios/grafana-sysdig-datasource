@@ -21,30 +21,26 @@ import Cache from './cache';
 
 export default class MetricsService {
     static findMetrics(backend, options) {
-        const normOptions = Object.assign({ areLabelsIncluded: false, match: null }, options);
+        const normOptions = Object.assign(
+            {
+                areLabelsIncluded: false,
+                match: null,
+                plottableMetricTypes: ['%', 'byte', 'int', 'double', 'number', 'relativeTime']
+            },
+            options
+        );
 
         if (normOptions.match && normOptions.match.trim() === '') {
             normOptions.match = null;
         }
 
         return getMetricsCache(backend).values.get(normOptions, async () => {
-            const plottableMetricTypes = ['%', 'byte', 'int', 'double', 'number', 'relativeTime'];
-            const typesFilter = normOptions.areLabelsIncluded ? [] : plottableMetricTypes;
-            const metricTypes = normOptions.areLabelsIncluded
-                ? []
-                : ['counter', 'gauge', 'histogram'];
+            const response = await ApiService.fetchMetricsDescriptors(backend, normOptions);
 
-            const response = await ApiService.send(backend, {
-                url: `api/v2/metrics/descriptors?offset=0&limit=100&filter=${normOptions.match ||
-                    ''}&types=${encodeURIComponent(
-                    typesFilter.join(',')
-                )}&metricTypes=${encodeURIComponent(metricTypes.join(','))}`
-            });
-
-            return response.data.metricDescriptors
+            return response
                 .map((metric) =>
                     _.assign(metric, {
-                        isNumeric: plottableMetricTypes.indexOf(metric.type) >= 0
+                        isNumeric: normOptions.plottableMetricTypes.indexOf(metric.type) >= 0
                     })
                 )
                 .sort((a, b) => a.id.localeCompare(b.id));
@@ -59,12 +55,9 @@ export default class MetricsService {
         }
 
         return getMetricsCache(backend).labels.get(normOptions, async () => {
-            const result = await ApiService.send(backend, {
-                url: `api/v2/labels/descriptors?offset=0&limit=100&filter=${normOptions.match ||
-                    ''}&pids=${normOptions.metric || ''}&scope=`
-            });
+            const result = await ApiService.fetchLabelDescriptors(backend, normOptions);
 
-            return result.data.labelDescriptors.sort((a, b) => a.id.localeCompare(b.id));
+            return result.sort((a, b) => a.id.localeCompare(b.id));
         });
     }
 
