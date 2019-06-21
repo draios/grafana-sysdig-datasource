@@ -23,7 +23,7 @@ We offer a Docker container image based on Grafana that comes with the plugin pr
 docker run -d -p 3000:3000 --name grafana sysdiglabs/grafana:latest
 ```
 
-> For more information, refer to the [Docker Hub repository page](https://hub.docker.com/u/sysdiglabs/grafana) for more information about the 
+> For more information, refer to the [Docker Hub repository page](https://hub.docker.com/r/sysdiglabs/grafana) for more information about the 
 
 ---
 
