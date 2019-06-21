@@ -105,7 +105,8 @@ export class SysdigDatasource {
                     timeAggregation: 'timeAvg',
                     groupAggregation: 'avg',
                     filter: undefined,
-                    pageLimit: DEFAULT_PAGE_LIMIT
+                    pageLimit: DEFAULT_PAGE_LIMIT,
+                    segmentBy: []
                 });
             } else {
                 const isTabularFormat = targets[0].isTabularFormat;
