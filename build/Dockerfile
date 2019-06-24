@@ -15,9 +15,13 @@
 #
 FROM debian:stable-slim
 
-# Install basic tools/utilities
-# Also, install Google Chrome unstable (which has cross platform support for headless mode
-# Combining them together so that "apt cache cleanup" would need to be done just once
+
+
+###############################################################################
+#                                                                             #
+# Install basic tools/utilities                                               #
+#                                                                             #
+###############################################################################
 RUN apt-get update -y && \
     apt-get install ca-certificates \
       gconf-service \
@@ -43,26 +47,54 @@ RUN apt-get update -y && \
       git \
       awscli \
       xz-utils -y --no-install-recommends && \
-    wget https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb && \
-    dpkg -i google-chrome*.deb && \
-    apt-get install -f && \
-    apt-get clean autoclean && \
+    apt-get install -f
+
+# Install the latest Docker CE binaries
+# From https://github.com/getintodevops/jenkins-withdocker/blob/master/Dockerfile
+RUN apt-get update && \
+    apt-get -y install apt-transport-https \
+      ca-certificates \
+      curl \
+      gnupg2 \
+      software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+    add-apt-repository \
+      "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+      $(lsb_release -cs) \
+      stable" && \
+   apt-get update && \
+   apt-get -y install docker-ce
+
+# Install Node.js v10
+# (ref. https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    apt-get install -y nodejs
+
+# Install Google Chrome unstable (which has cross platform support for headless mode
+RUN wget https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb && \
+    dpkg -i google-chrome*.deb
+
+# Cleanup
+RUN apt-get clean autoclean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* google-chrome-unstable_current_amd64.deb
 
-RUN groupadd ec2-user -g 500 && \
-    useradd -m -d /home/ec2-user -g ec2-user -u 500 ec2-user
 
-# Install nodejs
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 8.9.4
-ENV NVM_VERSION 0.31.2
 
-RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v$NVM_VERSION/install.sh | bash
+###############################################################################
+#                                                                             #
+# Prepare environment                                                         #
+#                                                                             #
+###############################################################################
 
-RUN /bin/bash -c "source $NVM_DIR/nvm.sh && \
-    nvm install $NODE_VERSION && \
-    nvm alias default $NODE_VERSION && \
-    nvm use default"
+WORKDIR /usr/bin/grafana-sysdig-datasource
 
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+
+###############################################################################
+#                                                                             #
+# Run the build                                                               #
+#                                                                             #
+###############################################################################
+
+CMD ["./build/build.sh"]
+
