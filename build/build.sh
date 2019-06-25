@@ -75,6 +75,8 @@ setup_env() {
 build() {
     echo "Building..."
 
+    npm ci
+
     npm run build
 
     echo "Cleaning up artifacts...."
