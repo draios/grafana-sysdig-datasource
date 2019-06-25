@@ -29,20 +29,19 @@ setup_env() {
     #
     # Set default variables
     #
-    if [ -z ${BUILD_CONTAINER} ]
-    then
+    if [ -z ${BUILD_CONTAINER} ]; then
         BUILD_CONTAINER=true
     fi
-    if [ -z ${ENVIRONMENT} ]
-    then
+    if [ -z ${CLEANUP} ]; then
+        CLEANUP=true
+    fi
+    if [ -z ${ENVIRONMENT} ]; then
         ENVIRONMENT=development
     fi
-    if [ -z ${GIT_BRANCH} ]
-    then
+    if [ -z ${GIT_BRANCH} ]; then
         GIT_BRANCH=dev
     fi
-    if [ -z ${BUILD_NUMBER} ]
-    then
+    if [ -z ${BUILD_NUMBER} ]; then
         BUILD_NUMBER=42
     fi
 
@@ -62,27 +61,27 @@ setup_env() {
     fi
     GRAFANA_VERSION=`cat VERSION_GRAFANA`
 
-    S3_BUCKET="s3://download.draios.com"
-
-    if [[ "$GIT_BRANCH_NAME" == 'master' ]]; then
-        S3_DEST="stable/grafana-sysdig-datasource"
-    elif [[ "$GIT_BRANCH_NAME" == 'dev' ]]; then
-        S3_DEST="dev/grafana-sysdig-datasource"
-    else
-        S3_DEST="dev/grafana-sysdig-datasource/${GIT_BRANCH_NAME}"
-    fi
-
     FILE_NAME_PREFIX="grafana-sysdig-datasource"
     BUILD_FILE_NAME="${FILE_NAME_PREFIX}-v${USER_VERSION}.${BUILD_NUMBER}"
     BUILD_FILE_NAME_LATEST="${FILE_NAME_PREFIX}-v${USER_VERSION}"
 
     DOCKER_IMAGE_TAG=sysdiglabs/grafana
     if [ "${ENVIRONMENT}" = "production" ]; then
-        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${VERSION}
+        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${USER_VERSION}
         DOCKER_IMAGE_VERSION_LATEST="latest"
     else
-        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${VERSION}-${GIT_BRANCH_NAME}
+        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${USER_VERSION}.${BUILD_NUMBER}-${GIT_BRANCH_NAME}
         DOCKER_IMAGE_VERSION_LATEST="dev"
+    fi
+
+    S3_BUCKET="s3://download.draios.com"
+
+    if [ "${ENVIRONMENT}" = "production" ]; then
+        S3_DEST="stable/grafana-sysdig-datasource"
+    elif [[ "$GIT_BRANCH_NAME" == 'dev' ]]; then
+        S3_DEST="dev/grafana-sysdig-datasource"
+    else
+        S3_DEST="dev/grafana-sysdig-datasource/${GIT_BRANCH_NAME}"
     fi
 }
 
@@ -92,11 +91,11 @@ publish_artifacts() {
     aws s3 cp out/${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read
     aws s3 cp out/${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.tgz --acl public-read
 
-    # aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.zip --acl public-read
-    # aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.tgz --acl public-read
+    aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.zip --acl public-read
+    aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.tgz --acl public-read
 
     if [ "${BUILD_CONTAINER}" = "true" ]; then
-        if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH}" = "dev" ]; then
+        if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH_NAME}" = "dev" ]; then
             echo "Publishing image to Docker hub..."
 
             docker push ${DOCKER_IMAGE_TAG}:${DOCKER_IMAGE_VERSION}

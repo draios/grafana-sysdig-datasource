@@ -15,24 +15,19 @@ setup_env() {
     #
     # Set default variables
     #
-    if [ -z ${BUILD_CONTAINER} ]
-    then
+    if [ -z ${BUILD_CONTAINER} ]; then
         BUILD_CONTAINER=true
     fi
-    if [ -z ${CLEANUP} ]
-    then
+    if [ -z ${CLEANUP} ]; then
         CLEANUP=true
     fi
-    if [ -z ${ENVIRONMENT} ]
-    then
+    if [ -z ${ENVIRONMENT} ]; then
         ENVIRONMENT=development
     fi
-    if [ -z ${GIT_BRANCH} ]
-    then
+    if [ -z ${GIT_BRANCH} ]; then
         GIT_BRANCH=dev
     fi
-    if [ -z ${BUILD_NUMBER} ]
-    then
+    if [ -z ${BUILD_NUMBER} ]; then
         BUILD_NUMBER=42
     fi
 
@@ -52,19 +47,20 @@ setup_env() {
     fi
     GRAFANA_VERSION=`cat VERSION_GRAFANA`
 
-    DIST_PATH="dist"
     FILE_NAME_PREFIX="grafana-sysdig-datasource"
     BUILD_FILE_NAME="${FILE_NAME_PREFIX}-v${USER_VERSION}.${BUILD_NUMBER}"
     BUILD_FILE_NAME_LATEST="${FILE_NAME_PREFIX}-v${USER_VERSION}"
 
     DOCKER_IMAGE_TAG=sysdiglabs/grafana
     if [ "${ENVIRONMENT}" = "production" ]; then
-        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${VERSION}
+        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${USER_VERSION}
         DOCKER_IMAGE_VERSION_LATEST="latest"
     else
-        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${VERSION}-${GIT_BRANCH_NAME}
+        DOCKER_IMAGE_VERSION=${GRAFANA_VERSION}-sysdig-${USER_VERSION}.${BUILD_NUMBER}-${GIT_BRANCH_NAME}
         DOCKER_IMAGE_VERSION_LATEST="dev"
     fi
+
+    DIST_PATH="dist"
 
     # Disabling interactive progress bar, and spinners gains 2x performances
     # as stated on https://twitter.com/gavinjoyce/status/691773956144119808
