@@ -90,6 +90,11 @@ pipeline {
             }
 
             //
+            // Notification
+            //
+            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
+
+            //
             // Cleanup
             //
             // NOTE: All artifacts that need to be stored should be uploaded to permanent storage by now!
@@ -97,11 +102,6 @@ pipeline {
             step([$class: 'WsCleanup'])
 
             sh "docker rm grafana-sysdig-datasource-builder || echo \\\"Builder image not found\\\""
-
-            //
-            // Notification
-            //
-            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
         }
     }
 }
