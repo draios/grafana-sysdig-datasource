@@ -91,8 +91,8 @@ publish_artifacts() {
     aws s3 cp out/${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.zip --acl public-read
     aws s3 cp out/${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME}.tgz --acl public-read
 
-    aws s3 cp ${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.zip --acl public-read
-    aws s3 cp ${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.tgz --acl public-read
+    aws s3 cp out/${BUILD_FILE_NAME}.zip ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.zip --acl public-read
+    aws s3 cp out/${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.tgz --acl public-read
 
     if [ "${BUILD_CONTAINER}" = "true" ]; then
         if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH_NAME}" = "dev" ]; then
