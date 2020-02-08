@@ -159,12 +159,13 @@ export class SysdigDatasource {
         const normParser = parser || ((d) => d);
 
         if (typeof input === 'string') {
-            const fn = isSingleMatch
-                ? TemplatingService.replaceSingleMatch
-                : TemplatingService.replace;
-
             return normParser(
-                fn.call(TemplatingService, this.templateSrv, input, (options || {}).scopedVars)
+                TemplatingService.replace.call(
+                    TemplatingService,
+                    this.templateSrv,
+                    input,
+                    (options || {}).scopedVars
+                )
             );
         } else {
             return normParser(input);
