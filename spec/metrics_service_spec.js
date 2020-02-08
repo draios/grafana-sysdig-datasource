@@ -1,5 +1,4 @@
 import MetricsService from '../metrics_service';
-import q from 'q';
 
 describe('MetricsService', () => {
     let backendMock;
@@ -16,11 +15,12 @@ describe('MetricsService', () => {
             url: 'dummy://localhost',
             apiToken: '42',
             backendSrv: {
-                $q: q,
                 datasourceRequest(options) {
                     backendRequestArgs.push(options);
 
-                    return q.resolve(backendResponseStubs[backendRequestArgs.length - 1]);
+                    return new Promise((resolve) =>
+                        resolve(backendResponseStubs[backendRequestArgs.length - 1])
+                    );
                 }
             }
         };
@@ -86,7 +86,7 @@ describe('MetricsService', () => {
             }
         ];
 
-        await q.all([
+        await Promise.all([
             MetricsService.findMetrics(backendMock, { match: 'test' }),
             MetricsService.findMetrics(
                 Object.assign({}, backendMock, { url: 'dummy://localhost-2' }),

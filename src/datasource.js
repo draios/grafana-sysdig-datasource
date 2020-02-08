@@ -30,9 +30,8 @@ const SORT_OPTIONS = {
 };
 
 export class SysdigDatasource {
-    constructor(instanceSettings, $q, backendSrv, templateSrv) {
+    constructor(instanceSettings, backendSrv, templateSrv) {
         this.name = instanceSettings.name;
-        this.$q = $q;
         this.backendSrv = backendSrv;
         this.templateSrv = templateSrv;
         this.url = instanceSettings.url;
@@ -56,38 +55,32 @@ export class SysdigDatasource {
         };
     }
 
-    testDatasource() {
-        return this.$q
-            .when(
-                ApiService.send(this.getBackendConfiguration(), {
-                    url: 'api/login'
-                })
-            )
-            .then((response) => {
-                if (response.status === 200) {
-                    return {
-                        status: 'success',
-                        message: 'Data source is working',
-                        title: 'Success'
-                    };
-                }
-            });
+    async testDatasource() {
+        const response = await ApiService.send(this.getBackendConfiguration(), {
+            url: 'api/login'
+        });
+
+        if (response.status === 200) {
+            return {
+                status: 'success',
+                message: 'Data source is working',
+                title: 'Success'
+            };
+        }
     }
 
-    query(options) {
+    async query(options) {
         const query = this.buildQueryParameters(options);
         query.targets = query.targets.filter((t) => !t.hide);
 
         if (query.targets.length <= 0) {
-            return this.$q.when({ data: [] });
+            return { data: [] };
         }
 
-        return this.$q.when(
-            DataService.fetch(
-                this.getBackendConfiguration(),
-                query,
-                convertRangeToUserTime(options.range, query.intervalMs)
-            )
+        return DataService.fetch(
+            this.getBackendConfiguration(),
+            query,
+            convertRangeToUserTime(options.range, query.intervalMs)
         );
     }
 
@@ -178,7 +171,7 @@ export class SysdigDatasource {
         }
     }
 
-    metricFindQuery(query, options) {
+    async metricFindQuery(query, options) {
         const normOptions = Object.assign(
             { areLabelsIncluded: false, range: null, variable: null, match: '' },
             options
@@ -188,56 +181,45 @@ export class SysdigDatasource {
             //
             // variable query
             //
-            return this.$q
-                .when(
-                    MetricsService.queryMetrics(
-                        this.getBackendConfiguration(),
-                        this.templateSrv,
-                        query,
-                        { userTime: convertRangeToUserTime(normOptions.range) }
-                    )
-                )
-                .then((result) =>
-                    result
-                        .sort(this.getLabelValuesSorter(normOptions.variable.sort))
-                        .map((labelValue) => ({
-                            text: FormatterService.formatLabelValue(labelValue)
-                        }))
-                );
+            const result = await MetricsService.queryMetrics(
+                this.getBackendConfiguration(),
+                this.templateSrv,
+                query,
+                { userTime: convertRangeToUserTime(normOptions.range) }
+            );
+
+            return result
+                .sort(this.getLabelValuesSorter(normOptions.variable.sort))
+                .map((labelValue) => ({
+                    text: FormatterService.formatLabelValue(labelValue)
+                }));
         } else {
             //
             // panel configuration query
             //
-            return (
-                this.$q
-                    .when(
-                        MetricsService.findMetrics(this.getBackendConfiguration(), {
-                            areLabelsIncluded: normOptions.areLabelsIncluded,
-                            match: normOptions.match
-                        })
-                    )
-                    // filter out all tags/labels/other string metrics
-                    .then((result) => {
-                        if (normOptions.areLabelsIncluded) {
-                            return result;
-                        } else {
-                            return result.filter((metric) => metric.isNumeric);
-                        }
-                    })
-            );
+            const result = await MetricsService.findMetrics(this.getBackendConfiguration(), {
+                areLabelsIncluded: normOptions.areLabelsIncluded,
+                match: normOptions.match
+            });
+
+            // filter out all tags/labels/other string metrics
+
+            if (normOptions.areLabelsIncluded) {
+                return result;
+            } else {
+                return result.filter((metric) => metric.isNumeric);
+            }
         }
     }
 
-    findSegmentBy(metric, query) {
+    async findSegmentBy(metric, query) {
         if (metric) {
-            return this.$q.when(
-                MetricsService.findSegmentations(this.getBackendConfiguration(), {
-                    metric,
-                    match: this.resolveTemplate(query, true)
-                })
-            );
+            return MetricsService.findSegmentations(this.getBackendConfiguration(), {
+                metric,
+                match: this.resolveTemplate(query, true)
+            });
         } else {
-            return this.$q.when([]);
+            return [];
         }
     }
 
@@ -288,7 +270,7 @@ export class SysdigDatasource {
         }
     }
 
-    annotationQuery() {
+    async annotationQuery() {
         // const query = this.templateSrv.replace(options.annotation.query, {}, 'glob');
         // const annotationQuery = {
         //     range: options.range,
@@ -303,7 +285,7 @@ export class SysdigDatasource {
         // };
 
         // TODO Not supported yet
-        return this.$q.when([]);
+        return [];
     }
 }
 
