@@ -16,47 +16,39 @@
 import ApiService from './api_service';
 
 export default class DataService {
-    static validateTimeWindow(backend, userTime) {
-        const q = backend.backendSrv.$q;
+    static async validateTimeWindow(backend, userTime) {
+        return Promise.all([
+            ApiService.send(backend, {
+                url: `api/history/timelines`
+            }),
+            ApiService.send(backend, {
+                url: `api/v2/history/timelines/alignments`
+            })
+        ]).then((responses) => {
+            const requestTime = getRequestTime(responses[0].data, responses[1].data, userTime);
 
-        return q
-            .all([
-                ApiService.send(backend, {
-                    url: `api/history/timelines`
-                }),
-                ApiService.send(backend, {
-                    url: `api/v2/history/timelines/alignments`
-                })
-            ])
-            .then((responses) => {
-                const requestTime = getRequestTime(responses[0].data, responses[1].data, userTime);
-
-                if (requestTime) {
-                    return requestTime;
-                } else {
-                    return q.reject('Unable to validate request time');
-                }
-            });
+            if (requestTime) {
+                return requestTime;
+            } else {
+                throw 'Unable to validate request time';
+            }
+        });
     }
 
-    static queryTimelines(backend) {
-        const q = backend.backendSrv.$q;
-
-        return q
-            .all([
-                ApiService.send(backend, {
-                    url: `api/history/timelines`
-                }),
-                ApiService.send(backend, {
-                    url: `api/v2/history/timelines/alignments`
-                })
-            ])
-            .then((responses) => {
-                return {
-                    timelines: responses[0].data,
-                    alignments: responses[1].data
-                };
-            });
+    static async queryTimelines(backend) {
+        return Promise.all([
+            ApiService.send(backend, {
+                url: `api/history/timelines`
+            }),
+            ApiService.send(backend, {
+                url: `api/v2/history/timelines/alignments`
+            })
+        ]).then((responses) => {
+            return {
+                timelines: responses[0].data,
+                alignments: responses[1].data
+            };
+        });
     }
 }
 
