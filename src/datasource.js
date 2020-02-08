@@ -160,12 +160,7 @@ export class SysdigDatasource {
 
         if (typeof input === 'string') {
             return normParser(
-                TemplatingService.replace.call(
-                    TemplatingService,
-                    this.templateSrv,
-                    input,
-                    (options || {}).scopedVars
-                )
+                TemplatingService.replace(this.templateSrv, input, (options || {}).scopedVars)
             );
         } else {
             return normParser(input);
