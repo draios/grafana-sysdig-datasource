@@ -76,17 +76,17 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            script {
-                GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
-                if (currentBuild.previousBuild) {
-                    PREVIOUS_BUILD_RESULT = "${currentBuild.previousBuild.currentResult}"
-                } else {
-                    PREVIOUS_BUILD_RESULT = "NONE"
-                }
-            }
-            sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
-        }
-    }
+    // post {
+    //     always {
+    //         script {
+    //             GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    //             if (currentBuild.previousBuild) {
+    //                 PREVIOUS_BUILD_RESULT = "${currentBuild.previousBuild.currentResult}"
+    //             } else {
+    //                 PREVIOUS_BUILD_RESULT = "NONE"
+    //             }
+    //         }
+    //         sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
+    //     }
+    // }
 }
