@@ -36,10 +36,6 @@ export default class TemplatingService {
         }
     }
 
-    static replaceSingleMatch(templateSrv, input, scopedVars) {
-        return templateSrv.replace(input, scopedVars);
-    }
-
     static replace(templateSrv, input, scopedVars) {
         return templateSrv.replace(input, scopedVars, (...args) =>
             this.formatTemplateValue(...args)
