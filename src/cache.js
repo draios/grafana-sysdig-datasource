@@ -14,8 +14,7 @@
 //  limitations under the License.
 //
 export default class Cache {
-    constructor($q, maxCount = 10, expiration = Number.MAX_VALUE) {
-        this.$q = $q;
+    constructor(maxCount = 10, expiration = Number.MAX_VALUE) {
         this.map = {};
         this.list = [];
 
@@ -30,7 +29,7 @@ export default class Cache {
     async get(id, loader) {
         const data = this.read(id);
         if (data !== undefined) {
-            return this.$q.resolve(data);
+            return data;
         } else {
             const promise = this.fetch(loader);
 
@@ -78,7 +77,7 @@ export default class Cache {
     }
 
     fetch(loader) {
-        return this.$q.resolve(loader());
+        return loader();
     }
 
     write(id, data) {

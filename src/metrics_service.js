@@ -20,7 +20,7 @@ import TemplatingService from './templating_service';
 import Cache from './cache';
 
 export default class MetricsService {
-    static findMetrics(backend, options) {
+    static async findMetrics(backend, options) {
         const normOptions = Object.assign(
             {
                 areLabelsIncluded: false,
@@ -47,7 +47,7 @@ export default class MetricsService {
         });
     }
 
-    static findSegmentations(backend, options) {
+    static async findSegmentations(backend, options) {
         const normOptions = Object.assign({ metric: false, match: null }, options);
 
         if (normOptions.match && normOptions.match.trim() === '') {
@@ -61,46 +61,41 @@ export default class MetricsService {
         });
     }
 
-    static findSegmentValues(backend, filter, queryOptions, userTime) {
+    static async findSegmentValues(backend, filter, queryOptions, userTime) {
         let evaluateUserTime;
         if (userTime === null) {
-            evaluateUserTime = TimeService.queryTimelines(backend).then(({ timelines }) => {
-                if (timelines.agents.filter((t) => t.from !== null && t.to !== null).length > 0) {
-                    return {
-                        from: (timelines.agents[0].to - timelines.agents[0].sampling) / 1000000,
-                        to: timelines.agents[0].to / 1000000,
-                        sampling: timelines.agents[0].sampling / 1000000
-                    };
-                } else {
-                    return backend.backendSrv.$q.reject(
-                        'Unable to query metrics (data not available)'
-                    );
-                }
-            });
+            const { timelines } = await TimeService.queryTimelines(backend);
+            if (timelines.agents.filter((t) => t.from !== null && t.to !== null).length > 0) {
+                evaluateUserTime = {
+                    from: (timelines.agents[0].to - timelines.agents[0].sampling) / 1000000,
+                    to: timelines.agents[0].to / 1000000,
+                    sampling: timelines.agents[0].sampling / 1000000
+                };
+            } else {
+                throw 'Unable to query metrics (data not available)';
+            }
         } else {
-            evaluateUserTime = backend.backendSrv.$q.resolve(userTime);
+            evaluateUserTime = userTime;
         }
 
-        return evaluateUserTime
-            .then((userTime) => TimeService.validateTimeWindow(backend, userTime))
-            .then((requestTime) => {
-                return ApiService.send(backend, {
-                    method: 'POST',
-                    url: 'api/data/entity/metadata',
-                    data: {
-                        time: {
-                            from: requestTime.from * 1000000,
-                            to: requestTime.to * 1000000
-                        },
-                        metrics: [queryOptions.labelName],
-                        filter,
-                        paging: { from: queryOptions.from, to: queryOptions.to }
-                    }
-                });
+        return TimeService.validateTimeWindow(backend, evaluateUserTime).then((requestTime) => {
+            return ApiService.send(backend, {
+                method: 'POST',
+                url: 'api/data/entity/metadata',
+                data: {
+                    time: {
+                        from: requestTime.from * 1000000,
+                        to: requestTime.to * 1000000
+                    },
+                    metrics: [queryOptions.labelName],
+                    filter,
+                    paging: { from: queryOptions.from, to: queryOptions.to }
+                }
             });
+        });
     }
 
-    static queryMetrics(backend, templateSrv, query, options) {
+    static async queryMetrics(backend, templateSrv, query, options) {
         let queryOptions;
         if ((queryOptions = TemplatingService.validateLabelValuesQuery(query)) !== null) {
             //
@@ -127,7 +122,7 @@ export default class MetricsService {
                 result.map((metric) => metric.id)
             );
         } else {
-            return backend.backendSrv.$q.when([]);
+            return [];
         }
     }
 
@@ -137,8 +132,8 @@ export default class MetricsService {
 }
 
 class MetricsCache extends Cache {
-    constructor($q) {
-        super($q, 10, 60000);
+    constructor() {
+        super(10, 60000);
     }
 
     getItemId(id) {
@@ -157,8 +152,8 @@ function getMetricsCache(backend) {
 
     if (metricsCaches[backend.url] === undefined) {
         metricsCaches[backend.url] = {
-            values: new MetricsCache(backend.backendSrv.$q),
-            labels: new MetricsCache(backend.backendSrv.$q)
+            values: new MetricsCache(),
+            labels: new MetricsCache()
         };
     }
 

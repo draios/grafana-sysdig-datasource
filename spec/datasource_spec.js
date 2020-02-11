@@ -1,14 +1,12 @@
 import { SysdigDatasource } from '../datasource';
-import Q from 'q';
 
 describe('SysdigDatasource', () => {
     var ctx = {};
 
     beforeEach(() => {
-        ctx.$q = Q;
         ctx.backendSrv = {};
         ctx.templateSrv = {};
-        ctx.ds = new SysdigDatasource({}, ctx.$q, ctx.backendSrv, ctx.templateSrv);
+        ctx.ds = new SysdigDatasource({}, ctx.backendSrv, ctx.templateSrv);
     });
 
     it('should return an empty array when no targets are set', async () => {

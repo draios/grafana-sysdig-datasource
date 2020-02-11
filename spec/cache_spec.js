@@ -1,9 +1,8 @@
 import Cache from '../cache';
-import Q from 'q';
 
 describe('Cache', () => {
     it('should store items', async () => {
-        const cache = new Cache(Q);
+        const cache = new Cache();
 
         await cache.get('test-1', () => 'res-1');
         const res1 = await cache.get('test-1');
@@ -15,7 +14,7 @@ describe('Cache', () => {
     });
 
     it('should store up to MAX items', async () => {
-        const cache = new Cache(Q, 2);
+        const cache = new Cache(2);
 
         await cache.get('test-1', () => 'res-1');
         await cache.get('test-2', () => 'res-2');
@@ -29,7 +28,7 @@ describe('Cache', () => {
     });
 
     it('should store up to MAX recently read items', async () => {
-        const cache = new Cache(Q, 2);
+        const cache = new Cache(2);
 
         await cache.get('test-1', () => 'res-1');
         await cache.get('test-2', () => 'res-2');
@@ -43,7 +42,7 @@ describe('Cache', () => {
     });
 
     it('should evict expired items', async () => {
-        const cache = new Cache(Q, 10, 10);
+        const cache = new Cache(10, 10);
 
         cache.now = () => 0;
         await cache.get('test-1', () => 'res-1');
@@ -61,7 +60,7 @@ describe('Cache', () => {
     });
 
     it('should evict expired items', async () => {
-        const cache = new Cache(Q, 10, 10);
+        const cache = new Cache(10, 10);
 
         cache.now = () => 0;
         await cache.get('test-1', () => 'res-1');
@@ -79,7 +78,7 @@ describe('Cache', () => {
     });
 
     it('should evict expired items based on creation time', async () => {
-        const cache = new Cache(Q, 10, 10);
+        const cache = new Cache(10, 10);
 
         cache.now = () => 0;
         await cache.get('test-1', () => 'res-1');

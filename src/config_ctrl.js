@@ -45,7 +45,7 @@ export class SysdigConfigCtrl {
         this.isOnprem = this.current.url !== CLOUD_URL;
         this.plan = this.isOnprem ? this.planOptions[1] : this.planOptions[0];
 
-        this.q = $q;
+        this.$q = $q;
         this.backendSrv = backendSrv;
     }
 
@@ -82,11 +82,14 @@ export class SysdigConfigCtrl {
         dashboardSet.importStatus = 'executing';
         dashboardSet.importMessage = null;
 
-        DashboardsService.importFromSysdig(
-            this.getBackendConfiguration(),
-            this.current.name,
-            dashboardSetId
-        )
+        this.$q
+            .when(
+                DashboardsService.importFromSysdig(
+                    this.getBackendConfiguration(),
+                    this.current.name,
+                    dashboardSetId
+                )
+            )
             .then(() => {
                 dashboardSet.importStatus = 'success';
             })

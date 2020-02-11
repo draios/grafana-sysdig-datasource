@@ -21,24 +21,25 @@ import FormatterService from './formatter_service';
 let fetchQueue;
 
 export default class DataService {
-    static fetch(backend, query, userTime) {
+    static async fetch(backend, query, userTime) {
         const queue = this.setupTokenRequestQueue(backend.apiToken);
         const batch = this.setupDataBatchQueue(queue, backend, userTime);
 
-        const promise = backend.backendSrv.$q.defer();
-        batch.requests.push({
-            query,
-            promise
+        const promise = new Promise((resolve, reject) => {
+            batch.requests.push({
+                query,
+                promise: { resolve, reject }
+            });
+
+            //
+            // Debounce fetch so that all panels' requests can be batched together
+            // Note that this function will be called synchronously once per panel
+            //
+            const scheduleFetchFn = _.debounce(this.scheduleFetch.bind(this), 0);
+            scheduleFetchFn();
         });
 
-        //
-        // Debounce fetch so that all panels' requests can be batched together
-        // Note that this function will be called synchronously once per panel
-        //
-        const scheduleFetchFn = _.debounce(this.scheduleFetch.bind(this), 0);
-        scheduleFetchFn();
-
-        return promise.promise;
+        return promise;
     }
 
     static setupDataBatchQueue(queue, backend, userTime) {
@@ -55,7 +56,7 @@ export default class DataService {
         return queue[batchId];
     }
 
-    static scheduleFetch() {
+    static async scheduleFetch() {
         const queues = Object.values(fetchQueue);
 
         // clear queue, requests will be now processed
@@ -66,9 +67,7 @@ export default class DataService {
         });
     }
 
-    static fetchBatch(batch) {
-        const q = batch.backend.backendSrv.$q;
-
+    static async fetchBatch(batch) {
         TimeService.validateTimeWindow(batch.backend, batch.userTime)
             .then((requestTime) => {
                 //
@@ -99,7 +98,7 @@ export default class DataService {
                     //
                     // send all batch requests
                     //
-                    return q.all(
+                    return Promise.all(
                         chunks.map((chunk) =>
                             ApiService.send(batch.backend, {
                                 url: `api/data/batch`,
