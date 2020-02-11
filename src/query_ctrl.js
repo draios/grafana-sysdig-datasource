@@ -18,8 +18,9 @@ import './css/query-editor.css!';
 import { DEFAULT_PAGE_LIMIT } from './datasource';
 
 const DEFAULT_TIME_AGGREGATIONS = [
+    { value: 'timeAvg', text: 'Time average' },
+    { value: 'rateOfChange', text: 'Rate of change' },
     { value: 'avg', text: 'Average' },
-    { value: 'timeAvg', text: 'Rate' },
     { value: 'sum', text: 'Sum' },
     { value: 'min', text: 'Min' },
     { value: 'max', text: 'Max' },
@@ -145,7 +146,10 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     getSortDirectionOptions() {
-        return [{ value: 'desc', text: 'Top' }, { value: 'asc', text: 'Bottom' }];
+        return [
+            { value: 'desc', text: 'Top' },
+            { value: 'asc', text: 'Bottom' }
+        ];
     }
 
     getSegmentByOptions(item, query) {
