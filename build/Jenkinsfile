@@ -17,7 +17,7 @@ pipeline {
     agent {
         dockerfile {
             dir 'build'
-            label 'builder-backend-j8'
+            label 'general_terminating_j8'
         }
     }
 
