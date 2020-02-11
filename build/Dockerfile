@@ -23,30 +23,12 @@ FROM debian:stable-slim
 #                                                                             #
 ###############################################################################
 RUN apt-get update -y && \
-    apt-get install ca-certificates \
-      gconf-service \
-      libasound2 \
-      libatk1.0-0 \
-      libatk1.0-0 \
-      libdbus-1-3 \
-      libgconf-2-4 \
-      libgtk-3-0 \
-      libnspr4 \
-      libnss3 \
-      libx11-xcb1 \
-      libxss1 \
-      libxtst6 \
-      fonts-liberation \
-      libappindicator3-1 \
-      xdg-utils \
-      lsb-release \
-      wget \
+    apt-get install -y --no-install-recommends \
       curl \
-      gzip \
       zip \
       git \
       awscli \
-      xz-utils -y --no-install-recommends && \
+      && \
     apt-get install -f
 
 # Install the latest Docker CE binaries
@@ -70,13 +52,9 @@ RUN apt-get update && \
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y nodejs
 
-# Install Google Chrome unstable (which has cross platform support for headless mode
-RUN wget https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb && \
-    dpkg -i google-chrome*.deb
-
 # Cleanup
 RUN apt-get clean autoclean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* google-chrome-unstable_current_amd64.deb
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 
@@ -97,4 +75,3 @@ WORKDIR /usr/bin/grafana-sysdig-datasource
 ###############################################################################
 
 CMD ["./build/build.sh"]
-
