@@ -98,6 +98,7 @@ publish_artifacts() {
         if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH_NAME}" = "dev" ]; then
             echo "Publishing image to Docker hub..."
 
+            docker login -u=${DOCKER_USERNAME} -p=${DOCKER_PASSWORD}
             docker push ${DOCKER_IMAGE_TAG}:${DOCKER_IMAGE_VERSION}
             docker push ${DOCKER_IMAGE_TAG}:${DOCKER_IMAGE_VERSION_LATEST}
         fi
