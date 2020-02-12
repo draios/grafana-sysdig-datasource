@@ -15,49 +15,57 @@
 //
 pipeline {
     agent {
-        dockerfile {
-            dir 'build'
-            label 'builder-backend-j8'
-        }
-    }
-
-    environment {
-        VERSION = readFile "VERSION"
-        SLACK_URL = credentials('grafana-ds-build-slack-webhook')
+        label 'general_terminating_j8'
     }
 
     options {
         disableConcurrentBuilds()
     }
 
+    environment {
+        BUILDER = "sysdiglabs/grafana-sysdig-datasource-builder:0.1"
+        VERSION = readFile "VERSION"
+    }
+
     stages {
-        stage('Prepare build') {
+        stage('Prepare') {
             steps {
                 // At this point, Jenkins checked out the repository already.
                 // Also, the workspace is persistent.
                 // Since the previous build might have left some artifacts then now we're going to
                 // remove everything and checkout the repository again
-                sh "rm -rf *"
+                step([$class: 'WsCleanup'])
+
+                sh "docker rm grafana-sysdig-datasource-builder || echo \\\"Builder image not found\\\""
 
                 // NOTE: 'checkout scm' is equivalent to
-                // git url: "https://github.com/draios/grafana-sysdig-datasource", branch: "${env.BRANCH_NAME}", credentialsId: "github-jenkins-user-token"
+                // git url: "https://github.com/:account/:repository", branch: "${env.BRANCH_NAME}", credentialsId: ${env.MY_CREDENTAILS_NAME}"
                 checkout scm
 
-                // Prepare npm/yarn environment
-                sh "npm install"
-                sh "./node_modules/.bin/yarn install"
+                // Define build number
+                script {
+                    def now = new Date()
+
+                    env.VERSION_BUILD_NUMBER=now.format("yyyyMMdd.HHmmss", TimeZone.getTimeZone('UTC'))
+                }
             }
         }
 
         stage('Build') {
+            environment {
+                CWD = sh(script: 'pwd', , returnStdout: true).trim()
+            }
             steps {
-                sh "npm run build"
+                sh "docker run --name grafana-sysdig-datasource-builder -v ${CWD}:/usr/bin/grafana-sysdig-datasource -v /var/run/docker.sock:/var/run/docker.sock -e 'GIT_BRANCH=${env.BRANCH_NAME}' -e 'BUILD_NUMBER=${env.VERSION_BUILD_NUMBER}' ${env.BUILDER}"
             }
         }
 
-        stage('Deploy') {
+        stage('Publish Docker image') {
             steps {
-                sh "/bin/bash -c './build/upload-s3.sh ${VERSION} ${env.BUILD_ID} ${env.BRANCH_NAME}'"
+                withCredentials([usernamePassword(credentialsId: "docker-hub", passwordVariable: "DOCKER_PASSWORD", usernameVariable: "DOCKER_USERNAME")]) {
+                    sh "docker login -u=${env.DOCKER_USERNAME} -p=${env.DOCKER_PASSWORD}"
+                    sh "GIT_BRANCH=${env.BRANCH_NAME} BUILD_NUMBER=${env.VERSION_BUILD_NUMBER} ./build/publish.sh"
+                }            
             }
         }
 
@@ -75,18 +83,4 @@ pipeline {
             }
         }
     }
-
-    // post {
-    //     always {
-    //         script {
-    //             GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
-    //             if (currentBuild.previousBuild) {
-    //                 PREVIOUS_BUILD_RESULT = "${currentBuild.previousBuild.currentResult}"
-    //             } else {
-    //                 PREVIOUS_BUILD_RESULT = "NONE"
-    //             }
-    //         }
-    //         sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
-    //     }
-    // }
 }

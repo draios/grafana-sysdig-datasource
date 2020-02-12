@@ -15,54 +15,63 @@
 #
 FROM debian:stable-slim
 
-# Install basic tools/utilities
-# Also, install Google Chrome unstable (which has cross platform support for headless mode
-# Combining them together so that "apt cache cleanup" would need to be done just once
+
+
+###############################################################################
+#                                                                             #
+# Install basic tools/utilities                                               #
+#                                                                             #
+###############################################################################
 RUN apt-get update -y && \
-    apt-get install ca-certificates \
-      gconf-service \
-      libasound2 \
-      libatk1.0-0 \
-      libatk1.0-0 \
-      libdbus-1-3 \
-      libgconf-2-4 \
-      libgtk-3-0 \
-      libnspr4 \
-      libnss3 \
-      libx11-xcb1 \
-      libxss1 \
-      libxtst6 \
-      fonts-liberation \
-      libappindicator3-1 \
-      xdg-utils \
-      lsb-release \
-      wget \
+    apt-get install -y --no-install-recommends \
       curl \
-      gzip \
       zip \
       git \
       awscli \
-      xz-utils -y --no-install-recommends && \
-    wget https://dl.google.com/linux/direct/google-chrome-unstable_current_amd64.deb && \
-    dpkg -i google-chrome*.deb && \
-    apt-get install -f && \
-    apt-get clean autoclean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* google-chrome-unstable_current_amd64.deb
+      && \
+    apt-get install -f
 
-RUN groupadd ec2-user -g 500 && \
-    useradd -m -d /home/ec2-user -g ec2-user -u 500 ec2-user
+# Install the latest Docker CE binaries
+# From https://github.com/getintodevops/jenkins-withdocker/blob/master/Dockerfile
+RUN apt-get update && \
+    apt-get -y install apt-transport-https \
+      ca-certificates \
+      curl \
+      gnupg2 \
+      software-properties-common && \
+    curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg > /tmp/dkey; apt-key add /tmp/dkey && \
+    add-apt-repository \
+      "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+      $(lsb_release -cs) \
+      stable" && \
+   apt-get update && \
+   apt-get -y install docker-ce
 
-# Install nodejs
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 8.9.4
-ENV NVM_VERSION 0.31.2
+# Install Node.js v10
+# (ref. https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions)
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+    apt-get install -y nodejs
 
-RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v$NVM_VERSION/install.sh | bash
+# Cleanup
+RUN apt-get clean autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN /bin/bash -c "source $NVM_DIR/nvm.sh && \
-    nvm install $NODE_VERSION && \
-    nvm alias default $NODE_VERSION && \
-    nvm use default"
 
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
+
+###############################################################################
+#                                                                             #
+# Prepare environment                                                         #
+#                                                                             #
+###############################################################################
+
+WORKDIR /usr/bin/grafana-sysdig-datasource
+
+
+
+###############################################################################
+#                                                                             #
+# Run the build                                                               #
+#                                                                             #
+###############################################################################
+
+CMD ["./build/build.sh"]
