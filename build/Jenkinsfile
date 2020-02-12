@@ -25,7 +25,6 @@ pipeline {
     environment {
         BUILDER = "sysdiglabs/grafana-sysdig-datasource-builder:0.1"
         VERSION = readFile "VERSION"
-        SLACK_URL = credentials('grafana-ds-build-slack-webhook')
     }
 
     stages {
@@ -84,31 +83,4 @@ pipeline {
             }
         }
     }
-
-    // post {
-    //     always {
-    //         script {
-    //             GIT_COMMIT_HASH = sh(script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
-    //             if (currentBuild.previousBuild) {
-    //                 PREVIOUS_BUILD_RESULT = "${currentBuild.previousBuild.currentResult}"
-    //             } else {
-    //                 PREVIOUS_BUILD_RESULT = "NONE"
-    //             }
-    //         }
-
-    //         //
-    //         // Notification
-    //         //
-    //         sh "node build/notify-slack.js ${SLACK_URL} ${VERSION} ${env.BUILD_NUMBER} ${env.BRANCH_NAME} ${env.BUILD_URL} ${PREVIOUS_BUILD_RESULT} ${currentBuild.currentResult} ${currentBuild.timeInMillis} ${currentBuild.duration} ${GIT_COMMIT_HASH}"
-
-    //         //
-    //         // Cleanup
-    //         //
-    //         // NOTE: All artifacts that need to be stored should be uploaded to permanent storage by now!
-    //         //
-    //         step([$class: 'WsCleanup'])
-
-    //         sh "docker rm grafana-sysdig-datasource-builder || echo \\\"Builder image not found\\\""
-    //     }
-    // }
 }
