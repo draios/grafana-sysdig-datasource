@@ -15,7 +15,7 @@
 //
 pipeline {
     agent {
-        label 'builder-backend-j8'
+        label 'general_terminating_j8'
     }
 
     options {
