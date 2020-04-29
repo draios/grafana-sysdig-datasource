@@ -44,6 +44,11 @@ docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3
 
 > For more information, refer to the [Grafana installation documentation](http://docs.grafana.org/installation/docker/#grafana-container-using-bind-mounts) and the [Docker documentation](https://docs.docker.com/storage/bind-mounts/).
 
+#### Codifing the Sysdig Datasource with Grafana
+
+These instructions will often apply to container-based platforms such as kubernetes and is focused more on how to codify the installation and configuration of the datasource & dashboards. Grafana supports many dynamic configuration capabilites such as using Environment Variables or loading in dashboard and datasource configurations. 
+
+You can refer to [CONFIGURE_AS_CODE](CONFIGURE_AS_CODE.md) file for instructions.
 
 #### Using Grafana Installed on the Host
 
