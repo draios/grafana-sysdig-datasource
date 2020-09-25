@@ -113,7 +113,10 @@ function getRequestTime(timelines, alignments, userTime) {
     };
 
     if (userTime.sampling) {
-        requestTime.sampling = Math.trunc(minSampling / 1000000);
+        // use the highest data resolution available to display data
+        // this comes from the valid timeline with lowest sampling time
+        // (NOTE: timelines.agents is assumed to be sorted by `sampling` property in ascending mode)
+        requestTime.sampling = Math.trunc(validTimelines[0].sampling / 1000000);
     }
 
     return requestTime;
