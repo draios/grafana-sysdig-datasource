@@ -63,9 +63,9 @@ function getRequestTime(timelines, alignments, userTime) {
     const timespan = toUs - fromUs;
 
     //
-    // Use alignments that allow the required timespan
+    // Find aligment to use given timespan ONLY
     //
-    const validAlignments = alignments.filter((a) => {
+    let validAlignments = alignments.filter((a) => {
         return timespan <= a.max * 1000000;
     });
 
@@ -98,6 +98,22 @@ function getRequestTime(timelines, alignments, userTime) {
     }
 
     //
+    // Find minimum sampling (ie. highest resolution) available given the timespan and alignments
+    //
+    const sampling = validTimelines[0].sampling / 1000000;
+
+    //
+    // Find aligments to use given timespan AND sampling
+    //
+    validAlignments = validAlignments.filter((a) => {
+        return a.sampling >= sampling;
+    });
+
+    if (validAlignments.length === 0) {
+        return null;
+    }
+
+    //
     // Align time window with required alignment
     //
     const alignTo = validAlignments[0].alignTo * 1000000;
@@ -116,7 +132,7 @@ function getRequestTime(timelines, alignments, userTime) {
         // use the highest data resolution available to display data
         // this comes from the valid timeline with lowest sampling time
         // (NOTE: timelines.agents is assumed to be sorted by `sampling` property in ascending mode)
-        requestTime.sampling = Math.trunc(validTimelines[0].sampling / 1000000);
+        requestTime.sampling = Math.trunc(sampling);
     }
 
     return requestTime;
