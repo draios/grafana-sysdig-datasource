@@ -109,6 +109,19 @@ To add a datasource to Grafana:
 </p>
 
 
+### 3. Import Sysdig dashboards
+
+After creating the datasource, Sysdig Monitor dashboards can then be imported into Grafana:
+
+1. On the Datasources tab, select the Sysdig datasource.
+2. Click the **Import** button for dashboards.
+3. Navigate to the **Dashboards** home page, and pull down the dashboard selection to see all the dashboards available.
+
+<p align="center">
+    <img alt="Import Sysdig dashboards" src="https://user-images.githubusercontent.com/5033993/39788145-df340996-52dd-11e8-9ec1-16efedada047.gif" width="900" />
+</p>
+
+
 ## Panels
 
 Custom panels can be added once the Sysdig datasource is installed. Any panel supported by Grafana can be used.
@@ -269,7 +282,9 @@ The Sysdig datasource is currently in Beta. Sysdig will continue to release iter
 
 * The datasource is being tested with latest version of Grafana. If you're using older versions of Grafana and you find any issues, please report the issue and we'll make sure to support your version of Grafana!
 * We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
+* Topology panels are not supported in Grafana, so importing Sysdig dashboards will ignore these panels.
 * With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).
+* Grafana doesn't support exponential y-axis scale (the import from Sysdig will fallback to linear scale).
 
 
 ## Support / Community
