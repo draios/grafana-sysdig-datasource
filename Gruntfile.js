@@ -22,7 +22,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-execute');
   grunt.loadNpmTasks('grunt-contrib-clean');
 
-  const version = fs.readFileSync('VERSION').toString();
+  const version = fs.readFileSync('VERSION').toString().trim();
 
   grunt.initConfig({
 
