@@ -155,3 +155,50 @@ limitations under the License.
     </div>
   </div>
 </div>
+
+
+<!--                   -->
+<!-- Import dashboards -->
+<!--                   -->
+<h3 class="page-heading">Sysdig Dashboards</h3>
+
+<p class="sysdig-config-editor-info">
+  Created some dashboards in Sysdig Monitor already? No worries, you can import them to Grafana!
+</p>
+<p class="sysdig-config-editor-info">
+  You can visit your existing dashboards at
+  <a href="{{ctrl.current.url}}/#/dashboards" target="_blank" style="text-decoration: underline;">Sysdig Monitor Dashboards page</a>.
+</p>
+<p class="grafana-info-box" ng-if="ctrl.isDashboardsImportDisabled()">
+  Before importing dashboards, please save the data source.
+</p>
+
+<div class="gf-form-group max-width-30" ng-if="ctrl.isDashboardsImportDisabled() === false">
+  <div class="gf-form-group">
+    <table class="filter-table">
+      <tbody>
+        <tr ng-repeat="dashboardSet in ctrl.dashboardSets">
+          <td class="width-1">
+            <i class="icon-gf icon-gf-dashboard"></i>
+          </td>
+          <td>
+            <span>{{dashboardSet.title}}</span>
+          </td>
+          <td>
+            <button class="btn btn-secondary btn-small" ng-disabled="ctrl.isDashboardsImportDisabled()" ng-click="ctrl.importDashboards(dashboardSet.id); $event.stopPropagation();">
+              Import
+            </button>
+            <div style="display: inline-block; margin: 0 10px; min-width: 13px;">
+              <i class="fa fa-spinner" ng-show="dashboardSet.importStatus === 'executing'"></i>
+              <i class="fa fa-check" ng-show="dashboardSet.importStatus === 'success'"></i>
+              <i class="fa fa-exclamation-triangle" ng-show="dashboardSet.importStatus === 'error'"></i>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="sysdig-config-editor-info" ng-if="ctrl.isDashboardsImportDisabled() === false">
+  <strong>Note</strong>: Imported dashboards will have the <code>sysdig</code> tag, and this tag will be used to delete all dashboards imported from Sysdig. You can delete all dashboards with <code>sysdig</code> tag by clicking <a style="text-decoration: underline;" ng-click="ctrl.deleteDashboards();">here</a>
