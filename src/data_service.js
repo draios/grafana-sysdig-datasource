@@ -293,9 +293,8 @@ function getRequest(target, requestTime) {
                 sort.push({ k1: sortDirection });
             }
         } else {
-            // for table panels, sort data by first metric.
-            // users can then re-sort by clicking table headers, but data stays the same (no re-fetch).
-            sort = [{ v0: sortDirection }];
+            // sort table by first label, let Grafana to sort the final table then
+            sort = [{ k0: sortDirection }];
         }
 
         return sort;
