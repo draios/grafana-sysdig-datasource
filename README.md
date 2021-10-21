@@ -6,6 +6,19 @@ This README discusses the installation and configuration instructions for the Sy
     <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="1200" />
 </p>
 
+---
+
+## Support and Known Limitations
+
+The Sysdig datasource plugin is currently in BETA and tested with Grafana version up to [7.4.3](https://github.com/grafana/grafana/releases/tag/v7.4.3).
+
+**NOTE: this plugin is not supported with later versions of Grafana. Instead, use the official Prometheus data source plugin to query the Sysdig API. For more info: [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/integrations-for-sysdig-monitor/collect-prometheus-metrics/configure-sysdig-with-grafana/).**
+
+Known limitations are listed below:
+* [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
+* With Grafana you can enter any arbitrary [time range](https://grafana.com/docs/grafana/v7.4/dashboards/time-range-controls/), but data will be fetched according to retention and granularity restrictions as explained in [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/explore/time-windows/#time-window-limitations).
+
+---
 
 ## Getting Started
 
@@ -261,16 +274,6 @@ The complete example below contains dynamic rows and panels:
 </p>
 
 ---
-
-
-## Current limitations
-
-The Sysdig datasource plugin is currently in BETA. Known limitations are listed below:
-
-* The plugin is tested with Grafana version up to [7.4.3](https://github.com/grafana/grafana/releases/tag/v7.4.3).
-* [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
-* With Grafana you can enter any arbitrary [time range](https://grafana.com/docs/grafana/v7.4/dashboards/time-range-controls/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://docs.sysdig.com/en/docs/sysdig-monitor/explore/time-windows/#time-window-limitations).
-
 
 ## Support / Community
 
