@@ -14,7 +14,7 @@ The Sysdig datasource plugin is currently in BETA and tested with Grafana versio
 
 **NOTE: this plugin is not supported with later versions of Grafana. Instead, use the official Prometheus data source plugin to query the Sysdig API. For more info: [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/integrations-for-sysdig-monitor/collect-prometheus-metrics/configure-sysdig-with-grafana/).**
 
-Known limitations are listed below:
+Known limitations of the Sysdig datasource plugin are listed below:
 * [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
 * With Grafana you can enter any arbitrary [time range](https://grafana.com/docs/grafana/v7.4/dashboards/time-range-controls/), but data will be fetched according to retention and granularity restrictions as explained in [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/explore/time-windows/#time-window-limitations).
 
