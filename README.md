@@ -265,15 +265,13 @@ The complete example below contains dynamic rows and panels:
 
 ## Current limitations
 
-The Sysdig datasource is currently in Beta. Sysdig will continue to release iterations to make the datasource more complete and robust; however, some issues may be encountered. A list of known limitations is provided below:
+The Sysdig datasource plugin is currently in BETA. Known limitations are listed below:
 
-* The datasource is being tested with latest version of Grafana. If you're using older versions of Grafana and you find any issues, please report the issue and we'll make sure to support your version of Grafana!
-* We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
-* With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).
+* The plugin is tested with Grafana version up to [7.4.3](https://github.com/grafana/grafana/releases/tag/v7.4.3).
+* [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
+* With Grafana you can enter any arbitrary [time range](https://grafana.com/docs/grafana/v7.4/dashboards/time-range-controls/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://docs.sysdig.com/en/docs/sysdig-monitor/explore/time-windows/#time-window-limitations).
 
 
 ## Support / Community
 
-The Sysdig Datasource Plugin for Grafana is currently in beta. We'd love to hear from you and help you with it!
-
-Join our [Public Slack](https://slack.sysdig.com) channel ([#grafana](https://sysdig.slack.com/messages/CA7RSQXK9)) for announcements and discussions.
+We'd love to hear from you! Join our [Public Slack](https://slack.sysdig.com) channel ([#grafana](https://sysdig.slack.com/messages/CA7RSQXK9)) for announcements and discussions.
