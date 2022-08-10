@@ -8,3 +8,9 @@ dist/
 dist-image/
 out/
 sysdig/
+
+# Local data
+grafana-data-*/
+
+# IDE settings
+.idea/
