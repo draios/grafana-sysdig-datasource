@@ -65,15 +65,17 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
         }
 
         this.target.sortDirection = this.target.sortDirection || 'desc';
-
-        // enforce tabular format to be applied when the panel type is a table
-        this.target.isTabularFormat = this.panel.type === 'table';
+        this.target.isSingleDataPoint = this.target.isTabularFormat;
 
         this.segmentByItems = this.calculateSegmentByItems();
     }
 
     isFirstTarget() {
         return this.panel.targets.indexOf(this.target) === 0;
+    }
+
+    isTabularFormat() {
+        return this.panel.targets[0].isTabularFormat;
     }
 
     getLimitPlaceholder() {
@@ -90,11 +92,11 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     getMetricOptions(query) {
         let parseMetric;
         let options = {
-            areLabelsIncluded: this.panel.type === 'table',
+            areLabelsIncluded: this.isTabularFormat(),
             match: query
         };
 
-        if (this.panel.type !== 'table') {
+        if (!this.isTabularFormat()) {
             parseMetric = (m) => ({ text: m.id, value: m.id });
         } else {
             parseMetric = (m) => {
@@ -211,29 +213,30 @@ export class SysdigDatasourceQueryCtrl extends QueryCtrl {
     }
 
     calculateSegmentByItems() {
-        if (this.panel.type !== 'table' || this.isFirstTarget()) {
-            if (this.target.segmentBy.length === 0) {
-                return [
-                    {
-                        isFirst: true,
-                        canAdd: false,
-                        segmentBy: null
-                    }
-                ];
-            } else {
-                return this.target.segmentBy.map((segmentBy, i) => ({
-                    isFirst: i === 0,
-                    canAdd: i === this.target.segmentBy.length - 1,
-                    segmentBy
-                }));
-            }
+        if (this.target.segmentBy.length === 0) {
+            return [
+                {
+                    isFirst: true,
+                    canAdd: false,
+                    segmentBy: null
+                }
+            ];
         } else {
-            return [];
+            return this.target.segmentBy.map((segmentBy, i) => ({
+                isFirst: i === 0,
+                canAdd: i === this.target.segmentBy.length - 1,
+                segmentBy
+            }));
         }
     }
 
     toggleEditorMode() {
         // noop
+    }
+
+    onChangeTabularFormat() {
+        this.target.isSingleDataPoint = this.target.isTabularFormat;
+        this.refresh();
     }
 }
 

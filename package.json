@@ -5,7 +5,8 @@
     "scripts": {
         "build": "./node_modules/grunt-cli/bin/grunt",
         "test": "./node_modules/grunt-cli/bin/grunt mochaTest",
-        "clean": "rm -rf dist"
+        "clean": "rm -rf dist",
+        "start": "./build/start.sh"
     },
     "repository": {
         "type": "git",
