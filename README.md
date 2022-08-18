@@ -6,6 +6,19 @@ This README discusses the installation and configuration instructions for the Sy
     <img alt="Sysdig datasource" src="https://user-images.githubusercontent.com/5033993/39788129-bd3963fe-52dd-11e8-86b0-10e127660e68.gif" width="1200" />
 </p>
 
+---
+
+## Support and Known Limitations
+
+The Sysdig datasource plugin is currently in BETA and tested with Grafana version up to [8.5.5](https://github.com/grafana/grafana/releases/tag/v8.5.5).
+
+**NOTE: this plugin is not supported with later versions of Grafana. Instead, use the official Prometheus data source plugin to query the Sysdig API. For more info: [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/integrations-for-sysdig-monitor/collect-prometheus-metrics/configure-sysdig-with-grafana/).**
+
+Known limitations of the Sysdig datasource plugin are listed below:
+* [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
+* With Grafana you can enter any arbitrary [time range](https://grafana.com/docs/grafana/v8.5/dashboards/time-range-controls/), but data will be fetched according to retention and granularity restrictions as explained in [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/explore/time-windows/#time-window-limitations).
+
+---
 
 ## Getting Started
 
@@ -15,15 +28,26 @@ There are several installation approaches available for the Sysdig datasource pl
 
 > **Note:** The Sysdig datasource plugin is currently not included in the [official & community built plugin page](https://grafana.com/plugins), and needs to be installed manually.
 
+#### Compatibility
+
+| Grafana Version | Plugin Version |
+|-----------------|----------------|
+| <= 7.3.10       | <= 0.10        |
+| 7.4.0 - 8.5.5   | 0.11           |
+
+> **Note:** Starting from version 8, Grafana will not load unsigned plugins.  
+> To load the sysdig plugin you must set the [allow_loading_unsigned_plugins](https://grafana.com/docs/grafana/v8.5/administration/configuration/#allow_loading_unsigned_plugins) property. (E.g. `allow_loading_unsigned_plugins=sysdig`)  
+> For more information about the configuration files, refer to the [Grafana docs](https://grafana.com/docs/grafana/v8.5/administration/configuration/#configuration-file-location).
+
 #### Using a Grafana Docker Container
 
 We offer a Docker container image based on Grafana that comes with the plugin pre-installed:
 
 ```
-docker run -d -p 3000:3000 --name grafana sysdiglabs/grafana:latest
+docker run -d -p 3000:3000 -e GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=sysdig --name grafana sysdiglabs/grafana:latest
 ```
 
-> For more information, refer to the [Docker Hub repository page](https://hub.docker.com/r/sysdiglabs/grafana) for more information about the 
+> For more information, refer to the [Docker Hub repository page](https://hub.docker.com/r/sysdiglabs/grafana).
 
 ---
 
@@ -33,13 +57,13 @@ Alternatively, the default Grafana container image can be used as is, and the pl
 ```
 mkdir grafana-data
 mkdir grafana-data/plugins
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.7.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.11.tgz -o sysdig.tgz
 tar zxf sysdig.tgz -C grafana-data/plugins
 ```
 2. Start the container with the current user, to give read/write permissions to the data directory:
 ```
 ID=$(id -u)
-docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 grafana/grafana:latest
+docker run -d --user $ID --volume "$PWD/grafana-data:/var/lib/grafana" -p 3000:3000 -e GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=sysdig grafana/grafana:latest
 ```
 
 > For more information, refer to the [Grafana installation documentation](http://docs.grafana.org/installation/docker/#grafana-container-using-bind-mounts) and the [Docker documentation](https://docs.docker.com/storage/bind-mounts/).
@@ -59,7 +83,7 @@ The plugin can be installed on any host where Grafana is installed. To install t
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.7.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.11.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 sudo cp -R sysdig /var/lib/grafana/plugins
 sudo service grafana-server restart
@@ -74,7 +98,7 @@ sudo service grafana-server restart
 1. Open a shell terminal.
 2. Run the series of commands below:
 ```
-curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.7.tgz -o sysdig.tgz
+curl https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.11.tgz -o sysdig.tgz
 tar zxf sysdig.tgz
 cp -R sysdig /usr/local/var/lib/grafana/plugins
 brew services restart grafana
@@ -85,7 +109,7 @@ brew services restart grafana
 
 ##### Windows
 
-1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.7.zip
+1. Download the plugin from: https://download.sysdig.com/stable/grafana-sysdig-datasource/grafana-sysdig-datasource-v0.11.zip
 2. Install the plugin in the Grafana plugins folder.
 3. Restart Grafana.
 
@@ -122,6 +146,12 @@ In Sysdig, number panels, bar charts and histograms display aggregated data (i.e
 
 > **Note:** To maintain the same aggregation mechanism and precision offered by the Sysdig API, create panels with the "Fetch single data point" flag turned on. This will instruct the datasource to make an aggregated data request to the API.
 
+### Table panels
+
+Starting from Grafana 7.4, and Sysdig plugin 0.11, the table panel must be created with the "Fetch as table" flag turned on.   
+This flag can be used also with other Grafana panel types that requires data in a table format, like  `Bar chart` and `Bar gauge`.
+
+> **Note**: no migration is required for the existing panels.
 
 ### Filters
 
@@ -262,18 +292,6 @@ The complete example below contains dynamic rows and panels:
 
 ---
 
-
-## Current limitations
-
-The Sysdig datasource is currently in Beta. Sysdig will continue to release iterations to make the datasource more complete and robust; however, some issues may be encountered. A list of known limitations is provided below:
-
-* The datasource is being tested with latest version of Grafana. If you're using older versions of Grafana and you find any issues, please report the issue and we'll make sure to support your version of Grafana!
-* We leverage [annotations](http://docs.grafana.org/reference/annotations/) to show Sysdig events, but we don't support it just yet.
-* With Grafana you can enter any arbitrary [time range](http://docs.grafana.org/reference/timerange/), but data will be fetched according to retention and granularity restrictions as explained in this [Sysdig Support page](https://support.sysdig.com/hc/en-us/articles/204889655).
-
-
 ## Support / Community
 
-The Sysdig Datasource Plugin for Grafana is currently in beta. We'd love to hear from you and help you with it!
-
-Join our [Public Slack](https://slack.sysdig.com) channel ([#grafana](https://sysdig.slack.com/messages/CA7RSQXK9)) for announcements and discussions.
+We'd love to hear from you! Join our [Public Slack](https://slack.sysdig.com) channel ([#grafana](https://sysdig.slack.com/messages/CA7RSQXK9)) for announcements and discussions.

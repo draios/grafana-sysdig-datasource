@@ -53,7 +53,7 @@ limitations under the License.
   </div>
 
   <!-- Segmentation -->
-  <div class="gf-form gf-form-inline" ng-repeat="item in ctrl.segmentByItems">
+  <div class="gf-form gf-form-inline" ng-repeat="item in ctrl.segmentByItems" ng-if="!ctrl.isTabularFormat() || ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-12" ng-if="item.isFirst === true">
         Segment by
@@ -68,17 +68,17 @@ limitations under the License.
 
       <div style="min-width: 80px;">
         <button class="btn btn-inverse" ng-click="ctrl.removeSegmentBy(item)">
-          <i class="fa fa-trash" />
+          <i class="fa fa-trash" ></i>
         </button>
         <button class="btn btn-inverse" ng-click="ctrl.addSegmentBy(item)">
-          <i class="fa fa-plus" />
+          <i class="fa fa-plus" ></i>
         </button>
       </div>
      </div>
   </div>
 
   <!-- Filter -->
-  <div class="gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
+  <div class="gf-form-inline" ng-if="!ctrl.isTabularFormat() || ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-12">
         Filter
@@ -107,13 +107,18 @@ limitations under the License.
     <div class="gf-form gf-form--grow"></div>
     <div class="gf-form">
       <gf-form-switch class="gf-form" label="Fetch single data point" label-class="width-12" checked="ctrl.target.isSingleDataPoint"
-        on-change="ctrl.refresh()">
+        ng-disabled="ctrl.isTabularFormat()"
+        on-change="ctrl.refresh()"/>
+    </div>
+    <div class="gf-form">
+      <gf-form-switch class="gf-form" label="Fetch as table" label-class="width-12" checked="ctrl.target.isTabularFormat"
+        on-change="ctrl.onChangeTabularFormat()"/>
     </div>
   </div>
 </div>
 
   <!-- Alias -->
-  <div class="gf-form-inline" ng-if="ctrl.panel.type !== 'table' || ctrl.isFirstTarget()">
+  <div class="gf-form-inline" ng-if="!ctrl.isTabularFormat() || ctrl.isFirstTarget()">
     <div class="gf-form gf-form--grow">
       <label class="gf-form-label width-12">
         Alias

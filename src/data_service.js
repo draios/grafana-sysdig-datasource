@@ -215,10 +215,11 @@ function getBatchId(userTime) {
 }
 
 function getRequests(options, requestTime) {
-    return options.targets.map((target) => getRequest(target, requestTime));
+    const isTabularFormat = options.targets[0].isTabularFormat;
+    return options.targets.map((target) => getRequest(target, requestTime, isTabularFormat));
 }
 
-function getRequest(target, requestTime) {
+function getRequest(target, requestTime, isTabularFormat) {
     if (requestTime) {
         return {
             format: {
@@ -226,7 +227,7 @@ function getRequest(target, requestTime) {
             },
             time: getTime(),
             metrics: getMetrics(),
-            sort: getSort(),
+            sort: getSort(isTabularFormat),
             paging: getPaging(),
             scope: target.filter,
             group: {
@@ -281,12 +282,12 @@ function getRequest(target, requestTime) {
         }
     }
 
-    function getSort() {
+    function getSort(isTabularFormat) {
         const sortDirection = target.sortDirection || 'desc';
 
         let sort;
 
-        if (target.isTabularFormat === false) {
+        if (isTabularFormat === false) {
             sort = [{ v0: sortDirection }, { k0: sortDirection }];
 
             if (target.segmentBy.length > 0) {
