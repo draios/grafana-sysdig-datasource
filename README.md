@@ -12,7 +12,7 @@ This README discusses the installation and configuration instructions for the Sy
 
 The Sysdig datasource plugin is currently in BETA and tested with Grafana version up to [8.5.5](https://github.com/grafana/grafana/releases/tag/v8.5.5).
 
-**NOTE: this plugin is not supported with later versions of Grafana. Instead, use the official Prometheus data source plugin to query the Sysdig API. For more info: [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/integrations-for-sysdig-monitor/collect-prometheus-metrics/configure-sysdig-with-grafana/).**
+**NOTE: this plugin is not supported with later versions of Grafana. Instead, use the official Prometheus data source plugin to query the Sysdig API. For more info: [Sysdig Docs](https://docs.sysdig.com/en/docs/sysdig-monitor/monitoring-integrations/advanced-configuration/configure-sysdig-with-grafana/).**
 
 Known limitations of the Sysdig datasource plugin are listed below:
 * [Annotations](http://docs.grafana.org/reference/annotations/) are leveraged to show Sysdig events, but not broadly supported.
