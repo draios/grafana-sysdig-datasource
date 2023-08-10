@@ -62,7 +62,7 @@ pipeline {
 
         stage('Publish Docker image') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "docker-hub", passwordVariable: "DOCKER_PASSWORD", usernameVariable: "DOCKER_USERNAME")]) {
+                withCredentials([usernamePassword(credentialsId: "dockerhub-robot-account", passwordVariable: "DOCKER_PASSWORD", usernameVariable: "DOCKER_USERNAME")]) {
                     sh "GIT_BRANCH=${env.BRANCH_NAME} BUILD_NUMBER=${env.VERSION_BUILD_NUMBER} DOCKER_USERNAME=${DOCKER_USERNAME} DOCKER_PASSWORD=${DOCKER_PASSWORD} ./build/publish.sh"
                 }            
             }
