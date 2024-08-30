@@ -95,7 +95,7 @@ publish_artifacts() {
     aws s3 cp out/${BUILD_FILE_NAME}.tgz ${S3_BUCKET}/${S3_DEST}/${BUILD_FILE_NAME_LATEST}.tgz --acl public-read
 
     if [ "${BUILD_CONTAINER}" = "true" ]; then
-        if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH_NAME}" = "dev" ]; then
+        if [ "${ENVIRONMENT}" = "production" ] || [ "${GIT_BRANCH_NAME}" = "dev" ] || [ "${GIT_BRANCH_NAME}" = "patch-0.8.1-batch-size" ]; then
             echo "Publishing image to Docker hub..."
 
             docker login -u=${DOCKER_USERNAME} -p=${DOCKER_PASSWORD}
