@@ -78,9 +78,9 @@ export default class DataService {
                 }, []);
 
                 //
-                // break list into 20-request chunks
+                // break list into 4-request chunks
                 //
-                const maxRequestCountPerChunk = 20;
+                const maxRequestCountPerChunk = 4;
                 const chunks = apiRequests.reduce((acc, request) => {
                     if (
                         acc.length === 0 ||
